@@ -1,0 +1,46 @@
+{
+  "name": "logseq-chatgpt-plugin",
+  "version": "0.0.1",
+  "title": "Logseq ChatGPT Plugin",
+  "description": "An fully integrated ChatGPT plugin for logseq.",
+  "main": "dist/index.html",
+  "targets": {
+    "main": false
+  },
+  "default": "dist/index.html",
+  "repo": "debanjandhar12/logseq-chatgpt-plugin",
+  "author": "@debanjandhar12",
+  "scripts": {
+    "dev": "parcel watch ./src/index.ts --public-url ./ && cp ./src/index.html ./dist/index.html",
+    "build": "parcel build ./src/index.ts --public-url ./ && cp ./src/index.html ./dist/index.html"
+  },
+  "license": "AGPL-3.0",
+  "logseq": {
+    "id": "_rw1zys420",
+    "icon": "/icon.png"
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.0.14",
+    "await-lock": "^2.2.2",
+    "cancelable-promise": "4.3.1",
+    "dependency-graph": "^0.11.0",
+    "lodash": "^4.17.21",
+    "node-gyp": "^9.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "moment": "^2.29.4",
+    "mldoc": "^1.5.3",
+    "chatgpt-wrapper": "1.1.1"
+  },
+  "devDependencies": {
+    "@parcel/transformer-inline-string": "2.5.0",
+    "@types/lodash": "^4.14.177",
+    "@types/node": "^18.8.3",
+    "assert": "^2.0.0",
+    "buffer": "^6.0.3",
+    "constants-browserify": "^1.0.0",
+    "parcel": "2.5.0",
+    "path-browserify": "^1.0.1",
+    "vm-browserify": "^1.1.2"
+  }
+}

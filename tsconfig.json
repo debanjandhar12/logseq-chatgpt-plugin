@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "lib": [
+          "ES2021",
+          "dom"
+        ],
+        "esModuleInterop": false,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "sourceMap": false,
+        "removeComments": true,
+        "moduleResolution": "node",
+        "strict": false,
+        "module": "esnext",
+        "target": "ES6",
+        "isolatedModules": true,
+        "jsx": "react"
+    },
+    "exclude": [
+      "dist"
+    ],
+    "include": [
+        "src",
+        "type.ts"
+    ]
+}
