@@ -42,6 +42,9 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
                 window.parent.chatgptPageList_close_action();
             }
         };
+        div.getElementsByClassName("ui__modal-overlay")[0].addEventListener('click', () => {
+            window.parent.chatgptPageList_close_action();
+        });
         window.parent.document.addEventListener('keydown', onKeydown);
         // @ts-ignore
         window.parent.chatgptPageList_close_action = () => {
@@ -112,14 +115,16 @@ const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
                 <table>
                     <thead>
                     <tr>
-                        <th class="flex items-center">Name</th>
-                        <th class="flex items-center">Created Time</th>
-                        <th class="flex items-center">
-                            <span>Updated Time</span>
-                            <span><svg aria-hidden="true" version="1.1" viewBox="0 0 192 512" fill="currentColor"
-                                       display="inline-block" className="h-4 w-4"><path
-                                d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
-                                fill-rule="evenodd"></path></svg></span>
+                        <th>Name</th>
+                        <th>Created Time</th>
+                        <th>
+                            <span class="flex items-center">
+                                <span>Updated Time</span>
+                                <span><svg aria-hidden="true" version="1.1" viewBox="0 0 192 512" fill="currentColor"
+                                           display="inline-block" className="h-4 w-4"><path
+                                    d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
+                                    fill-rule="evenodd"></path></svg></span>
+                            </span>
                         </th>
                     </tr>
                     </thead>
