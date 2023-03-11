@@ -25,3 +25,9 @@ HELP is appreciated for making these decisions.
 - [ ] Streaming ChatGPT API (see stream function https://www.npmjs.com/package/chatgpt-wrapper)
 - [ ] Enhance the Ask ChatGPT button UI
 - [ ] Sanitize ChatGPT Output
+
+# 🙏 Support
+Loved the tool? Please consider donating 💸 to help continue development!<br/>
+<p align="center">
+<a href="https://www.buymeacoffee.com/debanjandhar12" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy Me A Coffee" height="55" style="border-radius:1px" />
+</p>
