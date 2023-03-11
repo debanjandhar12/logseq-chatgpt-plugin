@@ -1,4 +1,4 @@
-**A tightly integrated chatbot plugin for Logseq.**
+**A tightly integrated chatGPT plugin for Logseq.**
 
 This is an result of an 7 hour code sprint so please don't expect high quality code. Also, I am currently seeking contributors, and encourage you to browse through the available issues and assign yourself to one to contribute.
 
