@@ -24,3 +24,4 @@ HELP is appreciated for making these decisions.
 - [ ] Testing
 - [ ] Streaming ChatGPT API (see stream function https://www.npmjs.com/package/chatgpt-wrapper)
 - [ ] Enhance the Ask ChatGPT button UI
+- [ ] Sanitize ChatGPT Output
