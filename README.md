@@ -6,10 +6,12 @@ Current not available in marketplace. You have to build it yourself. Also, dont 
 
 ## Pending Plugin Architecture
 HELP is appreciated for making these decisions.
-##### Some general architecture decisions:
-- Currently, the plugin marks chatgpt pages using type: chatgpt. Should this be changed to something else?
 
-##### Some dev architecture decisions:
+**Some general architecture decisions:**
+- Currently, the plugin represents chatgpt pages using property `type: chatgpt`. Should this be changed to something else?
+- Currently, the plugin represents page flow using `chatgpt-flow` property. Should this be changed to something else?
+
+**Some dev architecture decisions:**
 - Should removePropsFromBlockContent.ts be moved from logseq folder? If so, where?
 
 ## TODO (sorted priority wise)
