@@ -49,6 +49,10 @@ export class AskChatGPTHandler {
         try {
             await this.askChatGPT();
         } catch (e) {
+            if(e.blockUUID) {
+                const page = await logseq.Editor.getCurrentPage();
+                await logseq.Editor.selectBlock(e.blockUUID);
+            }
             await logseq.UI.showMsg(e.message || e, e.type || "error", {timeout: 5000});
             console.log(e);
         }
@@ -94,7 +98,7 @@ export class AskChatGPTHandler {
         else if (messages[messages.length-1].role != "user")
             throw {message: "Last message is not from user", type: 'warning'};
         else if (messages[messages.length-1].content.trim() == "")
-            throw {message: "User message cannot be empty", type: 'warning'};
+            throw {message: "User message cannot be empty", type: 'warning', blockUUID: pageBlocks[messages.length].uuid};
 
         // Add the system message
         if (logseq.settings.CHATGPT_SYSTEM_PROMPT)
@@ -118,5 +122,6 @@ export class AskChatGPTHandler {
             await logseq.UI.showMsg(`ChatGPT stopped early because of ${resObj.choices[0].finish_reason.trim().toLowerCase()}.`, "warning", {timeout: 5000});
         console.log("resObj", resObj);
         await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+chatResponse.trim(), {properties: {}});
+        await logseq.Editor.exitEditingMode(true);
     }
 }
