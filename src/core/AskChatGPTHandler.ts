@@ -109,9 +109,13 @@ export class AskChatGPTHandler {
             model: 'gpt-3.5-turbo',
             stream: false,
             messages: messages,
-            max_tokens: 500,
+            max_tokens: 1000,
         });
         chatResponse += resObj.choices[0].message.content;
+        if (resObj.choices[0].finish_reason && resObj.choices[0].finish_reason.trim().toLowerCase() == "length")
+            await logseq.UI.showMsg("ChatGPT stopped early because of max_tokens limit. Please increase it in settings.", "warning", {timeout: 5000});
+        else if (resObj.choices[0].finish_reason && resObj.choices[0].finish_reason.trim().toLowerCase() != "stop")
+            await logseq.UI.showMsg(`ChatGPT stopped early because of ${resObj.choices[0].finish_reason.trim().toLowerCase()}.`, "warning", {timeout: 5000});
         console.log("resObj", resObj);
         await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+chatResponse.trim(), {properties: {}});
     }
