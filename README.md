@@ -15,9 +15,10 @@ HELP is appreciated for making these decisions.
 - Should removePropsFromBlockContent.ts be moved from logseq folder? If so, where?
 
 ## TODO (sorted priority wise)
-- [ ] Add pagination to chatgpt page list
+- [x] Add pagination to chatgpt page list
 - [ ] Look for better AutoFlowFormatter trigger events
 - [x] Better error handling
 - [ ] Check api key on change
 - [ ] Testing
 - [ ] Streaming ChatGPT API (see stream function https://www.npmjs.com/package/chatgpt-wrapper)
+- [ ] Enhance the Ask ChatGPT button UI

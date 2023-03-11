@@ -61,11 +61,16 @@ const PageList = () => {
             console.log(res);
         });
     }, []);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(8);
+
     return (
         <>
             <Header />
             <Toolbar />
-            <PageListBody pageList={pageList} />
+            <PageListBody pageList={pageList} currentPage={currentPage} itemsPerPage={itemsPerPage} />
+            <PaginationControls currentPage={currentPage} itemsPerPage={itemsPerPage} totalItems={pageList.length} onPageChange={setCurrentPage} />
         </>
     )
 }
@@ -96,19 +101,30 @@ const Toolbar = () => {
         </div>
     )
 }
-const PageListBody = ({pageList}) => {
+const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
+
     const sortedPageList = _.sortBy(pageList, (page) => page.updatedAt).reverse();
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedPageList.slice(indexOfFirstItem, indexOfLastItem);
     return (<div className="">
                 <table>
                     <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Created Time</th>
-                        <th>Updated Time</th>
+                        <th class="flex items-center">Name</th>
+                        <th class="flex items-center">Created Time</th>
+                        <th class="flex items-center">
+                            <span>Updated Time</span>
+                            <span><svg aria-hidden="true" version="1.1" viewBox="0 0 192 512" fill="currentColor"
+                                       display="inline-block" className="h-4 w-4"><path
+                                d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
+                                fill-rule="evenodd"></path></svg></span>
+                        </th>
                     </tr>
                     </thead>
                     <tbody>
-                    {sortedPageList.map((page) => (
+                    {currentItems.map((page) => (
                         <tr key={page.id}>
                             <td className="name"><PageLink pageName={page.name} /></td>
                             <td className="created-at">{new Date(page.createdAt).toLocaleString()}</td>
@@ -129,3 +145,32 @@ const PageLink = ({ pageName }) => {
         </a>
     );
 };
+
+const PaginationControls = ({ currentPage, itemsPerPage, totalItems, onPageChange}) => {
+    const incrementPage = () => {
+        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+            onPageChange(currentPage + 1);
+        }
+    }
+    const decrementPage = () => {
+        if (currentPage > 1) {
+            onPageChange(currentPage - 1);
+        }
+    }
+
+    return (
+        <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '1rem'}}>
+            <a onClick={decrementPage} className="fade-link flex items-center" style={{display: currentPage > 1 ? '' : 'none'}}><span className="ui__icon ti ls-icon-caret-left "><svg
+                xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-left" width="18"
+                height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
+                d="M18 15l-6 -6l-6 6h12" transform="rotate(270 12 12)"></path></svg></span>Prev</a>
+            <div className="px-2"><span>{currentPage}/{Math.ceil(totalItems / itemsPerPage)}</span></div>
+            <a onClick={incrementPage} className="fade-link flex items-center" style={{visibility: currentPage === Math.ceil(totalItems / itemsPerPage) ? 'hidden' : 'visible'}}>Next<span className="ui__icon ti ls-icon-caret-right "><svg
+                xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-right" width="18"
+                height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
+                d="M18 15l-6 -6l-6 6h12" transform="rotate(90 12 12)"></path></svg></span></a>
+        </div>
+    )
+}
