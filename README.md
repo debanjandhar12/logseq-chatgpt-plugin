@@ -1,6 +1,7 @@
 **A tightly integrated chatGPT plugin for Logseq.**
 
-[Screencast from 2023-03-11 12-04-02.webm](https://user-images.githubusercontent.com/49021233/224469295-1e9ecbce-d71d-4b3e-ac9d-4e1d7392f469.webm)
+[Screencast from 2023-03-11 13-54-43.webm](https://user-images.githubusercontent.com/49021233/224473826-1460ab43-f5ea-4f58-838c-37a20cd90a56.webm)
+
 
 This is the result of an 7 hour code sprint so please don't expect high quality code. Also, I am currently seeking contributors, and encourage you to browse through the available issues and assign yourself to one to contribute.
 
