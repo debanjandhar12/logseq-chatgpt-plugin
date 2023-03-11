@@ -6,6 +6,7 @@ import {
     SettingSchemaDesc
 } from "@logseq/libs/dist/LSPlugin";
 import AwaitLock from "await-lock";
+import {reject} from "lodash";
 
 
 
@@ -16,6 +17,26 @@ export namespace LogseqProxy {
         static registeredDBListeners = [];
         static registerDBChangeListener(listener: (event: {blocks, txData, txMeta}) => void): void {
             this.registeredDBListeners.push(listener);
+        }
+    }
+    export class Editor {
+        static async upsertBlockProperty(blockUUID: string, property: string, value: any): Promise<void> {
+            await getLogseqLock.acquireAsync();
+            try {
+                let block = await logseq.Editor.getBlock(blockUUID);
+                if (block.properties[property] == value) return;
+
+                if (!block.properties || (block.properties && Object.keys(block.properties).length === 0)) { // if property is empty
+                    // Add property to the top of the block
+                    await logseq.Editor.updateBlock(blockUUID, `${property}:: ${value}\n${block.content}`);
+                }
+                else {
+                    await logseq.Editor.upsertBlockProperty(blockUUID, property, value);
+                }
+            }
+            finally {
+                getLogseqLock.release();
+            }
         }
     }
     export class Settings {

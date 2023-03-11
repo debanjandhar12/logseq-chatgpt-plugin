@@ -83,7 +83,7 @@ export class AskChatGPTHandler {
         }
         else if (messages.length != 0 && messages[messages.length-1].role == "user" && messages[messages.length-1].content.trim() != "") {
             // @ts-ignore
-            resultBlock = await window.parent.logseq.api.insert_block(page.originalName, "speaker:: assistant", {isPageBlock: true, sibling: true});
+            resultBlock = await window.parent.logseq.api.insert_block(page.originalName, "", {isPageBlock: true, sibling: true});
         }
         console.log("resultBlock",resultBlock);
         console.log("messages",messages);
@@ -113,6 +113,6 @@ export class AskChatGPTHandler {
         });
         chatResponse += resObj.choices[0].message.content;
         console.log("resObj", resObj);
-        await logseq.Editor.updateBlock(resultBlock.uuid, chatResponse);
+        await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+chatResponse.trim(), {properties: {}});
     }
 }

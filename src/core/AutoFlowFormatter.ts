@@ -7,6 +7,7 @@ import {PageEntity, PageIdentity} from "@logseq/libs/dist/LSPlugin";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import getUUIDFromBlock from "../logseq/getUUIDFromBlock";
 import {isChatGPTPage} from "./isChatGPTPage";
+import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
 
 export class AutoFlowFormatter {
     static init() {
@@ -28,7 +29,7 @@ export class AutoFlowFormatter {
         });
     }
 
-    public static async enforceFlowFormat(pageName : PageIdentity) {
+    public static async enforceFlowFormat(pageName : PageIdentity, force = false) {
         let page = await logseq.Editor.getPage(pageName);
         if (!isChatGPTPage(page)) return;
 
@@ -42,8 +43,8 @@ export class AutoFlowFormatter {
         while (stack.length > 0) {
             let block = stack.pop();
             let currentSpeaker = lastSpeaker == "assistant" ? "user" : "assistant";
-            if (block.properties?.speaker != currentSpeaker) {
-                await logseq.Editor.upsertBlockProperty(getUUIDFromBlock(block), "speaker", currentSpeaker);
+            if (block.properties?.speaker != currentSpeaker && (!(currentSpeaker == "assistant" && removePropsFromBlockContent(block.content).trim() == "") || force == true)) {
+                await LogseqProxy.Editor.upsertBlockProperty(getUUIDFromBlock(block), "speaker", currentSpeaker);
             }
             lastSpeaker = currentSpeaker;
             if (block.children)

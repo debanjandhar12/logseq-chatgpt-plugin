@@ -14,3 +14,7 @@ node_modules/*
 
 # Dist folder
 dist/
+
+# IDEs
+.vscode
+.idea
