@@ -165,13 +165,13 @@ const PaginationControls = ({ currentPage, itemsPerPage, totalItems, onPageChang
 
     return (
         <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '1rem'}}>
-            <a onClick={decrementPage} className="fade-link flex items-center" style={{display: currentPage > 1 ? '' : 'none'}}><span className="ui__icon ti ls-icon-caret-left "><svg
+            <a onClick={decrementPage} className="fade-link flex items-center" style={{visibility: currentPage > 1 ? 'visible' : 'hidden', transition: '0s'}}><span className="ui__icon ti ls-icon-caret-left "><svg
                 xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-left" width="18"
                 height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
                 stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
                 d="M18 15l-6 -6l-6 6h12" transform="rotate(270 12 12)"></path></svg></span>Prev</a>
             <div className="px-2"><span>{currentPage}/{Math.ceil(totalItems / itemsPerPage)}</span></div>
-            <a onClick={incrementPage} className="fade-link flex items-center" style={{visibility: currentPage === Math.ceil(totalItems / itemsPerPage) ? 'hidden' : 'visible'}}>Next<span className="ui__icon ti ls-icon-caret-right "><svg
+            <a onClick={incrementPage} className="fade-link flex items-center" style={{visibility: currentPage === Math.ceil(totalItems / itemsPerPage) ? 'hidden' : 'visible', transition: '0s'}}>Next<span className="ui__icon ti ls-icon-caret-right "><svg
                 xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-right" width="18"
                 height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                 stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
