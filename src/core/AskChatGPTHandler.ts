@@ -1,7 +1,7 @@
 /**
  * This handles the ask chat GPT button event on ChatGPT pages.
  */
-import {ICON_14} from "../utils/constants";
+import {ICON_16} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {DOMElement} from "react";
 import {AutoFlowFormatter} from "./AutoFlowFormatter";
@@ -14,8 +14,17 @@ export class AskChatGPTHandler {
         logseq.App.registerUIItem('pagebar', {
             key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt"? "" : "-"+logseq.baseInfo.id}`,
             template: String.raw`
-              <a title="" data-on-click="" class="group item item-center logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex">
-                <span class="ui__icon ti ls-icon-hierarchy">${ICON_14}</span>
+              <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex" 
+              style="position: fixed;
+                z-index: var(--ls-z-index-level-1) !important;
+                right: 10px;
+                justify-content: center;
+                align-items: center;
+                color: var(--ls-alink-color);
+                padding: 0.08rem;
+                border-radius: .375rem;
+                display: none;">
+                <span class="ui__icon ti ls-icon-hierarchy" style="height:13px">${ICON_16}</span>
                 <span class="flex-1">Ask ChatGPT</span>
               </a>
         `
@@ -25,19 +34,33 @@ export class AskChatGPTHandler {
             if (button)
                 button.classList.add("logseq-chatgpt-callAPI-btn");
 
-            // Hide button if not on a ChatGPT page
+            // Show button if current page is a ChatGPT page only
             const page = await logseq.Editor.getCurrentPage();
             if (!(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]")))
             {
                 button.style.display = "none";
                 return;
             }
-            button.style.display = "sticky";
-            console.log("Triggered");
-            // Add event listener
+            button.style.display = "block";
+
+            // Add click event listener to button
             button.addEventListener("click", async () => {
                 await AskChatGPTHandler.askChatGPTWrapper();
             });
+
+            // Change color to blue on hover
+            button.addEventListener("mouseenter", () => {
+                button.style.backgroundColor = "rgba(59,130,246, .4)";
+            });
+            button.addEventListener("mouseleave", () => {
+                button.style.backgroundColor = "rgba(59,130,246, .2)";
+            });
+            button.style.backgroundColor = "rgba(59,130,246, .2)";
+
+            // Fix opacity of injected button container
+            const injectedUIItemContainer : HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt"? "" : "-"+logseq.baseInfo.id}"]`);
+            if (injectedUIItemContainer)
+                injectedUIItemContainer.style.opacity = "1";
         });
     }
     public static async askChatGPTWrapper() {
