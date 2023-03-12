@@ -24,9 +24,18 @@ export class AutoFlowFormatter {
 
         LogseqProxy.App.registerPageHeadActionsSlottedListener(async (e) => {
             const page = await logseq.Editor.getCurrentPage();
-            if (isChatGPTPage(page as PageEntity))
+            if (isChatGPTPage(page as PageEntity)) {
                 await this.enforceFlowFormat(page.originalName);
+                await attachAdditionalListenersOnChatGPTPageLoad();
+            }
         });
+
+        const attachAdditionalListenersOnChatGPTPageLoad = async () => {
+            window.parent.document.getElementsByClassName("add-button-link-wrap")[0].addEventListener("click", async () => {
+                const page = await logseq.Editor.getCurrentPage();
+                await this.enforceFlowFormat(page.originalName);
+            });
+        }
     }
 
     public static async enforceFlowFormat(pageName : PageIdentity, force = false) {
