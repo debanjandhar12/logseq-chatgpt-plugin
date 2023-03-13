@@ -8,6 +8,7 @@ import {addSettingsToLogseq} from "./settings";
 import {AutoFlowFormatter} from "./core/AutoFlowFormatter";
 import {LogseqProxy} from "./logseq/LogseqProxy";
 import {AskChatGPTHandler} from "./core/AskChatGPTHandler";
+import {BulletIconsInjector} from "./core/BulletIconsInjector";
 
 // --- Register UI Elements Onload ---
 function main(baseInfo: LSPluginBaseInfo) {
@@ -15,6 +16,7 @@ function main(baseInfo: LSPluginBaseInfo) {
   LogseqProxy.init();
   AutoFlowFormatter.init();
   AskChatGPTHandler.init();
+  BulletIconsInjector.init();
 
   let showChatGPTPageList = function() {
     console.log("Show ChatGPT Page List");
