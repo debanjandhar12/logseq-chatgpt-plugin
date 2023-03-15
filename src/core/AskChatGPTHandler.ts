@@ -5,9 +5,10 @@ import {ICON_16} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {DOMElement} from "react";
 import {AutoFlowFormatter} from "./AutoFlowFormatter";
-import {ChatGPT, Message} from "chatgpt-wrapper";
+import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
 import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
+import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -132,21 +133,54 @@ export class AskChatGPTHandler {
         const chat = new ChatGPT({
             API_KEY: logseq.settings.OPENAI_API_KEY
         });
-        let chatResponse = "";
-        let resObj = await chat.send({
+        let chatResponse = "", finishReason = null, lastChunk = null;
+        const responseStream = await chat.stream({
             model: 'gpt-3.5-turbo',
-            stream: false,
+            stream: true,
             messages: messages,
-            max_tokens: 1000,
+            max_tokens: 200,
         });
-        chatResponse += resObj.choices[0].message.content;
-        console.log("resObj", resObj);
-        await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
-        await logseq.Editor.exitEditingMode(true);
+        console.log("responseStream",responseStream);
+        await this.iterateChatGptResponseStream(responseStream, async (responseChunk) => {
+            chatResponse += responseChunk.choices[0].delta?.content || "";
+            finishReason = responseChunk.choices[0].finish_reason;
+            if (finishReason && finishReason.toLowerCase() == "stop")
+                lastChunk = responseChunk;
+            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+        });
+        console.log("lastChunk",lastChunk);
+        await logseq.Editor.exitEditingMode(false);
+        await logseq.Editor.selectBlock(resultBlock.uuid);
 
-        if (resObj.choices[0].finish_reason && resObj.choices[0].finish_reason.trim().toLowerCase() == "length")
+        if (finishReason && finishReason.trim().toLowerCase() == "length")
             await logseq.UI.showMsg("ChatGPT stopped early because of max_tokens limit. Please increase it in settings.", "warning", {timeout: 5000});
-        else if (resObj.choices[0].finish_reason && resObj.choices[0].finish_reason.trim().toLowerCase() != "stop")
-            await logseq.UI.showMsg(`ChatGPT stopped early because of ${resObj.choices[0].finish_reason.trim().toLowerCase()}.`, "warning", {timeout: 5000});
+        else if (finishReason && finishReason.toLowerCase() != "stop")
+            await logseq.UI.showMsg(`ChatGPT stopped early because of ${finishReason}.`, "warning", {timeout: 5000});
+    }
+
+    private static async iterateChatGptResponseStream(responseStream: NodeJS.ReadableStream, callback: (chunk: ResBody & {choices: [{delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter'}]}) => void) {
+        const responseAsyncIterator = streamToAsyncIterator(responseStream);
+        console.log(responseAsyncIterator);
+        // chatResponse += resObj.choices[0].message.content;
+        for await (const responseStream of responseAsyncIterator) {
+            const responseTxt = new TextDecoder().decode(responseStream, {stream: true});
+            const chunks = responseTxt.split('\n'); // ReadableStream can contain multiple chunks
+            for (let chunk of chunks) {
+                console.log(chunk);
+                try {
+                    if (chunk.match(/^data:\s*\[DONE\]/i))  // end of stream
+                        break;
+                    if (chunk.length === 0) continue;
+                    if (chunk.startsWith('data:')) chunk = chunk.slice(5);
+                    let chunkObj = JSON.parse(chunk);
+                    await callback(chunkObj);
+                } catch (e) {
+                    console.log("Error during message clean:");
+                    console.log(chunk);
+                    console.log(e);
+                    continue;
+                }
+            }
+        }
     }
 }
