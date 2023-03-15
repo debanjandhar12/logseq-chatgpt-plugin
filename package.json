@@ -7,12 +7,14 @@
   "targets": {
     "main": false
   },
+  "type": "module",
   "default": "dist/index.html",
   "repo": "debanjandhar12/logseq-chatgpt-plugin",
   "author": "@debanjandhar12",
   "scripts": {
     "dev": "parcel watch ./src/index.ts --public-url ./ && cp ./src/index.html ./dist/index.html",
-    "build": "parcel build ./src/index.ts --public-url ./ && cp ./src/index.html ./dist/index.html"
+    "build": "parcel build ./src/index.ts --public-url ./ && cp ./src/index.html ./dist/index.html",
+    "test": "jest"
   },
   "license": "AGPL-3.0",
   "logseq": {
@@ -41,6 +43,13 @@
     "constants-browserify": "^1.0.0",
     "parcel": "2.5.0",
     "path-browserify": "^1.0.1",
-    "vm-browserify": "^1.1.2"
+    "vm-browserify": "^1.1.2",
+    "jest": "^29.5.0",
+    "jest-cli": "^29.5.0",
+    "babel-jest": "^29.5.0",
+    "@babel/core": "^7.21.3",
+    "@babel/preset-typescript": "^7.20.2",
+    "@types/jest": "^29.4.1",
+    "@babel/preset-env": "^7.20.2"
   }
 }

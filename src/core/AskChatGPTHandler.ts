@@ -7,6 +7,7 @@ import {DOMElement} from "react";
 import {AutoFlowFormatter} from "./AutoFlowFormatter";
 import {ChatGPT, Message} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
+import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -17,11 +18,11 @@ export class AskChatGPTHandler {
               <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex" 
               style="position: fixed;
                 z-index: var(--ls-z-index-level-1) !important;
-                right: 10px;
+                right: 16px;
                 justify-content: center;
                 align-items: center;
                 color: var(--ls-alink-color);
-                padding: 0.08rem;
+                padding: 0.1rem;
                 border-radius: .375rem;
                 display: none;">
                 <span class="ui__icon ti ls-icon-hierarchy" style="height:13px">${ICON_16}</span>
@@ -140,7 +141,7 @@ export class AskChatGPTHandler {
         });
         chatResponse += resObj.choices[0].message.content;
         console.log("resObj", resObj);
-        await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+chatResponse.trim(), {properties: {}});
+        await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         await logseq.Editor.exitEditingMode(true);
 
         if (resObj.choices[0].finish_reason && resObj.choices[0].finish_reason.trim().toLowerCase() == "length")

@@ -1,5 +1,5 @@
 /***
- * This is an minimal version of the LogseqProxy.ts from the Logseq Anki Sync plugin.
+ * This is a minimal version of the LogseqProxy.ts from the Logseq Anki Sync plugin.
  * */
 import '@logseq/libs'
 import {
