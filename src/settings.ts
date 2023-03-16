@@ -15,7 +15,7 @@ export const addSettingsToLogseq = () => {
             type: 'string',
             title: "ChatGPT System Prompt",
             description: "Enter the system prompt for ChatGPT. See https://beta.openai.com/docs/engines/chatgpt for more information.",
-            default: "You are a helpful assistant."
+            default: "You are ChatGPT, a helpful assistant who replies using markdown. Current date: {{today}}"
         }
     ];
     LogseqProxy.Settings.useSettingsSchema(settingsTemplate);

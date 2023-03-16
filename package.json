@@ -32,7 +32,8 @@
     "react-dom": "^18.2.0",
     "moment": "^2.29.4",
     "mldoc": "^1.5.3",
-    "chatgpt-wrapper": "1.1.1"
+    "chatgpt-wrapper": "1.1.1",
+    "mustache": "^4.2.0"
   },
   "devDependencies": {
     "@parcel/transformer-inline-string": "2.5.0",
@@ -50,6 +51,7 @@
     "@babel/core": "^7.21.3",
     "@babel/preset-typescript": "^7.20.2",
     "@types/jest": "^29.4.1",
-    "@babel/preset-env": "^7.20.2"
+    "@babel/preset-env": "^7.20.2",
+    "@types/mustache": "^4.2.2"
   }
 }

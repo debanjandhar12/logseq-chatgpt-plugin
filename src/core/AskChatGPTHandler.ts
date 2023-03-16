@@ -9,6 +9,7 @@ import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
 import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
+import Mustache from "mustache";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -125,9 +126,12 @@ export class AskChatGPTHandler {
         else if (messages[messages.length-1].content.trim() == "")
             throw {message: "User message cannot be empty", type: 'warning', blockUUID: pageBlocks[messages.length].uuid};
 
-        // Add the system message
-        if (logseq.settings.CHATGPT_SYSTEM_PROMPT)
-            messages.unshift({role: "system", content: logseq.settings.CHATGPT_SYSTEM_PROMPT});
+        // Add the system message after processing via mustache if set
+        if (logseq.settings.CHATGPT_SYSTEM_PROMPT) {
+            messages.unshift({role: "system", content:
+                    Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,
+                        {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})});
+        }
 
         // Call ChatGPT API
         const chat = new ChatGPT({
