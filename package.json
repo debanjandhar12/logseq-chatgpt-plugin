@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@parcel/transformer-inline-string": "2.5.0",
+    "@parcel/config-default": "2.5.0",
     "@types/lodash": "^4.14.177",
     "@types/node": "^18.8.3",
     "assert": "^2.0.0",
