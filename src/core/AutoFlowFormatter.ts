@@ -53,7 +53,7 @@ export class AutoFlowFormatter {
             let block = stack.pop();
             let currentSpeaker = lastSpeaker == "assistant" ? "user" : "assistant";
             if (block.properties?.speaker != currentSpeaker && (!(currentSpeaker == "assistant" && removePropsFromBlockContent(block.content).trim() == "") || force == true)) {
-                await LogseqProxy.Editor.upsertBlockProperty(getUUIDFromBlock(block), "speaker", currentSpeaker);
+                await LogseqProxy.Editor.upsertBlockProperty(getUUIDFromBlock(block), "speaker", `[[${currentSpeaker}]]`);
             }
             lastSpeaker = currentSpeaker;
             if (block.children)

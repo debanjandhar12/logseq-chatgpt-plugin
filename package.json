@@ -1,6 +1,6 @@
 {
   "name": "logseq-chatgpt-plugin",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "title": "Logseq ChatGPT Plugin",
   "description": "A tightly integrated chatGPT plugin for Logseq.",
   "main": "dist/index.html",

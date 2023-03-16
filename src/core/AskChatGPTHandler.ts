@@ -103,7 +103,10 @@ export class AskChatGPTHandler {
             let block = stack.pop();
             if (block.properties?.speaker != "user" && removePropsFromBlockContent(block.content).trim() == "")
                 { stack.push(block); break; }
-            messages.push({role: block.properties?.speaker || "assistant", content: removePropsFromBlockContent(block.content).trim()});
+            messages.push(<Message>{
+                role: String(block.properties?.speaker) || "assistant",
+                content: removePropsFromBlockContent(block.content).trim()
+            });
             if (block.children)
                 stack.push(...block.children);
         }
@@ -150,7 +153,7 @@ export class AskChatGPTHandler {
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
                 lastChunk = responseChunk;
-            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: assistant\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         });
         console.log("lastChunk",lastChunk);
         await logseq.Editor.exitEditingMode(false);
