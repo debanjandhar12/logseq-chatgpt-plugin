@@ -145,7 +145,7 @@ export class AskChatGPTHandler {
             model: 'gpt-3.5-turbo',
             stream: true,
             messages: messages,
-            max_tokens: 200,
+            max_tokens: logseq.settings.CHATGPT_MAX_TOKENS || 1000,
         });
         console.log("responseStream",responseStream);
         await this.iterateChatGptResponseStream(responseStream, async (responseChunk) => {
