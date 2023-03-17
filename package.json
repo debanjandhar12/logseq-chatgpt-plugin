@@ -32,8 +32,9 @@
     "react-dom": "^18.2.0",
     "moment": "^2.29.4",
     "mldoc": "^1.5.3",
-    "chatgpt-wrapper": "1.1.1",
-    "mustache": "^4.2.0"
+    "chatgpt-wrapper": "https://github.com/debanjandhar12/chatgpt-wrapper/tarball/fab599d1a168b8b726f6679e60dfc6545480a29b",
+    "mustache": "^4.2.0",
+    "showdown": "^2.1.0"
   },
   "devDependencies": {
     "@parcel/transformer-inline-string": "2.5.0",

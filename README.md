@@ -19,7 +19,7 @@ HELP is appreciated for making these decisions.
 - [x] Add pagination to chatgpt page list
 - [ ] Look for better AutoFlowFormatter trigger events
 - [x] Better error handling
-- [ ] Check api key on change
+- [ ] ~Check api key on change~
 - [x] Testing
 - [x] Streaming ChatGPT API (see stream function https://www.npmjs.com/package/chatgpt-wrapper)
 - [x] Enhance the Ask ChatGPT button UI
