@@ -156,6 +156,7 @@ export class AskChatGPTHandler {
             await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         });
         console.log("lastChunk",lastChunk);
+        console.log("finalChatResponse",chatResponse);
         await logseq.Editor.exitEditingMode(false);
         await logseq.Editor.selectBlock(resultBlock.uuid);
 

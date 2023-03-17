@@ -5,8 +5,8 @@ describe('basic tests', () => {
         expect(ChatGPTLogseqSanitizer.sanitize("Hello **World**!")).toMatch("Hello **World**!");
     });
     test('basic markdown input string 2', () => {
-        const input = '#heading \nThis is some plain text';
-        const expectedOutput = '#heading \nThis is some plain text';
+        const input = 'This is some plain text.';
+        const expectedOutput = 'This is some plain text.';
         expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(expectedOutput);
     });
     test('empty input string', () => {
@@ -95,10 +95,6 @@ describe('list sanitization tests', () => {
         **- Main item 1**`;
         expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(input);
     });
-    test('avoid header during list conversion', () => {
-        const input = `# - Main item 1`;
-        expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(input);
-    });
     test('avoid table during list conversion', () => {
         const input = `| - First word 1 | Second word 1 |
                        |- First word 2 | Second word 2 |`;
@@ -106,4 +102,30 @@ describe('list sanitization tests', () => {
     });
 });
 
+describe('heading sanitization tests', () => {
+    test('basic heading conversion', () => {
+        const input = `# Heading 1`;
+        const expected = /^<h1>Heading 1<\/h1>$/;
+        expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(expected);
+    });
+    test('basic heading conversion with h6', () => {
+        const input = `###### Heading 1\n**Hello World**`;
+        const expected = /^<h6>Heading 1\s*<\/h6>\n\*\*Hello World\*\*$/;
+        expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(expected);
+    });
+    test('multiple heading conversion', () => {
+        const input = `# Heading 1\n## Heading 2\n### Heading 3`;
+        const expected = /^<h1>Heading 1<\/h1>\n<h2>Heading 2<\/h2>\n<h3>Heading 3<\/h3>$/;
+        expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(expected);
+    });
+    test('ignore list inside heading', () => {
+        const input = `# - Main item 1`;
+        const expected = /^<h1>- Main item 1<\/h1>$/;
+        expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(expected);
+    });
+    test('avoid inline code blocks during heading conversion', () => {
+        const input = `\`# Heading\``;
+        expect(ChatGPTLogseqSanitizer.sanitize(input)).toMatch(input);
+    });
+});
 export {};

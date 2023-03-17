@@ -1,19 +1,23 @@
 import { Mldoc } from 'mldoc';
 
 /**
- * Sanitizes text from ChatGPT to be compatible with Logseq.
+ * Logseq doesn't support unordered lists using "-" and headings using "#" (after first line).
+ * Hence, this sanitizes text from ChatGPT to be compatible with Logseq.
  */
+const MLDOCS_OPTIONS = {
+    "heading_number": false,
+    "heading_to_list": false,
+    "toc": false,
+    "keep_line_break": true,
+    "format": "Markdown",
+    "exporting_keep_properties": false,
+    "inline_type_with_pos": true,
+    "parse_outline_only": false
+};
 export class ChatGPTLogseqSanitizer {
     public static sanitize(text: string): string {
         let parsedJson = Mldoc.parseInlineJson(text,
-            JSON.stringify({
-                "toc": false,
-                "keep_line_break": true,
-                "format": "Markdown",
-                "exporting_keep_properties": false,
-                "inline_type_with_pos": true,
-                "parse_outline_only": false
-            }),
+            JSON.stringify(MLDOCS_OPTIONS),
             JSON.stringify({})
         );
         try { parsedJson = JSON.parse(parsedJson); } catch { parsedJson = []; }
@@ -43,7 +47,14 @@ export class ChatGPTLogseqSanitizer {
     private static sanitizePlain(node, resultUTF8) {
         let { start_pos, end_pos } = ChatGPTLogseqSanitizer.parseNode(node);
         let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
-        nodeText = nodeText.replace(/^(\s*)-(\s*)/gm, "$1*$2");
+        nodeText = nodeText.replace(/^(\s*)-(\s*)/gm, "$1*$2"); // convert lists using "-" to "*" lists
+        if(nodeText.match(/^(\s*)#(\s*)/gm)) { // convert headings using "#" to HTML headings
+            let headingToHTML = Mldoc.export("html", nodeText, JSON.stringify(MLDOCS_OPTIONS), JSON.stringify({}));
+            headingToHTML = headingToHTML.substring(65);
+            nodeText = headingToHTML.match(/^<(.*?)>(.*)<\/\1>/gm)[0];
+            nodeText = nodeText.replace(/<span> <\/span>(<\/.*?>)$/gm, "$1");
+            nodeText = nodeText.replace(/<span>(.*?)<\/span>/gm, "$1");
+        }
         return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
     }
 
