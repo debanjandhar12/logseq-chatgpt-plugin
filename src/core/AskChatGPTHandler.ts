@@ -79,7 +79,11 @@ export class AskChatGPTHandler {
                 const page = await logseq.Editor.getCurrentPage();
                 await logseq.Editor.selectBlock(e.blockUUID);
             }
-            await logseq.UI.showMsg(e.message || e, e.type || "error", {timeout: 5000});
+            let errorMsg = e.message || e;
+            errorMsg = errorMsg.replace(/^Request error: /, "");
+            await logseq.UI.showMsg(errorMsg, e.type || "error", {timeout: 5000});
+            if (e.blockUUID)
+                await logseq.Editor.selectBlock(e.blockUUID);
             console.log(e);
         }
         this.inAskingInProgress = false;
@@ -146,6 +150,9 @@ export class AskChatGPTHandler {
             stream: true,
             messages: messages,
             max_tokens: logseq.settings.CHATGPT_MAX_TOKENS || 1000,
+            presence_penalty: 0,    // try to avoid talking about new topics
+            frequency_penalty: 0,
+            temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
         });
         console.log("responseStream",responseStream);
         await this.iterateChatGptResponseStream(responseStream, async (responseChunk) => {

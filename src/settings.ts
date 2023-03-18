@@ -7,21 +7,21 @@ export const addSettingsToLogseq = () => {
             key: "OPENAI_API_KEY",
             type: 'string',
             title: "OpenAI API Key",
-            description: "Enter your OpenAI API Key here. See https://beta.openai.com/docs/api-reference/authentication to get one for free.",
+            description: "Enter your OpenAI API Key here. Visit https://platform.openai.com/account/api-keys to get one.",
             default: ""
         },
         {
             key: "CHATGPT_SYSTEM_PROMPT",
             type: 'string',
             title: "ChatGPT System Prompt",
-            description: "Enter the system prompt for ChatGPT. See https://beta.openai.com/docs/engines/chatgpt for more information.",
-            default: "You are ChatGPT, a helpful assistant who replies using markdown. Current date: {{today}}"
+            description: "Enter the system prompt for ChatGPT. Visit https://platform.openai.com/docs/guides/chat for more information.",
+            default: "You are a assistant who replies using markdown. Current date: {{today}}"
         },
         {
             key: "CHATGPT_MAX_TOKENS",
             type: 'number',
             title: "ChatGPT Max Tokens",
-            description: "Enter the maximum number of tokens for ChatGPT. See https://beta.openai.com/docs/engines/chatgpt for more information.",
+            description: "Enter the maximum number of tokens for ChatGPT. See https://platform.openai.com/docs/guides/chat for more information.",
             default: 1000
         }
     ];

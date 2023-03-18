@@ -1,6 +1,6 @@
 {
   "name": "logseq-chatgpt-plugin",
-  "version": "0.0.2",
+  "version": "0.4.9",
   "title": "Logseq ChatGPT Plugin",
   "description": "A tightly integrated chatGPT plugin for Logseq.",
   "main": "dist/index.html",
@@ -25,14 +25,13 @@
     "@logseq/libs": "^0.0.14",
     "await-lock": "^2.2.2",
     "cancelable-promise": "4.3.1",
-    "dependency-graph": "^0.11.0",
     "lodash": "^4.17.21",
     "node-gyp": "^9.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "moment": "^2.29.4",
     "mldoc": "^1.5.3",
-    "chatgpt-wrapper": "https://github.com/debanjandhar12/chatgpt-wrapper/tarball/fab599d1a168b8b726f6679e60dfc6545480a29b",
+    "chatgpt-wrapper": "1.1.2",
     "mustache": "^4.2.0",
     "showdown": "^2.1.0"
   },
