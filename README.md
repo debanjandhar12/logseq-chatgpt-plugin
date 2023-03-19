@@ -1,11 +1,11 @@
 **A tightly integrated chatGPT plugin for Logseq.**
 
-[Screencast from 2023-03-11 13-54-43.webm](https://user-images.githubusercontent.com/49021233/224473826-1460ab43-f5ea-4f58-838c-37a20cd90a56.webm)
+[Screencast from 2023-03-19 10-59-32.webm](https://user-images.githubusercontent.com/49021233/226155915-6c2b251c-6ed8-4d4f-a401-bed1cc10efbf.webm)
 
 
-Currently in early development stages and hence not available in marketplace. You have to download it from releases and install manually. Also, dont use it in your main logseq graph until it is stable.
+Currently not available in marketplace. You have to download it from releases and install manually.
 
-## Pending Plugin Architecture
+## Pending Plugin Architecture Decisions
 HELP is appreciated for making these decisions.
 
 **Some general architecture decisions:**
@@ -14,16 +14,6 @@ HELP is appreciated for making these decisions.
 
 **Some dev architecture decisions:**
 - Should removePropsFromBlockContent.ts be moved from logseq folder? If so, where?
-
-## TODO (sorted priority wise)
-- [x] Add pagination to chatgpt page list
-- [ ] Look for better AutoFlowFormatter trigger events
-- [x] Better error handling
-- [ ] ~Check api key on change~
-- [x] Testing
-- [x] Streaming ChatGPT API (see stream function https://www.npmjs.com/package/chatgpt-wrapper)
-- [x] Enhance the Ask ChatGPT button UI
-- [x] Sanitize ChatGPT Output
 
 # 🙏 Support
 Loved the tool? Please consider donating 💸 to help continue development!<br/>
