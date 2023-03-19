@@ -10,6 +10,7 @@ import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent
 import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";
+import {StyleString} from "@logseq/libs/dist/LSPlugin";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -73,6 +74,13 @@ export class AskChatGPTHandler {
         const originalButtonContent = button.innerHTML;
         button.innerHTML = "Asking...";
         try {
+            await logseq.provideStyle({ // Disable commands modal
+                key: "hide-commands",
+                style: `
+                .absolute-modal[data-modal-name=commands]
+                    display: none;
+                }`
+            });
             await this.askChatGPT();
         } catch (e) {
             if(e.blockUUID) {
@@ -86,8 +94,17 @@ export class AskChatGPTHandler {
                 await logseq.Editor.selectBlock(e.blockUUID);
             console.log(e);
         }
-        this.inAskingInProgress = false;
-        button.innerHTML = originalButtonContent;
+        finally {
+            this.inAskingInProgress = false;
+            button.innerHTML = originalButtonContent;
+            await logseq.provideStyle({  // Enable commands modal back
+                key: "hide-commands",
+                style: `
+                .absolute-modal[data-modal-name=commands]
+                    display: block;
+                }`
+            });
+        }
     }
     private static async askChatGPT() {
         if (logseq.settings.OPENAI_API_KEY.trim() == "")
