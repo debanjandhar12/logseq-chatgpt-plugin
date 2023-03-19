@@ -15,6 +15,11 @@ HELP is appreciated for making these decisions.
 **Some dev architecture decisions:**
 - Should removePropsFromBlockContent.ts be moved from logseq folder? If so, where?
 
+# Features
+- 📄 Page Management
+- 🐾 Sanitizes ChatGPT Output for Logseq
+- 🚀 Uses stream API of ChatGPT
+
 # 🙏 Support
 Loved the tool? Please consider donating 💸 to help continue development!<br/>
 <p align="center">
