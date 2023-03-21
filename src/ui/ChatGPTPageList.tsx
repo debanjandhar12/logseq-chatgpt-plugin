@@ -94,7 +94,7 @@ const Header = () => {
 const Toolbar = () => {
     const createNewPage = () => {
         logseq.Editor.createPage('chatgpt__' + moment().format('YYYY-MM-DD HH:mm:ss'),
-            {'type': 'ChatGPT', 'chatgpt-flow': 'alternating'});
+            {'type': 'ChatGPT', 'chatgpt-flow': 'alternating'}, {format: "markdown"});
         // @ts-ignore
         window.parent.chatgptPageList_close_action();
     }

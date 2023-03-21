@@ -77,7 +77,7 @@ export class AskChatGPTHandler {
             await logseq.provideStyle({ // Disable commands modal
                 key: "hide-commands",
                 style: `
-                .absolute-modal[data-modal-name=commands]
+                .absolute-modal[data-modal-name=commands], .absolute-modal[data-modal-name=block-commands] {
                     display: none;
                 }`
             });
@@ -100,7 +100,7 @@ export class AskChatGPTHandler {
             await logseq.provideStyle({  // Enable commands modal back
                 key: "hide-commands",
                 style: `
-                .absolute-modal[data-modal-name=commands]
+                .absolute-modal[data-modal-name=commands], .absolute-modal[data-modal-name=block-commands] {
                     display: block;
                 }`
             });
