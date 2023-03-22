@@ -1,6 +1,6 @@
 **A tightly integrated chatGPT plugin for Logseq.**
 
-[Screencast from 2023-03-19 10-59-32.webm](https://user-images.githubusercontent.com/49021233/226155915-6c2b251c-6ed8-4d4f-a401-bed1cc10efbf.webm)
+![chatGPT plugin Demo](https://user-images.githubusercontent.com/49021233/226954450-230185c7-f9ea-4a8f-bda1-0d29cf550ba4.gif)
 
 
 Currently not available in marketplace. You have to download it from releases and install manually.
