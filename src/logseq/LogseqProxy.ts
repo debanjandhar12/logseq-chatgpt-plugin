@@ -69,6 +69,12 @@ export namespace LogseqProxy {
         static registerPageHeadActionsSlottedListener(listener: (e) => void): void {
             this.registeredPageHeadActionsSlottedListeners.push(listener);
         }
+
+        static registeredRouteChangedListeners = [];
+
+        static registerRouteChangedListener(listener: (e) => void): void {
+            this.registeredRouteChangedListeners.push(listener);
+        }
     }
 
     export function init() {
@@ -82,19 +88,24 @@ export namespace LogseqProxy {
                 listener(newSettings, oldSettings);
             }
         });
-        logseq.App.onCurrentGraphChanged((e) => {
+        logseq.App.onCurrentGraphChanged((...e) => {
             for (let listener of LogseqProxy.App.registeredGraphChangeListeners) {
-                listener(e);
+                listener(...e);
             }
         });
-        logseq.App.onCurrentGraphIndexed((e) => {
+        logseq.App.onCurrentGraphIndexed((...e) => {
             for (let listener of LogseqProxy.App.registeredGraphIndexedListeners) {
-                listener(e);
+                listener(...e);
             }
         });
-        logseq.App.onPageHeadActionsSlotted((e) => {
+        logseq.App.onPageHeadActionsSlotted((...e) => {
             for (let listener of LogseqProxy.App.registeredPageHeadActionsSlottedListeners) {
-                listener(e);
+                listener(...e);
+            }
+        });
+        logseq.App.onRouteChanged((...e) => {
+            for (let listener of LogseqProxy.App.registeredRouteChangedListeners) {
+                listener(...e);
             }
         });
     }

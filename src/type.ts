@@ -5,5 +5,6 @@ declare global {
     interface Window {
         ReactDOM: any;
         chatgptPageList_close_action: any;
+        scrollFixForChatGPTPlugin: any;
     }
 }

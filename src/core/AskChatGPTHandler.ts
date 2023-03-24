@@ -17,7 +17,7 @@ export class AskChatGPTHandler {
             key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}`,
             template: String.raw`
               <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex" 
-              style="position: fixed;
+              style="position: absolute;
                 z-index: var(--ls-z-index-level-1) !important;
                 right: 16px;
                 justify-content: center;
@@ -25,6 +25,7 @@ export class AskChatGPTHandler {
                 color: var(--ls-alink-color);
                 padding: 0.1rem;
                 border-radius: .375rem;
+                transition: 0s;
                 display: none;">
                 <span class="ui__icon ti ls-icon-hierarchy" style="height:13px">${ICON_16}</span>
                 <span class="flex-1">Ask ChatGPT</span>
@@ -40,6 +41,8 @@ export class AskChatGPTHandler {
             const page = await logseq.Editor.getCurrentPage();
             if (!(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]"))) {
                 button.style.display = "none";
+                if (window.scrollFixForChatGPTPlugin)
+                    window.parent.document.getElementById("main-content-container").removeEventListener("scroll", window.scrollFixForChatGPTPlugin);
                 return;
             }
             button.style.display = "block";
@@ -62,6 +65,12 @@ export class AskChatGPTHandler {
             const injectedUIItemContainer: HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}"]`);
             if (injectedUIItemContainer)
                 injectedUIItemContainer.style.opacity = "1";
+
+            // Fix position of button on scroll
+            window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.scrollFixForChatGPTPlugin = () => {
+                window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0].style.top = `${10 + window.parent.document.getElementById("main-content-container").scrollTop}px`;
+            });
+            window.scrollFixForChatGPTPlugin();
         });
     }
 
