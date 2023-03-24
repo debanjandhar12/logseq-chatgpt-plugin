@@ -1,4 +1,4 @@
-**A tightly integrated chatGPT plugin for Logseq.**
+**A tightly integrated ChatGPT plugin for Logseq.**
 
 ![chatGPT plugin Demo](https://user-images.githubusercontent.com/49021233/226954450-230185c7-f9ea-4a8f-bda1-0d29cf550ba4.gif)
 
