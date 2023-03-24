@@ -1,14 +1,14 @@
-export default function streamToAsyncIterator(readable : NodeJS.ReadableStream | ReadableStream) : AsyncIterableIterator<Uint8Array> {
+export default function streamToAsyncIterator(readable: NodeJS.ReadableStream | ReadableStream): AsyncIterableIterator<Uint8Array> {
     // @ts-ignore
     const reader = readable.getReader();
     return {
-        next(){
+        next() {
             return reader.read();
         },
-        return(){
+        return() {
             return reader.releaseLock();
         },
-        [Symbol.asyncIterator](){
+        [Symbol.asyncIterator]() {
             return this;
         }
     } as any as AsyncIterableIterator<Uint8Array>;

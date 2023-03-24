@@ -9,16 +9,17 @@ import AwaitLock from "await-lock";
 import {reject} from "lodash";
 
 
-
 let getLogseqLock = new AwaitLock();
 
 export namespace LogseqProxy {
     export class DB {
         static registeredDBListeners = [];
-        static registerDBChangeListener(listener: (event: {blocks, txData, txMeta}) => void): void {
+
+        static registerDBChangeListener(listener: (event: { blocks, txData, txMeta }) => void): void {
             this.registeredDBListeners.push(listener);
         }
     }
+
     export class Editor {
         static async upsertBlockProperty(blockUUID: string, property: string, value: any): Promise<void> {
             await getLogseqLock.acquireAsync();
@@ -29,33 +30,36 @@ export namespace LogseqProxy {
                 if (!block.properties || (block.properties && Object.keys(block.properties).length === 0)) { // if property is empty
                     // Add property to the top of the block
                     await logseq.Editor.updateBlock(blockUUID, `${property}:: ${value}\n${block.content}`);
-                }
-                else {
+                } else {
                     await logseq.Editor.upsertBlockProperty(blockUUID, property, value);
                 }
-            }
-            finally {
+            } finally {
                 getLogseqLock.release();
             }
         }
     }
+
     export class Settings {
         static useSettingsSchema(schemas: Array<SettingSchemaDesc>): void {
             logseq.useSettingsSchema(schemas);
         }
 
         static registeredSettingsChangeListeners = [];
+
         static registerSettingsChangeListener(listener: (newSettings, oldSettings) => void): void {
             this.registeredSettingsChangeListeners.push(listener);
         }
     }
+
     export class App {
         static registeredGraphChangeListeners = [];
+
         static registerGraphChangeListener(listener: (e) => void): void {
             this.registeredGraphChangeListeners.push(listener);
         }
 
         static registeredGraphIndexedListeners = [];
+
         static registerGraphIndexedListener(listener: (e) => void): void {
             this.registeredGraphIndexedListeners.push(listener);
         }
@@ -66,6 +70,7 @@ export namespace LogseqProxy {
             this.registeredPageHeadActionsSlottedListeners.push(listener);
         }
     }
+
     export function init() {
         logseq.DB.onChanged(async ({blocks, txData, txMeta}) => {
             for (let listener of LogseqProxy.DB.registeredDBListeners) {

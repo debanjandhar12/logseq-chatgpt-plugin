@@ -11,9 +11,10 @@ import Mustache from "mustache";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
+
     static init() {
         logseq.App.registerUIItem('pagebar', {
-            key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt"? "" : "-"+logseq.baseInfo.id}`,
+            key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}`,
             template: String.raw`
               <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex" 
               style="position: fixed;
@@ -31,14 +32,13 @@ export class AskChatGPTHandler {
         `
         });
         LogseqProxy.App.registerPageHeadActionsSlottedListener(async (event) => {
-            const button : HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
+            const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
             if (button)
                 button.classList.add("logseq-chatgpt-callAPI-btn");
 
             // Show button if current page is a ChatGPT page only
             const page = await logseq.Editor.getCurrentPage();
-            if (!(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]")))
-            {
+            if (!(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]"))) {
                 button.style.display = "none";
                 return;
             }
@@ -59,15 +59,16 @@ export class AskChatGPTHandler {
             button.style.backgroundColor = "rgba(59,130,246, .2)";
 
             // Fix opacity of injected button container
-            const injectedUIItemContainer : HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt"? "" : "-"+logseq.baseInfo.id}"]`);
+            const injectedUIItemContainer: HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}"]`);
             if (injectedUIItemContainer)
                 injectedUIItemContainer.style.opacity = "1";
         });
     }
+
     public static async askChatGPTWrapper() {
         if (this.inAskingInProgress) return;
         this.inAskingInProgress = true;
-        const button : HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
+        const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
         const originalButtonContent = button.innerHTML;
         button.innerHTML = "Asking...";
         try {
@@ -80,7 +81,7 @@ export class AskChatGPTHandler {
             });
             await this.askChatGPT();
         } catch (e) {
-            if(e.blockUUID) {
+            if (e.blockUUID) {
                 const page = await logseq.Editor.getCurrentPage();
                 await logseq.Editor.selectBlock(e.blockUUID);
             }
@@ -90,8 +91,7 @@ export class AskChatGPTHandler {
             if (e.blockUUID)
                 await logseq.Editor.selectBlock(e.blockUUID);
             console.log(e);
-        }
-        finally {
+        } finally {
             this.inAskingInProgress = false;
             button.innerHTML = originalButtonContent;
             await logseq.provideStyle({  // Enable commands modal back
@@ -103,6 +103,7 @@ export class AskChatGPTHandler {
             });
         }
     }
+
     private static async askChatGPT() {
         if (logseq.settings.OPENAI_API_KEY.trim() == "")
             throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
@@ -110,7 +111,7 @@ export class AskChatGPTHandler {
         const page = await logseq.Editor.getCurrentPage();
 
         // Collect all messages and find block to insert result
-        const messages : Array<Message> = [];
+        const messages: Array<Message> = [];
         let resultBlock = null;
         const pageBlocks = await logseq.Editor.getPageBlocksTree(page.originalName);
         let stack = [];
@@ -119,8 +120,10 @@ export class AskChatGPTHandler {
         stack = stack.reverse();
         while (stack.length > 0) {
             let block = stack.pop();
-            if (block.properties?.speaker != "user" && removePropsFromBlockContent(block.content).trim() == "")
-                { stack.push(block); break; }
+            if (block.properties?.speaker != "user" && removePropsFromBlockContent(block.content).trim() == "") {
+                stack.push(block);
+                break;
+            }
             messages.push(<Message>{
                 role: String(block.properties?.speaker) || "assistant",
                 content: removePropsFromBlockContent(block.content).trim()
@@ -128,30 +131,38 @@ export class AskChatGPTHandler {
             if (block.children)
                 stack.push(...block.children);
         }
-        console.log("stack",stack);
+        console.log("stack", stack);
         if (stack.length > 0) {
             resultBlock = stack.pop();
-        }
-        else if (messages.length != 0 && messages[messages.length-1].role == "user" && messages[messages.length-1].content.trim() != "") {
+        } else if (messages.length != 0 && messages[messages.length - 1].role == "user" && messages[messages.length - 1].content.trim() != "") {
             // @ts-ignore
-            resultBlock = await window.parent.logseq.api.insert_block(page.originalName, "", {isPageBlock: true, sibling: true});
+            resultBlock = await window.parent.logseq.api.insert_block(page.originalName, "", {
+                isPageBlock: true,
+                sibling: true
+            });
         }
-        console.log("resultBlock",resultBlock);
-        console.log("messages",messages);
+        console.log("resultBlock", resultBlock);
+        console.log("messages", messages);
 
         // Check if messages list is valid
         if (pageBlocks.length == 1 || messages.length == 0)
             throw {message: "No messages. Please write a messages to the page.", type: 'warning'};
-        else if (messages[messages.length-1].role != "user")
+        else if (messages[messages.length - 1].role != "user")
             throw {message: "Last message is not from user", type: 'warning'};
-        else if (messages[messages.length-1].content.trim() == "")
-            throw {message: "User message cannot be empty", type: 'warning', blockUUID: pageBlocks[messages.length].uuid};
+        else if (messages[messages.length - 1].content.trim() == "")
+            throw {
+                message: "User message cannot be empty",
+                type: 'warning',
+                blockUUID: pageBlocks[messages.length].uuid
+            };
 
         // Add the system message after processing via mustache if set
         if (logseq.settings.CHATGPT_SYSTEM_PROMPT) {
-            messages.unshift({role: "system", content:
+            messages.unshift({
+                role: "system", content:
                     Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,
-                        {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})});
+                        {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})
+            });
         }
 
         // Call ChatGPT API
@@ -168,16 +179,16 @@ export class AskChatGPTHandler {
             frequency_penalty: 0,
             temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
         });
-        console.log("responseStream",responseStream);
+        console.log("responseStream", responseStream);
         await this.iterateChatGptResponseStream(responseStream, async (responseChunk) => {
             chatResponse += responseChunk.choices[0].delta?.content || "";
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
                 lastChunk = responseChunk;
-            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n"+ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         });
-        console.log("lastChunk",lastChunk);
-        console.log("finalChatResponse",chatResponse);
+        console.log("lastChunk", lastChunk);
+        console.log("finalChatResponse", chatResponse);
         await logseq.Editor.exitEditingMode(false);
         await logseq.Editor.selectBlock(resultBlock.uuid);
 
@@ -187,7 +198,7 @@ export class AskChatGPTHandler {
             await logseq.UI.showMsg(`ChatGPT stopped early because of ${finishReason}.`, "warning", {timeout: 5000});
     }
 
-    private static async iterateChatGptResponseStream(responseStream: NodeJS.ReadableStream, callback: (chunk: ResBody & {choices: [{delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter'}]}) => void) {
+    private static async iterateChatGptResponseStream(responseStream: NodeJS.ReadableStream, callback: (chunk: ResBody & { choices: [{ delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter' }] }) => void) {
         const responseAsyncIterator = streamToAsyncIterator(responseStream);
         console.log(responseAsyncIterator);
         // chatResponse += resObj.choices[0].message.content;

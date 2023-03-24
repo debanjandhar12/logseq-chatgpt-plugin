@@ -13,11 +13,11 @@ export class AutoFlowFormatter {
     static init() {
         LogseqProxy.DB.registerDBChangeListener(async ({blocks, txData, txMeta}) => {
             const pages = new Set();
-            for(let block of blocks) {
+            for (let block of blocks) {
                 if (block.originalName && (block.properties?.type == "ChatGPT" || block.properties?.type == "[[ChatGPT]]"))
-                        pages.add(block.originalName);
+                    pages.add(block.originalName);
             }
-            pages.forEach((pageName : PageIdentity) => {
+            pages.forEach((pageName: PageIdentity) => {
                 this.enforceFlowFormat(pageName);
             });
         });
@@ -38,7 +38,7 @@ export class AutoFlowFormatter {
         }
     }
 
-    public static async enforceFlowFormat(pageName : PageIdentity, force = false) {
+    public static async enforceFlowFormat(pageName: PageIdentity, force = false) {
         let page = await logseq.Editor.getPage(pageName);
         if (!isChatGPTPage(page)) return;
 

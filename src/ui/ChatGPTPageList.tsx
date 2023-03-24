@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import _ from "lodash";
 import {ICON_18} from "../utils/constants";
 import moment from "moment";
+
 export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
     return new Promise(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
@@ -29,7 +30,7 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
         const root = ReactDOM.createRoot(div.getElementsByClassName('chatgptPageList-container')[0]);
         try {
             window.parent.document.body.appendChild(div);
-            root.render(<PageList />);
+            root.render(<PageList/>);
         } catch (e) {
             // @ts-ignore
             window.parent.chatgptPageList_close_action();
@@ -70,10 +71,11 @@ const PageList = () => {
 
     return (
         <>
-            <Header />
-            <Toolbar />
-            <PageListBody pageList={pageList} currentPage={currentPage} itemsPerPage={itemsPerPage} />
-            <PaginationControls currentPage={currentPage} itemsPerPage={itemsPerPage} totalItems={pageList.length} onPageChange={setCurrentPage} />
+            <Header/>
+            <Toolbar/>
+            <PageListBody pageList={pageList} currentPage={currentPage} itemsPerPage={itemsPerPage}/>
+            <PaginationControls currentPage={currentPage} itemsPerPage={itemsPerPage} totalItems={pageList.length}
+                                onPageChange={setCurrentPage}/>
         </>
     )
 }
@@ -86,7 +88,8 @@ const Header = () => {
                 &nbsp;
                 <h3 className="text-lg">ChatGPT Page List</h3>
             </div>
-            <a href="https://www.buymeacoffee.com/debanjandhar12"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" style={{height: "1.8rem"}}></img></a>
+            <a href="https://www.buymeacoffee.com/debanjandhar12"><img
+                src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" style={{height: "1.8rem"}}></img></a>
         </div>
     )
 }
@@ -100,7 +103,12 @@ const Toolbar = () => {
     }
     return (
         <div className="flex" style={{justifyContent: 'end', alignItems: 'center', marginTop: '16px'}}>
-            <button onClick={createNewPage} className="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm" style={{margin: '0.125rem 0.25rem 0.125rem 0',padding: '.35rem .35rem'}}><i className="ti ti-plus"  style={{fontSize: '1.25rem'}}></i>New ChatGPT Page</button>
+            <button onClick={createNewPage}
+                    className="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm"
+                    style={{margin: '0.125rem 0.25rem 0.125rem 0', padding: '.35rem .35rem'}}><i className="ti ti-plus"
+                                                                                                 style={{fontSize: '1.25rem'}}></i>New
+                ChatGPT Page
+            </button>
         </div>
     )
 }
@@ -112,12 +120,12 @@ const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = sortedPageList.slice(indexOfFirstItem, indexOfLastItem);
     return (<div className="">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Created Time</th>
-                        <th>
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Created Time</th>
+                <th>
                             <span class="flex items-center">
                                 <span>Updated Time</span>
                                 <span><svg aria-hidden="true" version="1.1" viewBox="0 0 192 512" fill="currentColor"
@@ -125,33 +133,33 @@ const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
                                     d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
                                     fill-rule="evenodd"></path></svg></span>
                             </span>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {currentItems.map((page) => (
-                        <tr key={page.id}>
-                            <td className="name"><PageLink pageName={page.name} /></td>
-                            <td className="created-at">{new Date(page.createdAt).toLocaleString()}</td>
-                            <td className="updated-at">{new Date(page.updatedAt).toLocaleString()}</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>)
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {currentItems.map((page) => (
+                <tr key={page.id}>
+                    <td className="name"><PageLink pageName={page.name}/></td>
+                    <td className="created-at">{new Date(page.createdAt).toLocaleString()}</td>
+                    <td className="updated-at">{new Date(page.updatedAt).toLocaleString()}</td>
+                </tr>
+            ))}
+            </tbody>
+        </table>
+    </div>)
 }
 
-const PageLink = ({ pageName }) => {
+const PageLink = ({pageName}) => {
     return (
         <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={window.parent.chatgptPageList_close_action}>
-            <div className="" data-tooltipped="" aria-describedby="tippy-tooltip-15" style={{ display: "inline" }}>
+            <div className="" data-tooltipped="" aria-describedby="tippy-tooltip-15" style={{display: "inline"}}>
                 <span tabIndex="0" data-ref={pageName} className="page-ref">{pageName}</span>
             </div>
         </a>
     );
 };
 
-const PaginationControls = ({ currentPage, itemsPerPage, totalItems, onPageChange}) => {
+const PaginationControls = ({currentPage, itemsPerPage, totalItems, onPageChange}) => {
     const incrementPage = () => {
         if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
             onPageChange(currentPage + 1);
@@ -165,13 +173,19 @@ const PaginationControls = ({ currentPage, itemsPerPage, totalItems, onPageChang
 
     return (
         <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '1rem'}}>
-            <a onClick={decrementPage} className="fade-link flex items-center" style={{visibility: currentPage > 1 ? 'visible' : 'hidden', transition: '0s'}}><span className="ui__icon ti ls-icon-caret-left "><svg
+            <a onClick={decrementPage} className="fade-link flex items-center"
+               style={{visibility: currentPage > 1 ? 'visible' : 'hidden', transition: '0s'}}><span
+                className="ui__icon ti ls-icon-caret-left "><svg
                 xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-left" width="18"
-                height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                stroke-linecap="round"
                 stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
                 d="M18 15l-6 -6l-6 6h12" transform="rotate(270 12 12)"></path></svg></span>Prev</a>
             <div className="px-2"><span>{currentPage}/{Math.ceil(totalItems / itemsPerPage)}</span></div>
-            <a onClick={incrementPage} className="fade-link flex items-center" style={{visibility: currentPage === Math.ceil(totalItems / itemsPerPage) ? 'hidden' : 'visible', transition: '0s'}}>Next<span className="ui__icon ti ls-icon-caret-right "><svg
+            <a onClick={incrementPage} className="fade-link flex items-center" style={{
+                visibility: currentPage === Math.ceil(totalItems / itemsPerPage) ? 'hidden' : 'visible',
+                transition: '0s'
+            }}>Next<span className="ui__icon ti ls-icon-caret-right "><svg
                 xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-right" width="18"
                 height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                 stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
