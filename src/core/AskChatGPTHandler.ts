@@ -3,14 +3,11 @@
  */
 import {ICON_16} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
-import {DOMElement} from "react";
-import {AutoFlowFormatter} from "./AutoFlowFormatter";
 import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
 import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";
-import {StyleString} from "@logseq/libs/dist/LSPlugin";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -166,7 +163,7 @@ export class AskChatGPTHandler {
             model: 'gpt-3.5-turbo',
             stream: true,
             messages: messages,
-            max_tokens: logseq.settings.CHATGPT_MAX_TOKENS || 1000,
+            max_tokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 1000,
             presence_penalty: 0,    // try to avoid talking about new topics
             frequency_penalty: 0,
             temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
