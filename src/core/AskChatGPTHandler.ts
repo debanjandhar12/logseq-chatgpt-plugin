@@ -114,8 +114,13 @@ export class AskChatGPTHandler {
     }
 
     private static async askChatGPT() {
-        if (logseq.settings.OPENAI_API_KEY.trim() == "")
+         if (logseq.settings.OPENAI_API_KEY.trim() == "") {
+            logseq.showSettingsUI();
+            setTimeout(function () {
+              logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
+            }, 3000);
             throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
+        }
 
         const page = await logseq.Editor.getCurrentPage();
 
