@@ -25,6 +25,10 @@ function main(baseInfo: LSPluginBaseInfo) {
     logseq.App.registerCommandPalette({
         key: `logseq-chatgpt-plugin-command-palette-${baseInfo.id}`,
         label: `Show ChatGPT Page List`,
+        keybinding: {
+            // key `g` for chatGpt
+            binding: "mod+shift+g"
+        },
     }, showChatGPTPageList);
     registerSideNavBarItem("ChatGPT", ICON_18, showChatGPTPageList);
     logseq.beforeunload(async () => {
