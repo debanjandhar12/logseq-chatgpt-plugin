@@ -60,12 +60,12 @@ export class AskChatGPTHandler {
 
             // Change color to blue on hover
             button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "rgba(59,130,246, .4)";
+                button.style.backgroundColor = "rgba(59,130,246, .8)";
             });
             button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "rgba(59,130,246, .2)";
+                button.style.backgroundColor = "rgba(59,130,246, .4)";
             });
-            button.style.backgroundColor = "rgba(59,130,246, .2)";
+            button.style.backgroundColor = "rgba(59,130,246, .4)";
 
             // Fix opacity of injected button container
             const injectedUIItemContainer: HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}"]`);
@@ -74,7 +74,7 @@ export class AskChatGPTHandler {
 
             // Fix position of button on scroll
             window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.scrollFixForChatGPTPlugin = () => {
-                window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0].style.top = `${10 + window.parent.document.getElementById("main-content-container").scrollTop}px`;
+                window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0].style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 70)}px`;
             });
             window.scrollFixForChatGPTPlugin();
         });
