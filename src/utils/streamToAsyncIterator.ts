@@ -6,7 +6,9 @@ export default function streamToAsyncIterator(readable: NodeJS.ReadableStream | 
             return reader.read();
         },
         return() {
-            return reader.releaseLock();
+            reader.releaseLock();
+            readable?.cancel();
+            return true;
         },
         [Symbol.asyncIterator]() {
             return this;

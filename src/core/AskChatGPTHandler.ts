@@ -11,6 +11,7 @@ import Mustache from "mustache";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
+    static chatResponseIterator = null;
 
     static init() {
         logseq.App.registerUIItem('pagebar', {
@@ -33,6 +34,11 @@ export class AskChatGPTHandler {
         `
         });
         LogseqProxy.App.registerPageHeadActionsSlottedListener(async (event) => {
+            // - Cancel the previous chat response stream if any -
+            if (this.inAskingInProgress && this.chatResponseIterator)
+                this.chatResponseIterator.return();
+
+            // - Add button to page head -
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
             if (button)
                 button.classList.add("logseq-chatgpt-callAPI-btn");
@@ -94,9 +100,10 @@ export class AskChatGPTHandler {
                 const page = await logseq.Editor.getCurrentPage();
                 await logseq.Editor.selectBlock(e.blockUUID);
             }
-            let errorMsg = e.message || e;
+            let errorMsg = e.message || e.toString();
             errorMsg = errorMsg.replace(/^Request error: /, "");
-            await logseq.UI.showMsg(errorMsg, e.type || "error", {timeout: 5000});
+            if (!errorMsg.includes("This readable stream reader has been released and cannot be used to read"))
+                await logseq.UI.showMsg(errorMsg, e.type || "error", {timeout: 5000});
             if (e.blockUUID)
                 await logseq.Editor.selectBlock(e.blockUUID);
             console.log(e);
@@ -184,7 +191,7 @@ export class AskChatGPTHandler {
             API_KEY: logseq.settings.OPENAI_API_KEY
         });
         let chatResponse = "", finishReason = null, lastChunk = null;
-        const responseStream = await chat.stream({
+        const chatResponseStream = await chat.stream({
             model: 'gpt-3.5-turbo',
             stream: true,
             messages: messages,
@@ -193,8 +200,8 @@ export class AskChatGPTHandler {
             frequency_penalty: 0,
             temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
         });
-        console.log("responseStream", responseStream);
-        await this.iterateChatGptResponseStream(responseStream, async (responseChunk) => {
+        this.chatResponseIterator = streamToAsyncIterator(chatResponseStream);
+        await this.iterateChatGptResponse(this.chatResponseIterator, async (responseChunk) => {
             chatResponse += responseChunk.choices[0].delta?.content || "";
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
@@ -212,11 +219,8 @@ export class AskChatGPTHandler {
             await logseq.UI.showMsg(`ChatGPT stopped early because of ${finishReason}.`, "warning", {timeout: 5000});
     }
 
-    private static async iterateChatGptResponseStream(responseStream: NodeJS.ReadableStream, callback: (chunk: ResBody & { choices: [{ delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter' }] }) => void) {
-        const responseAsyncIterator = streamToAsyncIterator(responseStream);
-        console.log(responseAsyncIterator);
-        // chatResponse += resObj.choices[0].message.content;
-        for await (const responseStream of responseAsyncIterator) {
+    private static async iterateChatGptResponse(asyncIterator, callback: (chunk: ResBody & { choices: [{ delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter' }] }) => void) {
+        for await (const responseStream of asyncIterator) {
             const responseTxt = new TextDecoder().decode(responseStream, {stream: true});
             const chunks = responseTxt.split('\n'); // ReadableStream can contain multiple chunks
             for (let chunk of chunks) {
