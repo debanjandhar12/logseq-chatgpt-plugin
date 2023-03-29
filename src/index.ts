@@ -9,6 +9,7 @@ import {AutoFlowFormatter} from "./core/AutoFlowFormatter";
 import {LogseqProxy} from "./logseq/LogseqProxy";
 import {AskChatGPTHandler} from "./core/AskChatGPTHandler";
 import {BulletIconsInjector} from "./core/BulletIconsInjector";
+import {ShowChatGPTPageListInjector} from "./core/ShowChatGPTPageListInjector";
 
 // --- Register UI Elements Onload ---
 function main(baseInfo: LSPluginBaseInfo) {
@@ -17,24 +18,7 @@ function main(baseInfo: LSPluginBaseInfo) {
     AutoFlowFormatter.init();
     AskChatGPTHandler.init();
     BulletIconsInjector.init();
-
-    let showChatGPTPageList = function () {
-        console.log("Show ChatGPT Page List");
-        ChatGPTPageList();
-    }
-    logseq.App.registerCommandPalette({
-        key: `logseq-chatgpt-plugin-command-palette-${baseInfo.id}`,
-        label: `Show ChatGPT Page List`,
-        keybinding: {
-            // key `g` for chatGpt
-            binding: "mod+shift+g"
-        },
-    }, showChatGPTPageList);
-    registerSideNavBarItem("ChatGPT", ICON_18, showChatGPTPageList);
-    logseq.beforeunload(async () => {
-        unregisterSideNavBarItem("ChatGPT");
-    });
-
+    ShowChatGPTPageListInjector.init();
     console.log("ChatGPT plugin loaded on window:", window.parent);
 }
 
