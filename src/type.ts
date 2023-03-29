@@ -6,5 +6,6 @@ declare global {
         ReactDOM: any;
         chatgptPageList_close_action: any;
         scrollFixForChatGPTPlugin: any;
+        select_command_prompt_close_action: any;
     }
 }
