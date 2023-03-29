@@ -15,47 +15,10 @@ export async function SelectCommandPrompt(commands, placeholder = "Enter command
                   <div class="absolute top-0 right-0 pt-2 pr-2"></div>
                   <div class="panel-content">
                      <div class="cp__palette cp__palette-main">
-                        <div class="command-reawaitsults-wrap">
-                           <div id="ui__ac" class="cp__palette-results">
-                              <div id="ui__ac-inner" class="hide-scrollbar">
-                                <!-- Actions -->
-                                 <div>
-                                    <a id="ac-0" class="flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link chosen">
-                                       <span class="flex-1">
-                                          <div class="inline-grid grid-cols-4 items-center w-full chosen">
-                                             <span class="col-span-3">Close Tab</span>
-                                             <div class="col-span-1 flex justify-end tip"><code class="opacity-40 bg-transparent">plugin.logseq-tabs</code><code class="ml-1">ctrl+w</code></div>
-                                          </div>
-                                       </span>
-                                    </a>
-                                 </div>
-                                 <div>
-                                    <a id="ac-1" class="flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link">
-                                       <span class="flex-1">
-                                          <div class="inline-grid grid-cols-4 items-center w-full">
-                                             <span class="col-span-3">Select Next Tab</span>
-                                             <div class="col-span-1 flex justify-end tip"><code class="opacity-40 bg-transparent">plugin.logseq-tabs</code><code class="ml-1">ctrl+down</code></div>
-                                          </div>
-                                       </span>
-                                    </a>
-                                 </div>
-                                 <div>
-                                    <a id="ac-2" class="flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link">
-                                       <span class="flex-1">
-                                          <div class="inline-grid grid-cols-4 items-center w-full">
-                                             <span class="col-span-3">Toggle wide mode</span>
-                                             <div class="col-span-1 flex justify-end tip"><code class="opacity-40 bg-transparent">ui</code><code class="ml-1">t w</code></div>
-                                          </div>
-                                       </span>
-                                    </a>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div`;
+                      </div>
+                   </div>
+                </div>
+            </div>`;
         const root = ReactDOM.createRoot(div.getElementsByClassName('cp__palette-main')[0]);
         try {
             window.parent.document.body.appendChild(div);
@@ -64,7 +27,7 @@ export async function SelectCommandPrompt(commands, placeholder = "Enter command
                 root.unmount();
                 window.parent.document.body.removeChild(div);
                 window.parent.document.removeEventListener('keydown', onKeydown);
-                }} />);
+            }}/>);
         } catch (e) {
             // @ts-ignore
             window.parent.chatgptPageList_close_action();
@@ -96,13 +59,13 @@ const CommandPlate = ({commands, placeholder, onSelect}) => {
     const [commandList, setCommandList] = useState(commands);
     return (
         <>
-            <SearchBox search={search} onSearchChange={setSearch} placeholder={placeholder} />
-            <ActionList commandList={commandList} search={search} onSelect={onSelect} />
+            <SearchBox search={search} onSearchChange={setSearch} placeholder={placeholder}/>
+            <ActionList commandList={commandList} search={search} onSelect={onSelect}/>
         </>
     )
 }
 
-const SearchBox = ({ search, placeholder, onSearchChange }) => {
+const SearchBox = ({search, placeholder, onSearchChange}) => {
     const handleSearchChange = (event) => {
         onSearchChange(event.target.value);
     };
@@ -125,22 +88,64 @@ const ActionList = ({commandList, search, onSelect}) => {
     const filteredCommandList = commandList.filter((command) => {
         return command.name.toLowerCase().includes(search.toLowerCase());
     });
-    console.log(onSelect);
+    const [chosenCommand, setChosenCommand] = useState(0);
+    // Handle some key events
+    React.useEffect(() => {
+        const onKeydown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                onSelect(filteredCommandList[chosenCommand]);
+                e.stopImmediatePropagation();
+            }
+            if (e.key === 'ArrowUp') {
+                setChosenCommand((chosenCommand) => Math.max(0, chosenCommand - 1));
+                e.stopImmediatePropagation();
+            }
+            if (e.key === 'ArrowDown') {
+                setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand + 1));
+                e.stopImmediatePropagation();
+            }
+            else {
+                const searchBox = document.getElementsByClassName('cp__palette-input')[0];
+                if (searchBox) {
+                    (searchBox as HTMLInputElement).focus();
+                }
+            }
+        };
+        window.parent.document.addEventListener('keydown', onKeydown, {capture: true});
+        return () => {
+            window.parent.document.removeEventListener('keydown', onKeydown, {capture: true});
+        };
+    }, [commandList]);
+    React.useEffect(() => {
+        setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand));
+        setChosenCommand((chosenCommand) => Math.max(0, chosenCommand));
+    }, [filteredCommandList]);
 
     return (
-        <div className="cp__palette-results">
-            <div className="hide-scrollbar">
-                {filteredCommandList.map((command, index) =>
-                    <div key={index}>
-                        <a className="flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link"  onClick={() => onSelect(command)}>
+        <div className="command-results-wrap">
+            <div id="ui__ac" className="cp__palette-results">
+                <div id="ui__ac-inner" className="hide-scrollbar">
+                    <div className="cp__palette-results">
+                        <div className="hide-scrollbar">
+                            {filteredCommandList.map((command, index) =>
+                                    <div key={index}>
+                                        <a className={`flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link ${chosenCommand === index ? 'chosen' : ''}`}
+                                           onClick={() => onSelect(command)} onMouseEnter={() => setChosenCommand(index)}>
                             <span className="flex-1">
                                 <div className="inline-grid grid-cols-4 items-center w-full">
                                     <span className="col-span-3">{command.name}</span>
+                                    {command && command.group && (
+                                        <div className="col-span-1 flex justify-end tip"><code
+                                            className="opacity-40 bg-transparent">{command.group}</code></div>
+                                    )}
                                 </div>
                             </span>
-                        </a>
+                                        </a>
+                                    </div>
+                            )}
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

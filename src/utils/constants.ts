@@ -4,22 +4,107 @@ export const ICON_16: string = `<svg class="icon icon-tabler icon-tabler-hierarc
 export const PromptCommands = [
     {
         name: 'Continue',
-        getPrompt: () => `Continue:`
+        getPrompt: () => `Continue:`,
+        group: 'continue'
     },
     {
         name: 'Summarize',
-        getPrompt: () => `Summarize:`
-    },
-    {
-        name: 'Summarize in three lines',
-        getPrompt: () => `Summarize in three lines:`
+        getPrompt: () => `Summarize:`,
+        group: 'summarize'
     },
     {
         name: 'Fix Grammar',
-        getPrompt: () => `Fix Grammar:`
+        getPrompt: () => `Fix Grammar:`,
+        group: 'fix'
     },
     {
         name: 'Fix Spelling',
-        getPrompt: () => `Fix Spelling:`
+        getPrompt: () => `Fix Spelling:`,
+        group: 'fix'
+    },
+    {
+        name: 'Summarize in three lines',
+        getPrompt: () => `Summarize in three lines:`,
+        group: 'summarize'
+    },
+    {
+        name: 'Translate to English',
+        getPrompt: () => `Translate to English:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Japanese',
+        getPrompt: () => `Translate to Japanese:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Chinese',
+        getPrompt: () => `Translate to Chinese:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Spanish',
+        getPrompt: () => `Translate to Spanish:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to French',
+        getPrompt: () => `Translate to French:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to German',
+        getPrompt: () => `Translate to German:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Italian',
+        getPrompt: () => `Translate to Italian:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Hindi',
+        getPrompt: () => `Translate to Hindi:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Arabic',
+        getPrompt: () => `Translate to Arabic:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Russian',
+        getPrompt: () => `Translate to Russian:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Portuguese',
+        getPrompt: () => `Translate to Portuguese:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Korean',
+        getPrompt: () => `Translate to Korean:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Turkish',
+        getPrompt: () => `Translate to Turkish:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Punjabi',
+        getPrompt: () => `Translate to Punjabi:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Bengali',
+        getPrompt: () => `Translate to Bengali:`,
+        group: 'translate'
+    },
+    {
+        name: 'Translate to Thai',
+        getPrompt: () => `Translate to Thai:`,
+        group: 'translate'
     }
 ];
