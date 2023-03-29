@@ -150,8 +150,17 @@ const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
 }
 
 const PageLink = ({pageName}) => {
+    const onClickHandler = async (e) => {
+        console.log(e.shiftKey)
+        if (e.shiftKey) {
+            logseq.Editor.openInRightSidebar((await logseq.Editor.getPage(pageName)).uuid);
+            e.preventDefault();
+        }
+        // @ts-ignore
+        window.parent.chatgptPageList_close_action();
+    }
     return (
-        <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={window.parent.chatgptPageList_close_action}>
+        <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={onClickHandler}>
             <div className="" data-tooltipped="" aria-describedby="tippy-tooltip-15" style={{display: "inline"}}>
                 <span tabIndex="0" data-ref={pageName} className="page-ref">{pageName}</span>
             </div>
