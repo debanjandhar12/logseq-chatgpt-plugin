@@ -16,7 +16,7 @@ const MLDOCS_OPTIONS = {
     "parse_outline_only": false
 };
 
-export class ChatGPTLogseqSanitizer {
+export class ChatgptToLogseqSanitizer {
     public static sanitize(text: string): string {
         let parsedJson = Mldoc.parseInlineJson(text,
             JSON.stringify(MLDOCS_OPTIONS),
@@ -34,11 +34,11 @@ export class ChatGPTLogseqSanitizer {
             if (node[node.length - 1]["start_pos"] == null) continue;
             if (node[0][0] == null) continue;
 
-            let {type} = ChatGPTLogseqSanitizer.parseNode(node);
+            let {type} = ChatgptToLogseqSanitizer.parseNode(node);
 
             switch (type) {
                 case "Plain":
-                    textUTF8 = ChatGPTLogseqSanitizer.sanitizePlain(node, textUTF8);
+                    textUTF8 = ChatgptToLogseqSanitizer.sanitizePlain(node, textUTF8);
                     break;
             }
         }
@@ -52,7 +52,7 @@ export class ChatGPTLogseqSanitizer {
      * 2) converts headings to html
      */
     private static sanitizePlain(node, resultUTF8) {
-        let {start_pos, end_pos} = ChatGPTLogseqSanitizer.parseNode(node);
+        let {start_pos, end_pos} = ChatgptToLogseqSanitizer.parseNode(node);
         let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
         nodeText = nodeText.replace(/^(\s*)-(\s*)/gm, "$1*$2"); // convert lists using "-" to "*" lists
         nodeText = nodeText.replace(/^(\s*)#(\s*)(.*)/gm, (match) => { // convert headings to html

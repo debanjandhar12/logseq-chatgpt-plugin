@@ -5,9 +5,10 @@ import {ICON_16} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
-import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
+import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";
+import {LogseqToChatgptConverter} from "../adapter/LogseqToChatgptConverter";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -147,7 +148,7 @@ export class AskChatGPTHandler {
             }
             messages.push(<Message>{
                 role: String(block.properties?.speaker) || "assistant",
-                content: removePropsFromBlockContent(block.content).trim()
+                content: (await LogseqToChatgptConverter.convert(block.content)).trim()
             });
             if (block.children)
                 stack.push(...block.children);
@@ -206,7 +207,7 @@ export class AskChatGPTHandler {
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
                 lastChunk = responseChunk;
-            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         });
         console.log("lastChunk", lastChunk);
         console.log("finalChatResponse", chatResponse);
