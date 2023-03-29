@@ -10,6 +10,7 @@ import {LogseqProxy} from "./logseq/LogseqProxy";
 import {AskChatGPTHandler} from "./core/AskChatGPTHandler";
 import {BulletIconsInjector} from "./core/BulletIconsInjector";
 import {ShowChatGPTPageListInjector} from "./core/ShowChatGPTPageListInjector";
+import {ChatgptPageFromPrompt} from "./core/ChatgptPageFromPrompt";
 
 // --- Register UI Elements Onload ---
 function main(baseInfo: LSPluginBaseInfo) {
@@ -19,6 +20,7 @@ function main(baseInfo: LSPluginBaseInfo) {
     AskChatGPTHandler.init();
     BulletIconsInjector.init();
     ShowChatGPTPageListInjector.init();
+    ChatgptPageFromPrompt.init();
     console.log("ChatGPT plugin loaded on window:", window.parent);
 }
 
