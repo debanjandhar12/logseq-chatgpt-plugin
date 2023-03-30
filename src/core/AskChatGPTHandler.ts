@@ -4,7 +4,7 @@
 import {ICON_16} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
-import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
+import {removePropsFromBlockContent} from "../adapter/removePropsFromBlockContent";
 import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";

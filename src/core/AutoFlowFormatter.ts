@@ -7,7 +7,7 @@ import {PageEntity, PageIdentity} from "@logseq/libs/dist/LSPlugin";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import getUUIDFromBlock from "../logseq/getUUIDFromBlock";
 import {isChatGPTPage} from "./isChatGPTPage";
-import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
+import {removePropsFromBlockContent} from "../adapter/removePropsFromBlockContent";
 
 export class AutoFlowFormatter {
     static init() {

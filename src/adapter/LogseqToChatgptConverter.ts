@@ -1,7 +1,6 @@
 import {Mldoc} from 'mldoc';
-import showdown from 'showdown';
 import '@logseq/libs';
-import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
+import {removePropsFromBlockContent} from "./removePropsFromBlockContent";
 
 /**
  * This parses Block References and Embeds before sending message to ChatGPT.
