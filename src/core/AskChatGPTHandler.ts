@@ -75,7 +75,7 @@ export class AskChatGPTHandler {
 
             // Fix position of button on scroll
             window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.scrollFixForChatGPTPlugin = () => {
-                window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0].style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 70)}px`;
+                (window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0] as HTMLButtonElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 70)}px`;
             });
             window.scrollFixForChatGPTPlugin();
         });
