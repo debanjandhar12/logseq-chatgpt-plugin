@@ -6,8 +6,12 @@ export default function streamToAsyncIterator(readable: NodeJS.ReadableStream | 
             return reader.read();
         },
         return() {
-            reader.releaseLock();
-            readable?.cancel();
+            try {
+                reader.releaseLock();
+                readable?.cancel();
+            } catch (e) {
+                console.log(e);
+            }
             return true;
         },
         [Symbol.asyncIterator]() {
