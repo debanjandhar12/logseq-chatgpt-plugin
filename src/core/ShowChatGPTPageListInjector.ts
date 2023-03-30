@@ -11,7 +11,7 @@ export class ShowChatGPTPageListInjector {
             key: `logseq-chatgpt-plugin-command-palette-${logseq.baseInfo.id}`,
             label: `Show ChatGPT Page List`,
             keybinding: {
-                binding: "mod+shift+g" // key `g` for chatGpt
+                binding: logseq.settings?.SHOW_CHATGPT_PAGE_LIST_SHORTCUT || "mod+shift+l"
             },
         }, showChatGPTPageList);
         registerSideNavBarItem("ChatGPT", ICON_18, showChatGPTPageList);

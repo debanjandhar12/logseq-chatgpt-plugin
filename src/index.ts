@@ -13,8 +13,8 @@ import {ShowChatGPTPageListInjector} from "./core/ShowChatGPTPageListInjector";
 import {ChatgptPageFromPrompt} from "./core/ChatgptPageFromPrompt";
 
 // --- Register UI Elements Onload ---
-function main(baseInfo: LSPluginBaseInfo) {
-    addSettingsToLogseq();
+async function main(baseInfo: LSPluginBaseInfo) {
+    await addSettingsToLogseq();
     LogseqProxy.init();
     AutoFlowFormatter.init();
     AskChatGPTHandler.init();
