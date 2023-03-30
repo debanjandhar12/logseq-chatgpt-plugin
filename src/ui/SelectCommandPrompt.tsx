@@ -93,7 +93,8 @@ const ActionList = ({commandList, search, onSelect}) => {
     React.useEffect(() => {
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
-                onSelect(filteredCommandList[chosenCommand]);
+                if(filteredCommandList.length != 0)
+                    onSelect(filteredCommandList[chosenCommand]);
                 e.stopImmediatePropagation();
             }
             if (e.key === 'ArrowUp') {
@@ -112,13 +113,11 @@ const ActionList = ({commandList, search, onSelect}) => {
             }
         };
         window.parent.document.addEventListener('keydown', onKeydown, {capture: true});
+        setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand));
+        setChosenCommand((chosenCommand) => Math.max(0, chosenCommand));
         return () => {
             window.parent.document.removeEventListener('keydown', onKeydown, {capture: true});
         };
-    }, [commandList]);
-    React.useEffect(() => {
-        setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand));
-        setChosenCommand((chosenCommand) => Math.max(0, chosenCommand));
     }, [filteredCommandList]);
 
     return (
@@ -128,20 +127,20 @@ const ActionList = ({commandList, search, onSelect}) => {
                     <div className="cp__palette-results">
                         <div className="hide-scrollbar">
                             {filteredCommandList.map((command, index) =>
-                                    <div key={index}>
-                                        <a className={`flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link ${chosenCommand === index ? 'chosen' : ''}`}
-                                           onClick={() => onSelect(command)} onMouseEnter={() => setChosenCommand(index)}>
-                            <span className="flex-1">
-                                <div className="inline-grid grid-cols-4 items-center w-full">
-                                    <span className="col-span-3">{command.name}</span>
-                                    {command && command.group && (
-                                        <div className="col-span-1 flex justify-end tip"><code
-                                            className="opacity-40 bg-transparent">{command.group}</code></div>
-                                    )}
+                                <div key={index}>
+                                    <a className={`flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link ${chosenCommand === index ? 'chosen' : ''}`}
+                                       onClick={() => onSelect(command)} onMouseEnter={() => setChosenCommand(index)}>
+                                            <span className="flex-1">
+                                                <div className="inline-grid grid-cols-4 items-center w-full">
+                                                    <span className="col-span-3">{command.name}</span>
+                                                    {command && command.group && (
+                                                        <div className="col-span-1 flex justify-end tip"><code
+                                                            className="opacity-40 bg-transparent">{command.group}</code></div>
+                                                    )}
+                                                </div>
+                                            </span>
+                                    </a>
                                 </div>
-                            </span>
-                                        </a>
-                                    </div>
                             )}
                         </div>
                     </div>
