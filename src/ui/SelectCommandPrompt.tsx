@@ -4,7 +4,7 @@ import _ from "lodash";
 import {ICON_18} from "../utils/constants";
 import moment from "moment";
 
-export async function SelectCommandPrompt(commands, placeholder = "Enter command"): Promise<Array<any> | boolean> {
+export async function SelectCommandPrompt(commands, placeholder = "Enter command", customCommandAllowed = false): Promise<Array<any> | boolean> {
     return new Promise(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `<div label="" class="ui__modal" style="z-index: 999;">
@@ -22,7 +22,7 @@ export async function SelectCommandPrompt(commands, placeholder = "Enter command
         const root = ReactDOM.createRoot(div.getElementsByClassName('cp__palette-main')[0]);
         try {
             window.parent.document.body.appendChild(div);
-            root.render(<CommandPlate commands={commands} placeholder={placeholder} onSelect={(command) => {
+            root.render(<CommandPlate commands={commands} placeholder={placeholder} customCommandAllowed={customCommandAllowed} onSelect={(command) => {
                 resolve(command);
                 root.unmount();
                 window.parent.document.body.removeChild(div);
@@ -54,13 +54,13 @@ export async function SelectCommandPrompt(commands, placeholder = "Enter command
     });
 }
 
-const CommandPlate = ({commands, placeholder, onSelect}) => {
+const CommandPlate = ({commands, placeholder, customCommandAllowed, onSelect}) => {
     const [search, setSearch] = useState('');
     const [commandList, setCommandList] = useState(commands);
     return (
         <>
             <SearchBox search={search} onSearchChange={setSearch} placeholder={placeholder}/>
-            <ActionList commandList={commandList} search={search} onSelect={onSelect}/>
+            <ActionList commandList={commandList} search={search} customCommandAllowed={customCommandAllowed} onSelect={onSelect} />
         </>
     )
 }
@@ -84,10 +84,12 @@ const SearchBox = ({search, placeholder, onSearchChange}) => {
     );
 };
 
-const ActionList = ({commandList, search, onSelect}) => {
+const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
     const filteredCommandList = commandList.filter((command) => {
         return command.name.toLowerCase().includes(search.toLowerCase());
     });
+    if (customCommandAllowed && search.length != "")
+        filteredCommandList.push({name: `<strong>Custom:</strong> ${search}`,getPrompt: () => `${search}:`});
     const [chosenCommand, setChosenCommand] = useState(0);
     // Handle some key events
     React.useEffect(() => {
@@ -132,7 +134,7 @@ const ActionList = ({commandList, search, onSelect}) => {
                                        onClick={() => onSelect(command)} onMouseEnter={() => setChosenCommand(index)}>
                                             <span className="flex-1">
                                                 <div className="inline-grid grid-cols-4 items-center w-full">
-                                                    <span className="col-span-3">{command.name}</span>
+                                                    <span className="col-span-3" dangerouslySetInnerHTML={{__html: command.name}}></span>
                                                     {command && command.group && (
                                                         <div className="col-span-1 flex justify-end tip"><code
                                                             className="opacity-40 bg-transparent">{command.group}</code></div>
