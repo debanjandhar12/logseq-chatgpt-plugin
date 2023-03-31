@@ -97,15 +97,12 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
             if (e.key === 'Enter') {
                 if(filteredCommandList.length != 0)
                     onSelect(filteredCommandList[chosenCommand]);
-                e.stopImmediatePropagation();
             }
             if (e.key === 'ArrowUp') {
                 setChosenCommand((chosenCommand) => Math.max(0, chosenCommand - 1));
-                e.stopImmediatePropagation();
             }
             if (e.key === 'ArrowDown') {
                 setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand + 1));
-                e.stopImmediatePropagation();
             }
             else {
                 const searchBox = document.getElementsByClassName('cp__palette-input')[0];
@@ -113,6 +110,7 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
                     (searchBox as HTMLInputElement).focus();
                 }
             }
+            e.stopImmediatePropagation();
         };
         window.parent.document.addEventListener('keydown', onKeydown, {capture: true});
         setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand));
