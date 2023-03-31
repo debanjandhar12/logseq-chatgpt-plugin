@@ -20,10 +20,10 @@ export class ChatgptPageFromPrompt {
         }, async () => {
             const blocks = await logseq.Editor.getSelectedBlocks();
             const page = await logseq.Editor.getCurrentPage();
-            if (blocks == null || blocks.length == 0)
-                await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
-            else if (page?.properties?.type == "ChatGPT")
+            if (page?.properties?.type == "ChatGPT" && (blocks == null || blocks.length == 0))
                 await AskChatGPTHandler.askChatGPTWrapper();
+            else if (blocks == null || blocks.length == 0)
+                await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
             else
                 await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
         });
@@ -58,5 +58,8 @@ export class ChatgptPageFromPrompt {
             prompt += `\n{{embed ((${block.uuid}))}}`;
         }
         await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt("", prompt);
+        try {
+            await AskChatGPTHandler.askChatGPTWrapper();
+        } catch (e) { console.log(e); };
     }
 }

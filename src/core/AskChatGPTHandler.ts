@@ -132,6 +132,10 @@ export class AskChatGPTHandler {
         }
 
         const page = await logseq.Editor.getCurrentPage();
+        if(page.properties.type != "ChatGPT") {
+            throw {message: "Current page is not a ChatGPT page.", type: 'warning'};
+            return;
+        }
 
         // Collect all messages and find block to insert result
         const messages: Array<Message> = [];
