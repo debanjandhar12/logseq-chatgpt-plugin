@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import _ from "lodash";
 import {ICON_18} from "../utils/constants";
 import moment from "moment";
+import {ChatgptPageFromPrompt} from "../core/ChatgptPageFromPrompt";
 
 export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
     return new Promise(async function (resolve, reject) {
@@ -96,9 +97,7 @@ const Header = () => {
 
 const Toolbar = () => {
     const createNewPage = () => {
-        logseq.Editor.createPage('chatgpt__' + moment().format('YYYY-MM-DD HH:mm:ss'),
-            {'type': 'ChatGPT', 'chatgpt-flow': 'alternating'}, {format: "markdown"});
-        // @ts-ignore
+        ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
         window.parent.chatgptPageList_close_action();
     }
     return (
@@ -150,8 +149,17 @@ const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
 }
 
 const PageLink = ({pageName}) => {
+    const onClickHandler = async (e) => {
+        console.log(e.shiftKey)
+        if (e.shiftKey) {
+            logseq.Editor.openInRightSidebar((await logseq.Editor.getPage(pageName)).uuid);
+            e.preventDefault();
+        }
+        // @ts-ignore
+        window.parent.chatgptPageList_close_action();
+    }
     return (
-        <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={window.parent.chatgptPageList_close_action}>
+        <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={onClickHandler}>
             <div className="" data-tooltipped="" aria-describedby="tippy-tooltip-15" style={{display: "inline"}}>
                 <span tabIndex="0" data-ref={pageName} className="page-ref">{pageName}</span>
             </div>

@@ -4,10 +4,12 @@
 import {ICON_16} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
-import {removePropsFromBlockContent} from "../logseq/removePropsFromBlockContent";
-import {ChatGPTLogseqSanitizer} from "../adapter/ChatGPTLogseqSanitizer";
+import {removePropsFromBlockContent} from "../adapter/removePropsFromBlockContent";
+import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";
+import {LogseqToChatgptConverter} from "../adapter/LogseqToChatgptConverter";
+import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -74,7 +76,7 @@ export class AskChatGPTHandler {
 
             // Fix position of button on scroll
             window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.scrollFixForChatGPTPlugin = () => {
-                window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0].style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 70)}px`;
+                (window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0] as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 70)}px`;
             });
             window.scrollFixForChatGPTPlugin();
         });
@@ -121,10 +123,10 @@ export class AskChatGPTHandler {
     }
 
     private static async askChatGPT() {
-         if (logseq.settings.OPENAI_API_KEY.trim() == "") {
+        if (logseq.settings.OPENAI_API_KEY.trim() == "") {
             logseq.showSettingsUI();
             setTimeout(function () {
-              logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
+                logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
             }, 3000);
             throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
         }
@@ -147,7 +149,7 @@ export class AskChatGPTHandler {
             }
             messages.push(<Message>{
                 role: String(block.properties?.speaker) || "assistant",
-                content: removePropsFromBlockContent(block.content).trim()
+                content: (await LogseqToChatgptConverter.convert(block.content)).trim()
             });
             if (block.children)
                 stack.push(...block.children);
@@ -186,6 +188,12 @@ export class AskChatGPTHandler {
             });
         }
 
+        // Context Window - Remove messages from top until we reach token limit
+        while(getMessageArrayTokenCount(messages) > logseq.settings.CHATGPT_MAX_TOKENS)
+             messages.shift();
+        if (messages.length == 0)
+            throw {message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning'};
+
         // Call ChatGPT API
         const chat = new ChatGPT({
             API_KEY: logseq.settings.OPENAI_API_KEY
@@ -206,7 +214,7 @@ export class AskChatGPTHandler {
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
                 lastChunk = responseChunk;
-            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatGPTLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         });
         console.log("lastChunk", lastChunk);
         console.log("finalChatResponse", chatResponse);
