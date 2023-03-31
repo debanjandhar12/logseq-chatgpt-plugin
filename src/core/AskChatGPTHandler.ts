@@ -9,6 +9,7 @@ import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
 import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";
 import {LogseqToChatgptConverter} from "../adapter/LogseqToChatgptConverter";
+import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -122,10 +123,10 @@ export class AskChatGPTHandler {
     }
 
     private static async askChatGPT() {
-         if (logseq.settings.OPENAI_API_KEY.trim() == "") {
+        if (logseq.settings.OPENAI_API_KEY.trim() == "") {
             logseq.showSettingsUI();
             setTimeout(function () {
-              logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
+                logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
             }, 3000);
             throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
         }
@@ -186,6 +187,12 @@ export class AskChatGPTHandler {
                         {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})
             });
         }
+
+        // Context Window - Remove messages from top until we reach token limit
+        while(getMessageArrayTokenCount(messages) > logseq.settings.CHATGPT_MAX_TOKENS)
+             messages.shift();
+        if (messages.length == 0)
+            throw {message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning'};
 
         // Call ChatGPT API
         const chat = new ChatGPT({
