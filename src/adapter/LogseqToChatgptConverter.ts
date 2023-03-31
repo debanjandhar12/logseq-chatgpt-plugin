@@ -77,16 +77,27 @@ export class LogseqToChatgptConverter {
         let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
         if(node[0][1]?.name == "embed") {
             const blockRefUUID = node[0][1]?.arguments[0].substring(2, node[0][1]?.arguments[0].length-2);
-            let blockContent = '';
             try {
-                blockContent = (await logseq.Editor.getBlock(blockRefUUID)).content;
-                nodeText = await LogseqToChatgptConverter.convert(blockContent);
-                nodeText = nodeText.trim();
-                nodeText = `------\n${nodeText}\n------\n`;
-                let prevText = new TextDecoder().decode(resultUTF8.slice(start_pos-1, start_pos));
-                if(prevText != "\n")
-                    nodeText = "\n"+nodeText;
+                const generateOutline = async (block, level) => {
+                    let processedBlockContent = (await LogseqToChatgptConverter.convert(block.content)).trim();
+                    let outline = "";
+                    outline += "  ".repeat(level) + "- " + processedBlockContent.split('\n')[0];
+                    processedBlockContent.split('\n').slice(1).forEach((line) => {
+                        outline += "\n";
+                        outline += "  ".repeat(level) + "  ";
+                        outline += line;
+                    });
+                    for (const children of (block.children || []))
+                        outline += '\n' + await generateOutline(children, level+1);
+                    return outline;
+                }
+                const block = await logseq.Editor.getBlock(blockRefUUID, {includeChildren: true});
+                nodeText = await generateOutline(block, 0);
             } catch (e) { console.log(e); nodeText = ''; }
+            nodeText = `------\n${nodeText}\n------\n`;
+            let prevText = new TextDecoder().decode(resultUTF8.slice(start_pos-1, start_pos));
+            if(prevText != "\n")
+                nodeText = "\n"+nodeText;
         }
         return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
     }
