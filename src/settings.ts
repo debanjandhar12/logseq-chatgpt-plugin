@@ -25,6 +25,15 @@ export const addSettingsToLogseq = async () => {
             default: null,
         },
         {
+            key: "CHATGPT_MODEL",
+            type: 'enum',
+            enumChoices: ["gpt-3.5-turbo", "gpt-4", "gpt-4-32k"],
+            enumPicker: "select",
+            title: "ChatGPT Model",
+            description: "",
+            default: "gpt-3.5-turbo",
+        },
+        {
             key: "CHATGPT_SYSTEM_PROMPT",
             type: 'string',
             title: "ChatGPT System Prompt",

@@ -204,7 +204,7 @@ export class AskChatGPTHandler {
         });
         let chatResponse = "", finishReason = null, lastChunk = null;
         const chatResponseStream = await chat.stream({
-            model: 'gpt-3.5-turbo',
+            model: logseq.settings.CHATGPT_MODEL,
             stream: true,
             messages: messages,
             max_tokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 1000,
