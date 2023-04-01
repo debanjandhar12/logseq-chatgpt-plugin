@@ -81,10 +81,10 @@ export class LogseqToChatgptConverter {
                 const generateOutline = async (block, level) => {
                     let processedBlockContent = (await LogseqToChatgptConverter.convert(block.content)).trim();
                     let outline = "";
-                    outline += "  ".repeat(level) + "- " + processedBlockContent.split('\n')[0];
+                    outline += "  ".repeat(level) + ((level != 0 || (block.children || []).length != 0) ? "- " : "") + processedBlockContent.split('\n')[0];
                     processedBlockContent.split('\n').slice(1).forEach((line) => {
                         outline += "\n";
-                        outline += "  ".repeat(level) + "  ";
+                        outline += "  ".repeat(level) + ((level != 0 || (block.children || []).length != 0) ? "  " : "");
                         outline += line;
                     });
                     for (const children of (block.children || []))

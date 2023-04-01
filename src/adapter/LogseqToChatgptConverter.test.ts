@@ -43,16 +43,16 @@ describe('block ref tests', () => {
 });
 describe('block embed tests', () => {
     test('basic block embed', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello {{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\n- World\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello {{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\nWorld\n------\n");
     });
     test('basic block embed 2', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\n- World\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\nWorld\n------\n");
     });
 });
 
 describe('block embed + block ref tests', () => {
     test('basic block embed + block ref', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-nested-hello-world))}}")).toEqual("Hello \n------\n- Title World\n  I am not title.\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-nested-hello-world))}}")).toEqual("Hello \n------\nTitle World\nI am not title.\n------\n");
     });
 });
 
@@ -61,7 +61,7 @@ describe('property removal tests', () => {
         expect(await LogseqToChatgptConverter.convert("speaker::user\nHello ((642146e4-bae3-47cf-world))")).toEqual("Hello World");
     });
     test('basic block embed', async () => {
-        expect(await LogseqToChatgptConverter.convert("speaker::user\nHello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\n- World\n------\n");
+        expect(await LogseqToChatgptConverter.convert("speaker::user\nHello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\nWorld\n------\n");
     });
 });
 
