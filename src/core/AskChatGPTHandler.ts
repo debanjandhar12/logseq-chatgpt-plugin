@@ -186,7 +186,7 @@ export class AskChatGPTHandler {
 
 
         // Add prefix messages from prompt if set
-        const prompt = getAllPrompts().find(p => p.name == page.properties['chatgptPrompt'].trim());
+        const prompt = getAllPrompts().find(p => p.name == (page.properties['chatgptPrompt'] || "").trim());
         console.log(prompt, page.properties['chatgpt-prompt']);
         if (prompt && prompt.getPromptPrefixMessages)
             messages.unshift(...prompt.getPromptPrefixMessages());
