@@ -30,7 +30,7 @@ export const addSettingsToLogseq = async () => {
             enumChoices: ["gpt-3.5-turbo", "gpt-4", "gpt-4-32k"],
             enumPicker: "select",
             title: "ChatGPT Model",
-            description: "",
+            description: "Please note that gpt-4 and gpt-4-32k only work if you have access to the them.",
             default: "gpt-3.5-turbo",
         },
         {
