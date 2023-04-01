@@ -3,8 +3,9 @@ import * as ReactDOM from 'react-dom/client';
 import _ from "lodash";
 import {ICON_18} from "../utils/constants";
 import moment from "moment";
+import {Prompt} from "../types/Prompt";
 
-export async function SelectCommandPrompt(commands, placeholder = "Enter command", customCommandAllowed = false): Promise<{name : string, getPrompt  : () => string, group : string} | false> {
+export async function SelectCommandPrompt(commands : Prompt[], placeholder = "Enter command", customCommandAllowed = false): Promise<Prompt | false> {
     return new Promise(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `<div label="" class="ui__modal" style="z-index: 999;">

@@ -50,9 +50,9 @@ export class ChatgptPageFromPrompt {
     private static async createChatGPTPageAndGoToItWithPrompt() {
         const blocks = await logseq.Editor.getSelectedBlocks();
         console.log(blocks);
-        const selectedCommand = await SelectCommandPrompt(getAllPrompts(), "Select a prompt", true);
-        if (!selectedCommand) return;
-        let prompt = selectedCommand.getPrompt() || "";
+        const selectedPrompt = await SelectCommandPrompt(getAllPrompts(), "Select a prompt", true);
+        if (!selectedPrompt) return;
+        let prompt = selectedPrompt.getPrompt() || "";
         for (const block of blocks) {
             if (block.parent && blocks.find(b => b.id == block.parent?.id)) continue;
             prompt += `\n{{embed ((${block.uuid}))}}`;
