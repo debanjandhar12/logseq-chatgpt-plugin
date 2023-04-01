@@ -10,6 +10,7 @@ import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import Mustache from "mustache";
 import {LogseqToChatgptConverter} from "../adapter/LogseqToChatgptConverter";
 import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
+import {getAllPrompts} from "../prompt/getAllPrompts";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -182,6 +183,13 @@ export class AskChatGPTHandler {
                 type: 'warning',
                 blockUUID: pageBlocks[messages.length].uuid
             };
+
+
+        // Add prefix messages from prompt if set
+        const prompt = getAllPrompts().find(p => p.name == page.properties['chatgptPrompt'].trim());
+        console.log(prompt, page.properties['chatgpt-prompt']);
+        if (prompt && prompt.getPromptPrefixMessages)
+            messages.unshift(...prompt.getPromptPrefixMessages());
 
         // Add the system message after processing via mustache if set
         if (logseq.settings.CHATGPT_SYSTEM_PROMPT) {

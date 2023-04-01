@@ -2,6 +2,7 @@ import moment from "moment/moment";
 import {SelectCommandPrompt} from "../ui/SelectCommandPrompt";
 import {AskChatGPTHandler} from "./AskChatGPTHandler";
 import {getAllPrompts} from "../prompt/getAllPrompts";
+import {Prompt} from "../types/Prompt";
 
 /**
  * This file injects and handles the "Ask ChatGPT" block option. Once clicked, it shows the prompt selector to user.
@@ -39,25 +40,39 @@ export class ChatgptPageFromPrompt {
         });
     }
 
-    public static async createChatGPTPageAndGoToIt(pageName: string = "", prompt: string = "") {
+    public static async createChatGPTPageAndGoToIt(pageName: string = "", additionalPageProps= {}, firstBlockContent = "") {
         pageName = pageName || "chatgpt__" + moment().format('YYYY-MM-DD HH:mm:ss');
-        await logseq.Editor.createPage(pageName,
-            {'type': 'ChatGPT', 'chatgpt-flow': 'alternating'}, {format: "markdown"});
-        if (prompt != "")
-            await logseq.Editor.insertBlock(pageName, `speaker:: [[user]]\n${prompt}`);
+        const pageProperties = {
+            'type': 'ChatGPT',
+            'chatgpt-flow': 'alternating',
+            ...additionalPageProps
+        }
+        await logseq.Editor.createPage(pageName, pageProperties, {format: "markdown"});
+        if (firstBlockContent != "")
+            await logseq.Editor.insertBlock(pageName, `speaker:: [[user]]\n${firstBlockContent}`);
     }
 
     private static async createChatGPTPageAndGoToItWithPrompt() {
         const blocks = await logseq.Editor.getSelectedBlocks();
-        console.log(blocks);
         const selectedPrompt = await SelectCommandPrompt(getAllPrompts(), "Select a prompt", true);
         if (!selectedPrompt) return;
-        let prompt = selectedPrompt.getPrompt() || "";
+
+        // Construct additional page props and first block content
+        const additionalPageProps = {};
+        additionalPageProps['chatgpt-prompt'] = selectedPrompt.name;
+        if (selectedPrompt.required_input.includes("block"))
+            additionalPageProps['chatgpt-source'] = "";
+        let firstBlockContent = selectedPrompt.getPrompt() || "";
         for (const block of blocks) {
-            if (block.parent && blocks.find(b => b.id == block.parent?.id)) continue;
-            prompt += `\n{{embed ((${block.uuid}))}}`;
+            if (block.parent && blocks.find(b => b.id == block.parent?.id)) continue;   // Skip child blocks
+
+            firstBlockContent += `\n{{embed ((${block.uuid}))}}`;
+            if (selectedPrompt.required_input.includes("block"))
+                additionalPageProps['chatgpt-source'] += `((${block.uuid}))`;
         }
-        await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt("", prompt);
+        await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt("", additionalPageProps, firstBlockContent);
+
+        // Call the askChatGPTWrapper
         try {
             await AskChatGPTHandler.askChatGPTWrapper();
         } catch (e) { console.log(e); };

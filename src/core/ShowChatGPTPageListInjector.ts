@@ -16,7 +16,9 @@ export class ShowChatGPTPageListInjector {
         }, showChatGPTPageList);
         registerSideNavBarItem("ChatGPT", ICON_18, showChatGPTPageList);
         logseq.beforeunload(async () => {
-            unregisterSideNavBarItem("ChatGPT");
+            try {
+                unregisterSideNavBarItem("ChatGPT");
+            } catch (e) { }
         });
     }
 }
