@@ -13,7 +13,7 @@ export class Fix {
                     you: *correct text*
                     user: Fix Grammar: *Grammatically correct text*
                     you: *inform user that the text is grammatically correct*
-                    `.trim()}
+                    `.replaceAll('    ', '').trim()}
                 ],
                 getPrompt: () => `Fix Grammar:`,
                 group: 'fix'
@@ -28,7 +28,7 @@ export class Fix {
                     you: *text with correct spelling*
                     user: Fix Spelling: *text with correct spelling*
                     you: *inform user that the text is correct*
-                    `.trim()}
+                    `.replaceAll('    ', '').trim()}
                 ],
                 getPrompt: () => `Fix Spelling:`,
                 group: 'fix'
