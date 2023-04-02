@@ -11,6 +11,7 @@ import Mustache from "mustache";
 import {LogseqToChatgptConverter} from "../adapter/LogseqToChatgptConverter";
 import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 import {getAllPrompts} from "../prompt/getAllPrompts";
+import {ActionableNotification} from "../ui/ActionableNotification";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
@@ -237,6 +238,35 @@ export class AskChatGPTHandler {
             await logseq.UI.showMsg("ChatGPT stopped early because of max_tokens limit. Please increase it in settings.", "warning", {timeout: 5000});
         else if (finishReason && finishReason.toLowerCase() != "stop")
             await logseq.UI.showMsg(`ChatGPT stopped early because of ${finishReason}.`, "warning", {timeout: 5000});
+
+        if (prompt) {
+            const source = page.properties['chatgptPromptSource'] || "";
+            let singular_block_uuid = source.trim().match(/^\(\(.*\)\)$/);
+            if (singular_block_uuid) {
+                const block = await logseq.Editor.getBlock(singular_block_uuid[0].slice(2, -2));
+                console.log(singular_block_uuid);
+                if (!block) return;
+                const blockPage = await logseq.Editor.getPage(block.page.id);
+                ActionableNotification("What do you want to do with the result from ChatGPT?", [
+                    {
+                        label: "Insert",
+                        labelSuffix: "↩️",
+                        onClick: async () => {
+                            let newBlock = await logseq.Editor.insertBlock(block.uuid, chatResponse.trim());
+                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);
+                        }
+                    },
+                    {
+                        label: "Replace",
+                        labelSuffix: "🔄",
+                        onClick: async () => {
+                            await logseq.Editor.updateBlock(block.uuid, chatResponse.trim());
+                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
+                        }
+                    }
+                ]);
+            }
+        }
     }
 
     private static async iterateChatGptResponse(asyncIterator, callback: (chunk: ResBody & { choices: [{ delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter' }] }) => void) {

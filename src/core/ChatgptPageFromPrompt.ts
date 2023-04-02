@@ -61,14 +61,14 @@ export class ChatgptPageFromPrompt {
         const additionalPageProps = {};
         additionalPageProps['chatgpt-prompt'] = selectedPrompt.name;
         if (selectedPrompt.required_input.includes("block"))
-            additionalPageProps['chatgpt-source'] = "";
+            additionalPageProps['chatgpt-prompt-source'] = "";
         let firstBlockContent = selectedPrompt.getPrompt() || "";
         for (const block of blocks) {
             if (block.parent && blocks.find(b => b.id == block.parent?.id)) continue;   // Skip child blocks
 
             firstBlockContent += `\n{{embed ((${block.uuid}))}}`;
             if (selectedPrompt.required_input.includes("block"))
-                additionalPageProps['chatgpt-source'] += `((${block.uuid}))`;
+                additionalPageProps['chatgpt-prompt-source'] += `((${block.uuid}))`;
         }
         await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt("", additionalPageProps, firstBlockContent);
 

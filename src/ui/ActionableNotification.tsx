@@ -1,4 +1,4 @@
-export async function ActionableNotification(msg: string, buttons : {label: string, onClick: Function}[]) {
+export async function ActionableNotification(msg: string, buttons : {label: string, labelSuffix?: string, onClick: Function}[]) {
     const fakeNotification = await logseq.UI.showMsg("", 'success', {
         key: `ActionableNotification-${logseq.baseInfo.id}`,
         timeout: 0
@@ -10,7 +10,7 @@ export async function ActionableNotification(msg: string, buttons : {label: stri
             <div class="p-4 py-2">
                     <div>${msg}</div>
                     <button type="button" class="ui__button bg-red-600 hover:bg-red-700 focus:border-red-700 active:bg-red-700 text-center text-sm p-1" onclick="ChatGPT.ActionableNotification.close();">Close</button>
-                    ${buttons.map((button, index) => `<button type="button" class="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm p-1 ml-2" style="float:right;" onclick="window.parent.ChatGPT.ActionableNotification.close();window.parent.ChatGPT.ActionableNotification.${button.label}();">${button.label}</button>`).join('')}
+                    ${buttons.map((button, index) => `<button type="button" class="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm p-1 ml-2" style="float:right;" onclick="window.parent.ChatGPT.ActionableNotification.close();window.parent.ChatGPT.ActionableNotification.${button.label}();">${button.label}${button.labelSuffix?" "+button.labelSuffix:""}</button>`).join('')}
             </div>
         </div>
     </div>`;
@@ -20,9 +20,6 @@ export async function ActionableNotification(msg: string, buttons : {label: stri
         close: () => {
             logseq.UI.closeMsg(`ActionableNotification-${logseq.baseInfo.id}`);
         },
-        ...buttons.reduce((acc, button) => {
-            acc[button.label] = button.onClick;
-            return acc;
-        })
+        ...Object.fromEntries(buttons.map(button => [button.label, button.onClick]))
     }
 }
