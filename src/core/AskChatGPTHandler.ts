@@ -241,10 +241,9 @@ export class AskChatGPTHandler {
 
         if (prompt) {
             const source = page.properties['chatgptPromptSource'] || "";
-            let singular_block_uuid = source.trim().match(/^\(\(.*\)\)$/);
+            let singular_block_uuid = source.trim().match(/^\(\([^)\n ]*\)\)$/);
             if (singular_block_uuid) {
                 const block = await logseq.Editor.getBlock(singular_block_uuid[0].slice(2, -2));
-                console.log(singular_block_uuid);
                 if (!block) return;
                 const blockPage = await logseq.Editor.getPage(block.page.id);
                 ActionableNotification("What do you want to do with the result from ChatGPT?", [
