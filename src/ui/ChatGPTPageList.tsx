@@ -15,7 +15,7 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
             </div>
             <div class="ui__modal-panel transform transition-all sm:min-w-lg sm ease-out duration-300 opacity-100 translate-y-0 sm:scale-100 enter-done">
                <div class="absolute top-0 right-0 pt-2 pr-2">
-                  <a aria-label="Close" type="button" class="ui__modal-close opacity-60 hover:opacity-100" onclick="chatgptPageList_close_action()">
+                  <a aria-label="Close" type="button" class="ui__modal-close opacity-60 hover:opacity-100" onclick="ChatGPT.ChatGPTPageList.close()">
                      <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6">
                         <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
                      </svg>
@@ -34,22 +34,22 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
             root.render(<PageList/>);
         } catch (e) {
             // @ts-ignore
-            window.parent.chatgptPageList_close_action();
+            window.parent.ChatGPT.ChatGPTPageList.close();
             logseq.App.showMsg("Failed to mount OcclusionEditor! Error Message: " + e);
             console.error(e);
         }
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 // @ts-ignore
-                window.parent.chatgptPageList_close_action();
+                window.parent.ChatGPT.ChatGPTPageList.close();
             }
         };
         div.getElementsByClassName("ui__modal-overlay")[0].addEventListener('click', () => {
-            window.parent.chatgptPageList_close_action();
+            window.parent.ChatGPT.ChatGPTPageList.close();
         });
         window.parent.document.addEventListener('keydown', onKeydown);
-        // @ts-ignore
-        window.parent.chatgptPageList_close_action = () => {
+        window.parent.ChatGPT.ChatGPTPageList = {};
+        window.parent.ChatGPT.ChatGPTPageList.close = () => {
             resolve(false);
             root.unmount();
             window.parent.document.body.removeChild(div);
@@ -98,7 +98,7 @@ const Header = () => {
 const Toolbar = () => {
     const createNewPage = () => {
         ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
-        window.parent.chatgptPageList_close_action();
+        window.parent.ChatGPT.ChatGPTPageList.close();
     }
     return (
         <div className="flex" style={{justifyContent: 'end', alignItems: 'center', marginTop: '16px'}}>
@@ -156,7 +156,7 @@ const PageLink = ({pageName}) => {
             e.preventDefault();
         }
         // @ts-ignore
-        window.parent.chatgptPageList_close_action();
+        window.parent.ChatGPT.ChatGPTPageList.close();
     }
     return (
         <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={onClickHandler}>

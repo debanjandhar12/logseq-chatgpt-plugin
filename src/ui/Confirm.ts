@@ -24,30 +24,27 @@ export async function Confirm(msg: string): Promise<boolean> {
                            </label>
                         </div>
                      </div>
-                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse"><span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto"><button type="button" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-indigo-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo transition ease-in-out duration-150 sm:text-sm sm:leading-5" onclick="sync_yes_action()">Yes</button></span><span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto"><button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5" onclick="sync_cancel_action()">Cancel</button></span></div>
+                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse"><span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto"><button type="button" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-indigo-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo transition ease-in-out duration-150 sm:text-sm sm:leading-5" onclick="ChatGPT.ConfirmDialog.confirm()">Yes</button></span><span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto"><button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5" onclick="ChatGPT.ConfirmDialog.cancel()">Cancel</button></span></div>
                   </div>
                </div>
             </div>
          </div>`;
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                // @ts-ignore
-                window.parent.sync_cancel_action();
+                window.parent.ChatGPT.ConfirmDialog.cancel();
             }
             else if (e.key === 'Enter') {
-                // @ts-ignore
-                window.parent.sync_yes_action();
+                window.parent.ChatGPT.ConfirmDialog.confirm();
             }
         }
         window.parent.document.addEventListener('keydown', onKeydown);
-        // @ts-ignore
-        window.parent.sync_yes_action = () => {
+        window.parent.ChatGPT.ConfirmDialog = {};
+        window.parent.ChatGPT.ConfirmDialog.confirm = () => {
             resolve(true);
             window.parent.document.body.removeChild(div);
             window.parent.document.removeEventListener('keydown', onKeydown);
         }
-        // @ts-ignore
-        window.parent.sync_cancel_action = () => {
+        window.parent.ChatGPT.ConfirmDialog.cancel = () => {
             resolve(false);
             window.parent.document.body.removeChild(div);
             window.parent.document.removeEventListener('keydown', onKeydown);

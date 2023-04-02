@@ -11,9 +11,11 @@ import {AskChatGPTHandler} from "./core/AskChatGPTHandler";
 import {BulletIconsInjector} from "./core/BulletIconsInjector";
 import {ShowChatGPTPageListInjector} from "./core/ShowChatGPTPageListInjector";
 import {ChatgptPageFromPrompt} from "./core/ChatgptPageFromPrompt";
+import {ActionableNotification} from "./ui/ActionableNotification";
 
 // --- Register UI Elements Onload ---
 async function main(baseInfo: LSPluginBaseInfo) {
+    window.parent.ChatGPT = {};
     await addSettingsToLogseq();
     LogseqProxy.init();
     AutoFlowFormatter.init();

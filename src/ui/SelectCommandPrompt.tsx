@@ -30,23 +30,22 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
                 window.parent.document.removeEventListener('keydown', onKeydown);
             }}/>);
         } catch (e) {
-            // @ts-ignore
-            window.parent.chatgptPageList_close_action();
+            window.parent.ChatGPT.CommandPrompt.close();
             logseq.App.showMsg("Failed to mount CommandPlate! Error Message: " + e);
             console.error(e);
         }
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 // @ts-ignore
-                window.parent.select_command_prompt_close_action();
+                window.parent.ChatGPT.CommandPrompt.close();
             }
         };
         div.getElementsByClassName("ui__modal-overlay")[0].addEventListener('click', () => {
-            window.parent.select_command_prompt_close_action();
+            window.parent.ChatGPT.CommandPrompt.close();
         });
         window.parent.document.addEventListener('keydown', onKeydown);
-        // @ts-ignore
-        window.parent.select_command_prompt_close_action = () => {
+        window.parent.ChatGPT.CommandPrompt = {};
+        window.parent.ChatGPT.CommandPrompt.close = () => {
             resolve(false);
             root.unmount();
             window.parent.document.body.removeChild(div);

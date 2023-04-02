@@ -4,8 +4,7 @@ export {};
 declare global {
     interface Window {
         ReactDOM: any;
-        chatgptPageList_close_action: any;
+        ChatGPT: any;
         scrollFixForChatGPTPlugin: any;
-        select_command_prompt_close_action: any;
     }
 }
