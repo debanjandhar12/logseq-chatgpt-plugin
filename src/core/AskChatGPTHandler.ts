@@ -246,13 +246,15 @@ export class AskChatGPTHandler {
                 const block = await logseq.Editor.getBlock(singular_block_uuid[0].slice(2, -2));
                 if (!block) return;
                 const blockPage = await logseq.Editor.getPage(block.page.id);
-                ActionableNotification("What do you want to do with the result from ChatGPT?", [
+                ActionableNotification("What action would you like to perform with the result from ChatGPT?", [
                     {
                         label: "Insert",
                         labelSuffix: "↩️",
                         onClick: async () => {
                             let newBlock = await logseq.Editor.insertBlock(block.uuid, chatResponse.trim());
                             await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);
+                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                                await logseq.Editor.deletePage(page.originalName);
                         }
                     },
                     {
@@ -261,9 +263,12 @@ export class AskChatGPTHandler {
                         onClick: async () => {
                             await logseq.Editor.updateBlock(block.uuid, chatResponse.trim());
                             await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
+                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                                await logseq.Editor.deletePage(page.originalName);
                         }
                     }
-                ]);
+                ],
+                {label: "Delete page after action", checked: logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION, onChange: (checked) => {console.log(checked, logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION); logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = checked;}});
             }
         }
     }
