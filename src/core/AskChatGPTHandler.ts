@@ -215,7 +215,7 @@ export class AskChatGPTHandler {
         // Call ChatGPT API
         const chat = new ChatGPT({
             API_KEY: logseq.settings.OPENAI_API_KEY,
-            URL: logseq.settings.CHATGPT_API_ENDPOINT
+            URL: logseq.settings.CHATGPT_API_ENDPOINT.trim() || "https://api.openai.com/v1/chat/completions"
         });
         let chatResponse = "", finishReason = null, lastChunk = null;
         const chatResponseStream = await chat.stream({

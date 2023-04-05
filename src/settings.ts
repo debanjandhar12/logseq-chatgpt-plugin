@@ -25,8 +25,8 @@ export const addSettingsToLogseq = async () => {
             key: "CHATGPT_API_ENDPOINT",
             type: 'string',
             title: "ChatGPT API Endpoint",
-            description: "Enter your ChatGPT API Endpoint here.",
-            default: "https://api.openai.com/v1/chat/completions"
+            description: "Please input the ChatGPT API Endpoint here. If you don't know what it is, leave it empty and we will use the official OpenAI endpoint. Keep in mind that if you do input an endpoint, your API key will be sent there.",
+            default: ""
         },
         {
             key: "heading2",
