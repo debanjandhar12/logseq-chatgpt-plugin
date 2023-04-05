@@ -203,7 +203,7 @@ export class AskChatGPTHandler {
 
         // Context Window - Remove messages from top until we reach token limit
         while(getMessageArrayTokenCount(messages) > logseq.settings.CHATGPT_MAX_TOKENS)
-             messages.shift();
+            messages.shift();
         if (messages.length == 0)
             throw {message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning'};
 
@@ -247,28 +247,28 @@ export class AskChatGPTHandler {
                 if (!block) return;
                 const blockPage = await logseq.Editor.getPage(block.page.id);
                 ActionableNotification("What action would you like to perform with the result from ChatGPT?", [
-                    {
-                        label: "Insert",
-                        labelSuffix: "↩️",
-                        onClick: async () => {
-                            let newBlock = await logseq.Editor.insertBlock(block.uuid, chatResponse.trim());
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);
-                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-                                await logseq.Editor.deletePage(page.originalName);
+                        {
+                            label: "Insert",
+                            labelSuffix: "↩️",
+                            onClick: async () => {
+                                let newBlock = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
+                                await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);
+                                if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                                    await logseq.Editor.deletePage(page.originalName);
+                            }
+                        },
+                        {
+                            label: "Replace",
+                            labelSuffix: "🔄",
+                            onClick: async () => {
+                                await logseq.Editor.updateBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
+                                await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
+                                if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                                    await logseq.Editor.deletePage(page.originalName);
+                            }
                         }
-                    },
-                    {
-                        label: "Replace",
-                        labelSuffix: "🔄",
-                        onClick: async () => {
-                            await logseq.Editor.updateBlock(block.uuid, chatResponse.trim());
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
-                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-                                await logseq.Editor.deletePage(page.originalName);
-                        }
-                    }
-                ],
-                {label: "Delete page after action", checked: logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION, onChange: (checked) => {console.log(checked, logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION); logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = checked;}});
+                    ],
+                    {label: "Delete page after action", checked: logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION, onChange: (checked) => {console.log(checked, logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION); logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = checked;}});
             }
         }
     }
