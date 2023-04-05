@@ -7,13 +7,13 @@ export class Continue {
                 name: 'Continue',
                 required_input: 'block(s)',
                 getPromptPrefixMessages: () => [
-                    {'role': 'user', 'content': `I want you to act as a Autocomplete tool. You take the input complete it factually. DO NOT reply the context of the question of the user input. Sample of the conversation will show below:
+                    {'role': 'user', 'content': `I want you to act as a Autocomplete tool. You take the input complete it factually. DO NOT reply the context of the question of the user input. Sample of the conversation is shown below:
                     user: Continue: *text*
-                    you: *completed text*
+                    you: *rest of text*
                     user: *add new info*
-                    you: *completed text with added info*
+                    you: *complete text*
                     user: *question related to text*
-                    you: *completed text with answer to the question*
+                    you: *complete text*
                     `.replaceAll('    ', '').trim()}
                 ],
                 getPrompt: () => `Continue:`,
