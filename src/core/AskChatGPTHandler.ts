@@ -42,6 +42,9 @@ export class AskChatGPTHandler {
             if (this.inAskingInProgress && this.chatResponseIterator)
                 this.chatResponseIterator.return();
 
+            // - Remove old actionable notification on page change -
+            try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {};
+
             // - Add button to page head -
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
             if (button)
@@ -51,8 +54,7 @@ export class AskChatGPTHandler {
             const page = await logseq.Editor.getCurrentPage();
             if (!(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]"))) {
                 button.style.display = "none";
-                if (window.scrollFixForChatGPTPlugin)
-                    window.parent.document.getElementById("main-content-container").removeEventListener("scroll", window.scrollFixForChatGPTPlugin);
+                window.parent.document.getElementById("main-content-container").removeEventListener("scroll", window.parent.scrollFixForChatGPTPlugin);
                 return;
             }
             button.style.display = "block";
@@ -77,11 +79,14 @@ export class AskChatGPTHandler {
                 injectedUIItemContainer.style.opacity = "1";
 
             // Fix position of button on scroll
-            window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.scrollFixForChatGPTPlugin = () => {
-                (window.parent.document.getElementsByClassName(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)[0] as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 70)}px`;
-            });
-            window.scrollFixForChatGPTPlugin();
+            window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.parent.scrollFixForChatGPTPlugin);
+            window.parent.scrollFixForChatGPTPlugin();
         });
+        window.parent.scrollFixForChatGPTPlugin = () => {
+            try {   // An error occurs sometimes as the scroll event listener is not removed when changing to journal page
+                (window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 50)}px`;
+            } catch (e) {};
+        }
     }
 
     public static async askChatGPTWrapper() {
