@@ -202,7 +202,7 @@ export class AskChatGPTHandler {
         }
 
         // Context Window - Remove messages from top until we reach token limit
-        while(getMessageArrayTokenCount(messages) > logseq.settings.CHATGPT_MAX_TOKENS)
+        while(getMessageArrayTokenCount(messages) > logseq.settings.CHATGPT_MAX_TOKENS*0.5)
             messages.shift();
         if (messages.length == 0)
             throw {message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning'};
