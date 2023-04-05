@@ -94,7 +94,7 @@ export class LogseqToChatgptConverter {
                 const block = await logseq.Editor.getBlock(blockRefUUID, {includeChildren: true});
                 nodeText = await generateOutline(block, 0);
             } catch (e) { console.log(e); nodeText = ''; }
-            nodeText = `------\n${nodeText}\n------\n`;
+            nodeText = `${nodeText}\n`;
             let prevText = new TextDecoder().decode(resultUTF8.slice(start_pos-1, start_pos));
             if(prevText != "\n")
                 nodeText = "\n"+nodeText;

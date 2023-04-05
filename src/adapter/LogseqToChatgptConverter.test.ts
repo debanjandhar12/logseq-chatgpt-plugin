@@ -43,16 +43,16 @@ describe('block ref tests', () => {
 });
 describe('block embed tests', () => {
     test('basic block embed', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello {{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\nWorld\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello {{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \nWorld\n");
     });
     test('basic block embed 2', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\nWorld\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \nWorld\n");
     });
 });
 
 describe('block embed + block ref tests', () => {
     test('basic block embed + block ref', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-nested-hello-world))}}")).toEqual("Hello \n------\nTitle World\nI am not title.\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello \n{{embed ((642146e4-bae3-nested-hello-world))}}")).toEqual("Hello \nTitle World\nI am not title.\n");
     });
 });
 
@@ -61,16 +61,16 @@ describe('property removal tests', () => {
         expect(await LogseqToChatgptConverter.convert("speaker::user\nHello ((642146e4-bae3-47cf-world))")).toEqual("Hello World");
     });
     test('basic block embed', async () => {
-        expect(await LogseqToChatgptConverter.convert("speaker::user\nHello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \n------\nWorld\n------\n");
+        expect(await LogseqToChatgptConverter.convert("speaker::user\nHello \n{{embed ((642146e4-bae3-47cf-world))}}")).toEqual("Hello \nWorld\n");
     });
 });
 
 describe('block embed with children tests', () => {
     test('basic block embed with children', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello\n{{embed ((hello-world-with-children))}}")).toEqual("Hello\n------\n- Title World\n  - Children 1\n  - Children 2\n    - Sub-Children 1\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello\n{{embed ((hello-world-with-children))}}")).toEqual("Hello\n- Title World\n  - Children 1\n  - Children 2\n    - Sub-Children 1\n");
     });
     test('basic block embed with children 2', async () => {
-        expect(await LogseqToChatgptConverter.convert("Hello\nWorld\n{{embed ((hello-world-with-children2))}}")).toEqual("Hello\nWorld\n------\n- Title\n  World\n  - Children 1\n    - Sub-Children 1\n      Some more text\n  - Children 2\n------\n");
+        expect(await LogseqToChatgptConverter.convert("Hello\nWorld\n{{embed ((hello-world-with-children2))}}")).toEqual("Hello\nWorld\n- Title\n  World\n  - Children 1\n    - Sub-Children 1\n      Some more text\n  - Children 2\n");
     });
 });
 
