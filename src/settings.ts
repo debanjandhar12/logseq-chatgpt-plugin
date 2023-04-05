@@ -49,7 +49,7 @@ export const addSettingsToLogseq = async () => {
             type: 'number',
             title: "ChatGPT Max Tokens",
             description: "Enter the maximum number of tokens for ChatGPT. See https://platform.openai.com/docs/guides/chat for more information.",
-            default: 1000
+            default: 2048
         },
         {
             key: "heading3",
@@ -98,5 +98,5 @@ export const addSettingsToLogseq = async () => {
     `);
     // Initialize other settings that are hidden from the UI
     if (!logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-        logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = false;
+        logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = true;
 };

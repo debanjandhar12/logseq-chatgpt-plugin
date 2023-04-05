@@ -89,7 +89,7 @@ const Header = () => {
                 &nbsp;
                 <h3 className="text-lg">ChatGPT Page List</h3>
             </div>
-            <a href="https://www.buymeacoffee.com/debanjandhar12"><img
+            <a href="https://www.buymeacoffee.com/debanjandhar12"><img alt={"Buy me a coffee"}
                 src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" style={{height: "1.8rem"}}></img></a>
         </div>
     )
@@ -125,12 +125,12 @@ const PageListBody = ({pageList, currentPage, itemsPerPage}) => {
                 <th>Name</th>
                 <th>Created Time</th>
                 <th>
-                            <span class="flex items-center">
+                            <span className="flex items-center">
                                 <span>Updated Time</span>
                                 <span><svg aria-hidden="true" version="1.1" viewBox="0 0 192 512" fill="currentColor"
                                            display="inline-block" className="h-4 w-4"><path
                                     d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
-                                    fill-rule="evenodd"></path></svg></span>
+                                    fillRule="evenodd"></path></svg></span>
                             </span>
                 </th>
             </tr>
@@ -185,9 +185,9 @@ const PaginationControls = ({currentPage, itemsPerPage, totalItems, onPageChange
                style={{visibility: currentPage > 1 ? 'visible' : 'hidden', transition: '0s'}}><span
                 className="ui__icon ti ls-icon-caret-left "><svg
                 xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-left" width="18"
-                height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
+                height="18" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
                 d="M18 15l-6 -6l-6 6h12" transform="rotate(270 12 12)"></path></svg></span>Prev</a>
             <div className="px-2"><span>{currentPage}/{Math.ceil(totalItems / itemsPerPage)}</span></div>
             <a onClick={incrementPage} className="fade-link flex items-center" style={{
@@ -195,8 +195,8 @@ const PaginationControls = ({currentPage, itemsPerPage, totalItems, onPageChange
                 transition: '0s'
             }}>Next<span className="ui__icon ti ls-icon-caret-right "><svg
                 xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-caret-right" width="18"
-                height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
+                height="18" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none"
+                strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path
                 d="M18 15l-6 -6l-6 6h12" transform="rotate(90 12 12)"></path></svg></span></a>
         </div>
     )
