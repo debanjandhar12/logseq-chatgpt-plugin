@@ -24,6 +24,8 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
         try {
             window.parent.document.body.appendChild(div);
             root.render(<CommandPlate commands={commands} placeholder={placeholder} customCommandAllowed={customCommandAllowed} onSelect={(command) => {
+                if (command.name.startsWith("<strong>Custom:</strong> "))
+                    command.name = command.name.replace("<strong>Custom:</strong>", "Custom:");
                 resolve(command);
                 root.unmount();
                 window.parent.document.body.removeChild(div);

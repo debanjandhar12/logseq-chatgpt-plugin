@@ -188,7 +188,7 @@ export class AskChatGPTHandler {
 
         // Add prefix messages from prompt if set
         const prompt = getAllPrompts().find(p => p.name == (page.properties['chatgptPrompt'] || "").trim());
-        console.log(prompt, page.properties['chatgpt-prompt']);
+        console.log(prompt, page.properties['chatgptPrompt']);
         if (prompt && prompt.getPromptPrefixMessages)
             messages.unshift(...prompt.getPromptPrefixMessages());
 
@@ -202,7 +202,7 @@ export class AskChatGPTHandler {
         }
 
         // Context Window - Remove messages from top until we reach token limit
-        while(getMessageArrayTokenCount(messages) > logseq.settings.CHATGPT_MAX_TOKENS*0.5)
+        while(getMessageArrayTokenCount(messages) > Math.floor(logseq.settings.CHATGPT_MAX_TOKENS*0.5))
             messages.shift();
         if (messages.length == 0)
             throw {message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning'};
@@ -239,7 +239,7 @@ export class AskChatGPTHandler {
         else if (finishReason && finishReason.toLowerCase() != "stop")
             await logseq.UI.showMsg(`ChatGPT stopped early because of ${finishReason}.`, "warning", {timeout: 5000});
 
-        if (prompt) {
+        if (prompt || (page.properties['chatgptPrompt'] && page.properties['chatgptPrompt'].startsWith("Custom:"))) {
             const source = page.properties['chatgptPromptSource'] || "";
             let singular_block_uuid = source.trim().match(/^\(\([^)\n ]*\)\)$/);
             if (singular_block_uuid) {
