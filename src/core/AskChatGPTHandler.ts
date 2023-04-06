@@ -23,7 +23,7 @@ export class AskChatGPTHandler {
             template: String.raw`
               <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex" 
               style="position: absolute;
-                z-index: var(--ls-z-index-level-1) !important;
+                z-index: var(--ls-z-index-level-5) !important;
                 right: 16px;
                 justify-content: center;
                 align-items: center;
