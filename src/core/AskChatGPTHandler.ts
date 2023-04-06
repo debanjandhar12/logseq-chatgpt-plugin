@@ -84,7 +84,7 @@ export class AskChatGPTHandler {
         });
         window.parent.scrollFixForChatGPTPlugin = () => {
             try {   // An error occurs sometimes as the scroll event listener is not removed when changing to journal page
-                (window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop - 50)}px`;
+                (window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop)}px`;
             } catch (e) {};
         }
     }
