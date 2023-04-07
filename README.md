@@ -1,5 +1,9 @@
 <h3 align="center">A tightly integrated ChatGPT plugin for Logseq.</h3>
 
+# Shortcuts
+
+* <kbd>cmd/ctrl</kbd>+<kbd>shift</kbd>+<kbd>g</kbd> Open ChatGPT Page List
+
 # Features
 <ul><li>
 <details open>
