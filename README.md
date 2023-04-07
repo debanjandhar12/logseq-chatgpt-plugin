@@ -2,7 +2,7 @@
 
 # Shortcuts
 
-* <kbd>cmd/ctrl</kbd>+<kbd>shift</kbd>+<kbd>g</kbd> Open ChatGPT Page List
+* <kbd>cmd/ctrl</kbd>+<kbd>shift</kbd>+<kbd>l</kbd> Open ChatGPT Page List
 
 # Features
 <ul><li>
