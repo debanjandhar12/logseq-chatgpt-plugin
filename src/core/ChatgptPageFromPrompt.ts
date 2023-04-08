@@ -3,6 +3,7 @@ import {SelectCommandPrompt} from "../ui/SelectCommandPrompt";
 import {AskChatGPTHandler} from "./AskChatGPTHandler";
 import {getAllPrompts} from "../prompt/getAllPrompts";
 import {Prompt} from "../types/Prompt";
+import _ from "lodash";
 
 /**
  * This file injects and handles the "Ask ChatGPT" block option. Once clicked, it shows the prompt selector to user.
@@ -53,7 +54,9 @@ export class ChatgptPageFromPrompt {
     }
 
     private static async createChatGPTPageAndGoToItWithPrompt() {
-        const blocks = await logseq.Editor.getSelectedBlocks();
+        let blocks = await logseq.Editor.getSelectedBlocks();
+        blocks = _.uniqBy(blocks, b => b.id);
+
         const selectedPrompt = await SelectCommandPrompt(getAllPrompts(), "Select a prompt", true);
         if (!selectedPrompt) return;
 
