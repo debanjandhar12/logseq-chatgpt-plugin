@@ -91,6 +91,7 @@ export class AskChatGPTHandler {
 
     public static async askChatGPTWrapper() {
         if (this.inAskingInProgress) return;
+        try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {} // Close previous actionable notification if any
         this.inAskingInProgress = true;
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
         const originalButtonContent = button.innerHTML;
