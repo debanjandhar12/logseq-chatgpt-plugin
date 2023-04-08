@@ -15,7 +15,7 @@ import {ActionableNotification} from "../ui/ActionableNotification";
 
 export class AskChatGPTHandler {
     static inAskingInProgress = false;
-    static chatResponseIterator = null;
+    static abortController : AbortController;
 
     static init() {
         logseq.App.registerUIItem('pagebar', {
@@ -38,9 +38,9 @@ export class AskChatGPTHandler {
         `
         });
         LogseqProxy.App.registerPageHeadActionsSlottedListener(async (event) => {
-            // - Cancel the previous chat response stream if any -
-            if (this.inAskingInProgress && this.chatResponseIterator)
-                this.chatResponseIterator.return();
+            // - Cancel the previous ask chatgpt request if any -
+            if (this.abortController)
+                this.abortController.abort();
 
             // - Remove old actionable notification on page change -
             try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {};
@@ -93,6 +93,7 @@ export class AskChatGPTHandler {
         if (this.inAskingInProgress) return;
         try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {} // Close previous actionable notification if any
         this.inAskingInProgress = true;
+        this.abortController = new AbortController();
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
         const originalButtonContent = button.innerHTML;
         button.innerHTML = "Asking...";
@@ -104,11 +105,12 @@ export class AskChatGPTHandler {
                     display: none;
                 }`
             });
-            await this.askChatGPT();
+            await this.askChatGPT({signal: this.abortController.signal});
         } catch (e) {
+            if (e.name == "AbortError") return; // Ignore abort error
             if (e.blockUUID) {
                 const page = await logseq.Editor.getCurrentPage();
-                await logseq.Editor.selectBlock(e.blockUUID);
+                await logseq.Editor.selectBlock(e.blocsignalkUUID);
             }
             let errorMsg = e.message || e.toString();
             errorMsg = errorMsg.replace(/^Request error: /, "");
@@ -119,6 +121,7 @@ export class AskChatGPTHandler {
             console.log(e);
         } finally {
             this.inAskingInProgress = false;
+            this.abortController = null;
             button.innerHTML = originalButtonContent;
             await logseq.provideStyle({  // Enable commands modal back
                 key: "hide-commands",
@@ -130,7 +133,7 @@ export class AskChatGPTHandler {
         }
     }
 
-    private static async askChatGPT() {
+    private static async askChatGPT({signal = new AbortController().signal}) {
         if (logseq.settings.OPENAI_API_KEY.trim() == "") {
             logseq.showSettingsUI();
             setTimeout(function () {
@@ -138,7 +141,6 @@ export class AskChatGPTHandler {
             }, 3000);
             throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
         }
-
         const page = await logseq.Editor.getCurrentPage();
         if(page.properties.type != "ChatGPT") {
             throw {message: "Current page is not a ChatGPT page.", type: 'warning'};
@@ -227,9 +229,14 @@ export class AskChatGPTHandler {
             presence_penalty: 0,    // try to avoid talking about new topics
             frequency_penalty: 0,
             temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
-        });
-        this.chatResponseIterator = streamToAsyncIterator(chatResponseStream);
-        await this.iterateChatGptResponse(this.chatResponseIterator, async (responseChunk) => {
+        }, {signal});
+        if (signal.aborted) return;
+        const chatResponseIterator = streamToAsyncIterator(chatResponseStream);
+        await this.iterateChatGptResponse(chatResponseIterator, async (responseChunk) => {
+            if (signal.aborted) {
+                await chatResponseIterator.return();
+                return;
+            }
             chatResponse += responseChunk.choices[0].delta?.content || "";
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
