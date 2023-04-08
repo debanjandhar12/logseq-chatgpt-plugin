@@ -233,10 +233,11 @@ export class AskChatGPTHandler {
             finishReason = responseChunk.choices[0].finish_reason;
             if (finishReason && finishReason.toLowerCase() == "stop")
                 lastChunk = responseChunk;
-            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+            await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         });
         console.log("lastChunk", lastChunk);
         console.log("finalChatResponse", chatResponse);
+        await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
         await logseq.Editor.exitEditingMode(false);
         await logseq.Editor.selectBlock(resultBlock.uuid);
 

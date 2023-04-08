@@ -37,6 +37,22 @@ export namespace LogseqProxy {
                 getLogseqLock.release();
             }
         }
+
+        static blockUpdateMap = new Map<string, string | Function>();
+        static updateBlockAfterDelayTimeoutFunc = null;
+        static async updateBlockAfterDelay(blockUUID: string, content: string | Function, opts?: Partial<{ properties: {}; }>): Promise<void> {
+            this.blockUpdateMap.set(blockUUID, content);
+            if (this.updateBlockAfterDelayTimeoutFunc) return;
+            this.updateBlockAfterDelayTimeoutFunc = setTimeout(() => {
+                this.blockUpdateMap.forEach((content, blockUUID) => {
+                    if (typeof content === "function")
+                        content = content();
+                    logseq.Editor.updateBlock(blockUUID, content as string, opts);
+                });
+                this.blockUpdateMap.clear();
+                this.updateBlockAfterDelayTimeoutFunc = null;
+            }, 200);
+        }
     }
 
     export class Settings {
