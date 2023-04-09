@@ -1,7 +1,12 @@
 /**
  * This handles the ask chat GPT button event on ChatGPT pages.
  */
-import {ICON_16} from "../utils/constants";
+import {
+    CHATGPT_ASK_BUTTON_CONTENT,
+    CHATGPT_ASKING_BUTTON_CONTENT,
+    CHATGPT_STOP_BUTTON_CONTENT,
+    ICON_16
+} from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../adapter/removePropsFromBlockContent";
@@ -21,19 +26,18 @@ export class AskChatGPTHandler {
         logseq.App.registerUIItem('pagebar', {
             key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}`,
             template: String.raw`
-              <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex" 
+              <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex px-1" 
               style="position: absolute;
-                z-index: var(--ls-z-index-level-1) !important;
+                z-index: var(--ls-z-index-level-1, 9) !important;
                 right: 16px;
                 justify-content: center;
                 align-items: center;
-                color: var(--ls-alink-color);
+                color: var(--ls-block-ref-link-text-color, #d8e1e8);
                 padding: 0.1rem;
                 border-radius: .375rem;
                 transition: 0s;
                 display: none;">
-                <span class="ui__icon ti ls-icon-hierarchy" style="height:13px">${ICON_16}</span>
-                <span class="flex-1">Ask ChatGPT</span>
+                    ${CHATGPT_ASK_BUTTON_CONTENT}
               </a>
         `
         });
@@ -61,17 +65,23 @@ export class AskChatGPTHandler {
 
             // Add click event listener to button
             button.addEventListener("click", async () => {
-                await AskChatGPTHandler.askChatGPTWrapper();
+                if (!this.inAskingInProgress)
+                    await AskChatGPTHandler.askChatGPTWrapper();
+                else this.abortController.abort();
             });
 
             // Change color to blue on hover
             button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "rgba(59,130,246, .8)";
+                button.style.backgroundColor = "rgba(59,130,246, 1)";
+                if (this.inAskingInProgress)
+                    button.innerHTML = CHATGPT_STOP_BUTTON_CONTENT;
             });
             button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "rgba(59,130,246, .4)";
+                button.style.backgroundColor = "rgba(59,130,246, .7)";
+                if (this.inAskingInProgress)
+                    button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
             });
-            button.style.backgroundColor = "rgba(59,130,246, .4)";
+            button.style.backgroundColor = "rgba(59,130,246, .7)";
 
             // Fix opacity of injected button container
             const injectedUIItemContainer: HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}"]`);
@@ -95,8 +105,7 @@ export class AskChatGPTHandler {
         this.inAskingInProgress = true;
         this.abortController = new AbortController();
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
-        const originalButtonContent = button.innerHTML;
-        button.innerHTML = "Asking...";
+        button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
         try {
             await logseq.provideStyle({ // Disable commands modal
                 key: "hide-commands",
@@ -122,7 +131,7 @@ export class AskChatGPTHandler {
         } finally {
             this.inAskingInProgress = false;
             this.abortController = null;
-            button.innerHTML = originalButtonContent;
+            button.innerHTML = CHATGPT_ASK_BUTTON_CONTENT;
             await logseq.provideStyle({  // Enable commands modal back
                 key: "hide-commands",
                 style: `
