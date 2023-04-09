@@ -143,9 +143,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         labelSuffix: "↩️",
                         onClick: async () => {
                             let newBlock = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);
                             if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-                                await logseq.Editor.deletePage(page.originalName);
+                                await logseq.Editor.deletePage(page.originalName)
+                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);;
                         }
                     },
                     {
@@ -153,9 +153,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         labelSuffix: "🔄",
                         onClick: async () => {
                             await logseq.Editor.updateBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
                             if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
                                 await logseq.Editor.deletePage(page.originalName);
+                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
                         }
                     }
                 ],
