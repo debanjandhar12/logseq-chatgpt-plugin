@@ -15,6 +15,7 @@ export class AskChatgptBtnController {
     static abortController : AbortController;
 
     static init() {
+        // --- Button UI ---
         logseq.App.registerUIItem('pagebar', {
             key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}`,
             template: String.raw`
@@ -34,13 +35,6 @@ export class AskChatgptBtnController {
         `
         });
         LogseqProxy.App.registerPageHeadActionsSlottedListener(async (event) => {
-            // - Cancel the previous ask chatgpt request if any -
-            if (this.abortController)
-                this.abortController.abort();
-
-            // - Remove old actionable notification on page change -
-            try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {};
-
             // - Add button to page head -
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
             if (button)
@@ -89,6 +83,16 @@ export class AskChatgptBtnController {
                 (window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop)}px`;
             } catch (e) {}
         }
+
+        // --- Misc Tasks ---
+        LogseqProxy.App.registerRouteChangedListener(async (event) => {
+            // - Cancel the previous ask chatgpt request through this controller (if any) on page change -
+            if (this.abortController)
+                this.abortController.abort();
+
+            // - Remove actionable notification (if any) on page change -
+            try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {};
+        });
     }
 
     public static async askChatGPTWrapper() {
@@ -99,10 +103,11 @@ export class AskChatgptBtnController {
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
         button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
         try {
-            await logseq.provideStyle({ // Disable commands modal
-                key: "hide-commands",
+            await logseq.provideStyle({ // Disable editor popups
+                key: "hide-editor-popups",
                 style: `
-                .absolute-modal[data-modal-name=commands], .absolute-modal[data-modal-name=block-commands] {
+                .absolute-modal[data-modal-name=commands], .absolute-modal[data-modal-name=block-commands],
+                .absolute-modal[data-modal-name=page-search], .absolute-modal[data-modal-name=block-search] {
                     display: none;
                 }`
             });
@@ -125,10 +130,11 @@ export class AskChatgptBtnController {
             this.inAskingInProgress = false;
             this.abortController = null;
             button.innerHTML = CHATGPT_ASK_BUTTON_CONTENT;
-            await logseq.provideStyle({  // Enable commands modal back
-                key: "hide-commands",
+            await logseq.provideStyle({  // Enable editor popups back
+                key: "hide-editor-popups",
                 style: `
-                .absolute-modal[data-modal-name=commands], .absolute-modal[data-modal-name=block-commands] {
+                .absolute-modal[data-modal-name=commands], .absolute-modal[data-modal-name=block-commands],
+                .absolute-modal[data-modal-name=page-search], .absolute-modal[data-modal-name=block-search] {
                     display: block;
                 }`
             });
