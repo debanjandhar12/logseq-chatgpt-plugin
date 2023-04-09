@@ -1,12 +1,12 @@
 /**
- * This ensures that the conversation flow is formatted correctly.
+ * This ensures that the conversation flow is formatted correctly for ChatGPT pages.
  * For example, when the flow is alternating, the blocks in page should be alternating between user and assistant.
  * Currently, only the alternating flow is supported.
  */
 import {PageEntity, PageIdentity} from "@logseq/libs/dist/LSPlugin";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import getUUIDFromBlock from "../logseq/getUUIDFromBlock";
-import {isChatGPTPage} from "./isChatGPTPage";
+import {isChatGPTPage} from "../utils/isChatGPTPage";
 import {removePropsFromBlockContent} from "../adapter/removePropsFromBlockContent";
 
 export class AutoFlowFormatter {

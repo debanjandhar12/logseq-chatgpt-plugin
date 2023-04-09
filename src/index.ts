@@ -7,7 +7,7 @@ import {ICON_18} from "./utils/constants";
 import {addSettingsToLogseq} from "./settings";
 import {AutoFlowFormatter} from "./core/AutoFlowFormatter";
 import {LogseqProxy} from "./logseq/LogseqProxy";
-import {AskChatGPTHandler} from "./core/AskChatGPTHandler";
+import {AskChatgptBtnController} from "./core/AskChatgptBtnController";
 import {BulletIconsInjector} from "./core/BulletIconsInjector";
 import {ShowChatGPTPageListInjector} from "./core/ShowChatGPTPageListInjector";
 import {ChatgptPageFromPrompt} from "./core/ChatgptPageFromPrompt";
@@ -19,7 +19,7 @@ async function main(baseInfo: LSPluginBaseInfo) {
     await addSettingsToLogseq();
     LogseqProxy.init();
     AutoFlowFormatter.init();
-    AskChatGPTHandler.init();
+    AskChatgptBtnController.init();
     BulletIconsInjector.init();
     ShowChatGPTPageListInjector.init();
     ChatgptPageFromPrompt.init();

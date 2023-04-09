@@ -1,6 +1,6 @@
 import moment from "moment/moment";
 import {SelectCommandPrompt} from "../ui/SelectCommandPrompt";
-import {AskChatGPTHandler} from "./AskChatGPTHandler";
+import {AskChatgptBtnController} from "./AskChatgptBtnController";
 import {getAllPrompts} from "../prompt/getAllPrompts";
 import {Prompt} from "../types/Prompt";
 import _ from "lodash";
@@ -23,7 +23,7 @@ export class ChatgptPageFromPrompt {
             const blocks = await logseq.Editor.getSelectedBlocks();
             const page = await logseq.Editor.getCurrentPage();
             if (page?.properties?.type == "ChatGPT" && (blocks == null || blocks.length == 0))
-                await AskChatGPTHandler.askChatGPTWrapper();
+                await AskChatgptBtnController.askChatGPTWrapper();
             else if (blocks == null || blocks.length == 0)
                 await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
             else
@@ -77,7 +77,7 @@ export class ChatgptPageFromPrompt {
 
         // Call the askChatGPTWrapper
         try {
-            await AskChatGPTHandler.askChatGPTWrapper();
+            await AskChatgptBtnController.askChatGPTWrapper();
         } catch (e) { console.log(e); };
     }
 }
