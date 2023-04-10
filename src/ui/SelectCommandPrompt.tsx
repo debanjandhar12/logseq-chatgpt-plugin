@@ -91,7 +91,8 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
         return command.name.toLowerCase().includes(search.toLowerCase());
     });
     if (customCommandAllowed && search.length != "")
-        filteredCommandList.push({name: `<strong>Custom:</strong> ${search}`, required_input: 'block(s)' ,getPrompt: () => `${search}:`});
+        filteredCommandList.push({name: `<strong>Custom:</strong> ${search}`, required_input: 'block(s)',
+            getPrompt: () => `${search}:`.replace(/:(:)+/g, ':')});
     const [chosenCommand, setChosenCommand] = useState(0);
     // Handle some key events
     React.useEffect(() => {
