@@ -80,6 +80,20 @@ export const addSettingsToLogseq = async () => {
             default: null,
         },
         {
+            key: "ASK_CHATGPT_SHORTCUT",
+            type: 'string',
+            title: "Ask ChatGPT Command Shortcut (restart required after changes):",
+            description: "",
+            default: "mod+shift+/"
+        },
+        {
+            key: "CREATE_CHATGPT_PAGE_SHORTCUT",
+            type: 'string',
+            title: "Create ChatGPT Page Command Shortcut (restart required after changes):",
+            description: "",
+            default: ""
+        },
+        {
             key: "SHOW_CHATGPT_PAGE_LIST_SHORTCUT",
             type: 'string',
             title: "Show ChatGPT Page List Shortcut (restart required after changes):",

@@ -17,9 +17,12 @@ export class ChatgptPageFromPrompt {
             await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
         });
         logseq.App.registerCommandPalette({
-            key: `logseq-chatgpt-plugin-ask-chatgpt-${logseq.baseInfo.id}`,
-            label: `Ask ChatGPT`,
-        }, async () => {
+                key: `logseq-chatgpt-plugin-ask-chatgpt-${logseq.baseInfo.id}`,
+                label: `Ask ChatGPT`,
+                keybinding: {
+                    binding: logseq.settings?.ASK_CHATGPT_SHORTCUT || null
+                }
+            }, async () => {
             const blocks = await logseq.Editor.getSelectedBlocks();
             const page = await logseq.Editor.getCurrentPage();
             if (page?.properties?.type == "ChatGPT" && (blocks == null || blocks.length == 0))
@@ -32,6 +35,9 @@ export class ChatgptPageFromPrompt {
         logseq.App.registerCommandPalette({
             key: `logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`,
             label: `Create ChatGPT Page`,
+            keybinding: {
+                binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
+            }
         }, async () => {
             const blocks = await logseq.Editor.getSelectedBlocks();
             if (blocks == null || blocks.length == 0)
