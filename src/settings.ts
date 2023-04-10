@@ -104,6 +104,6 @@ export const addSettingsToLogseq = async () => {
         }
     `);
     // Initialize other settings that are hidden from the UI
-    if (!logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-        logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = true;
+    if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION == null)
+        logseq.updateSettings({DELETE_PAGE_AFTER_PROMPT_ACTION: true});
 };

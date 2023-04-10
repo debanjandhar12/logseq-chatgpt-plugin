@@ -164,7 +164,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                     checked: logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION,
                     onChange: (checked) => {
                         console.log(checked, logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION);
-                        logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION = checked;
+                        logseq.updateSettings({DELETE_PAGE_AFTER_PROMPT_ACTION: checked})
                     }
                 });
         }
