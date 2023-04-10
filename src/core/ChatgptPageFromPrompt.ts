@@ -4,6 +4,7 @@ import {AskChatgptBtnController} from "./AskChatgptBtnController";
 import {getAllPrompts} from "../prompt/getAllPrompts";
 import {Prompt} from "../types/Prompt";
 import _ from "lodash";
+import {Confirm} from "../ui/Confirm";
 
 /**
  * This file injects and handles the "Ask ChatGPT" block option. Once clicked, it shows the prompt selector to user.
@@ -25,12 +26,17 @@ export class ChatgptPageFromPrompt {
             }, async () => {
             const blocks = await logseq.Editor.getSelectedBlocks();
             const page = await logseq.Editor.getCurrentPage();
-            if (page?.properties?.type == "ChatGPT" && (blocks == null || blocks.length == 0))
+            if (page?.properties?.type == "ChatGPT" && (blocks == null || blocks.length == 0)) {
                 await AskChatgptBtnController.askChatGPTWrapper();
-            else if (blocks == null || blocks.length == 0)
-                await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
-            else
+            }
+            else if (blocks == null || blocks.length == 0) {
+                if (await Confirm("This will create a new empty ChatGPT page. Continue?"))
+                    await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
+                // else do nothing
+            }
+            else {
                 await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
+            }
         });
         logseq.App.registerCommandPalette({
             key: `logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`,
