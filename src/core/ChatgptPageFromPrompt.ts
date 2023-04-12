@@ -18,24 +18,30 @@ export class ChatgptPageFromPrompt {
             await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
         });
         logseq.App.registerCommandPalette({
-                key: `logseq-chatgpt-plugin-ask-chatgpt-${logseq.baseInfo.id}`,
-                label: `Ask ChatGPT`,
-                keybinding: {
-                    binding: logseq.settings?.ASK_CHATGPT_SHORTCUT || null
-                }
-            }, async () => {
-            const blocks = await logseq.Editor.getSelectedBlocks();
+            key: `logseq-chatgpt-plugin-ask-chatgpt-${logseq.baseInfo.id}`,
+            label: `Ask ChatGPT`,
+            keybinding: {
+                binding: logseq.settings?.ASK_CHATGPT_SHORTCUT || null
+            }
+        }, async () => {
+
             const page = await logseq.Editor.getCurrentPage();
-            if (page?.properties?.type == "ChatGPT" && (blocks == null || blocks.length == 0)) {
+            if (page?.properties?.type == "ChatGPT") {
                 await AskChatgptBtnController.askChatGPTWrapper();
             }
-            else if (blocks == null || blocks.length == 0) {
-                if (await Confirm("This will create a new empty ChatGPT page. Continue?"))
-                    await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
-                // else do nothing
-            }
             else {
-                await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
+                let editingStatus = await logseq.Editor.checkEditing();
+                if (editingStatus)
+                    await logseq.Editor.selectBlock(editingStatus as string);
+                const blocks = await logseq.Editor.getSelectedBlocks();
+                if (blocks == null || blocks.length == 0) {
+                    if (await Confirm("This will create a new empty ChatGPT page. Continue?"))
+                        await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
+                    // else do nothing
+                }
+                else {
+                    await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
+                }
             }
         });
         logseq.App.registerCommandPalette({
@@ -45,11 +51,16 @@ export class ChatgptPageFromPrompt {
                 binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
             }
         }, async () => {
+            let editingStatus = await logseq.Editor.checkEditing();
+            if (editingStatus)
+                await logseq.Editor.selectBlock(editingStatus as string);
             const blocks = await logseq.Editor.getSelectedBlocks();
-            if (blocks == null || blocks.length == 0)
+            if (blocks == null || blocks.length == 0) {
                 await ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
-            else
+            }
+            else {
                 await ChatgptPageFromPrompt.createChatGPTPageAndGoToItWithPrompt();
+            }
         });
     }
 
