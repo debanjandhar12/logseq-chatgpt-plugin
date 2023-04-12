@@ -38,9 +38,9 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
         }
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                // @ts-ignore
                 window.parent.ChatGPT.CommandPrompt.close();
             }
+            e.stopImmediatePropagation();
         };
         div.getElementsByClassName("ui__modal-overlay")[0].addEventListener('click', () => {
             window.parent.ChatGPT.CommandPrompt.close();
@@ -78,7 +78,7 @@ const SearchBox = ({search, placeholder, onSearchChange}) => {
                 type="text"
                 placeholder={placeholder}
                 className="cp__palette-input w-full h-full"
-                value={search}
+                defaultValue={search}
                 onChange={handleSearchChange}
                 autoFocus
             />
@@ -95,13 +95,14 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
             getPrompt: () => `${search}:`.replace(/:(:)+/g, ':')});
     const [chosenCommand, setChosenCommand] = useState(0);
     // Handle some key events
-    React.useEffect(() => {
+    useEffect(() => {
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
                 if(filteredCommandList.length != 0)
                     onSelect(filteredCommandList[chosenCommand]);
             }
             if (e.key === 'ArrowUp') {
+                e.preventDefault();
                 setChosenCommand((chosenCommand) => Math.max(0, chosenCommand - 1));
             }
             if (e.key === 'ArrowDown') {
@@ -113,7 +114,6 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
                     (searchBox as HTMLInputElement).focus();
                 }
             }
-            e.stopImmediatePropagation();
         };
         window.parent.document.addEventListener('keydown', onKeydown, {capture: true});
         setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand));
