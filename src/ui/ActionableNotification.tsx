@@ -1,3 +1,5 @@
+import {waitForElement} from "../utils/waitForElement";
+
 export async function ActionableNotification(msg: string, buttons : {label: string, labelSuffix?: string, onClick: Function}[], checkbox : {label: string, checked: boolean, onChange: Function} = null) {
     const fakeNotification = await logseq.UI.showMsg("", 'success', {
         key: `ActionableNotification-${logseq.baseInfo.id}`,
@@ -17,6 +19,8 @@ export async function ActionableNotification(msg: string, buttons : {label: stri
             </div>
         </div>
     </div>`;
+    await waitForElement('.notifications > .ui__notifications-content', 2000, window.parent.document.querySelector('.notifications'));
+    console.log("Waited");
     const fakeNotificationDiv = window.parent.document.querySelector(".notifications > .ui__notifications-content:last-child");
     fakeNotificationDiv.innerHTML = div;
     window.parent.ChatGPT.ActionableNotification = {
