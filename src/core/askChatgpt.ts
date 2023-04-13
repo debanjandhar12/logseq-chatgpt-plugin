@@ -101,7 +101,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         model: logseq.settings.CHATGPT_MODEL,
         stream: true,
         messages: messages,
-        max_tokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 1000,
+        max_tokens: (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 3072) - getMessageArrayTokenCount(messages),
         presence_penalty: 0,    // try to avoid talking about new topics
         frequency_penalty: 0,
         temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
