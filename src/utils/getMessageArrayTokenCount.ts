@@ -8,6 +8,7 @@ export default function getMessageArrayTokenCount(messages: Message[]): number {
     const tokens_per_message = 4;
     for (const message of messages) {
         count += encode(message.content).length;
+        count += tokens_per_message;
     }
     count += tokens_per_message; // for reply
     return count;

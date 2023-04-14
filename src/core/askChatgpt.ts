@@ -10,17 +10,22 @@ import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
 import {ActionableNotification} from "../ui/ActionableNotification";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
+    // Validate settings
     if (logseq.settings.OPENAI_API_KEY.trim() == "") {
         logseq.showSettingsUI();
         setTimeout(function () {
             logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
         }, 3000);
-        throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
+        throw { message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning' };
     }
+
+    if (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) < 100) {
+        throw { message: "CHATGPT_MAX_TOKENS is too small. Please go to settings and set it to at least 100.", type: 'warning' };
+    }
+
     const page = await logseq.Editor.getPage(pageName);
     if(page.properties.type != "ChatGPT") {
-        throw {message: "Current page is not a ChatGPT page.", type: 'warning'};
-        return;
+        throw { message: "Current page is not a ChatGPT page.", type: 'warning' };
     }
 
     // Collect all messages and find block to insert result
@@ -86,10 +91,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     }
 
     // Context Window - Remove messages from top until we reach token limit
-    while(getMessageArrayTokenCount(messages) > Math.floor(logseq.settings.CHATGPT_MAX_TOKENS*0.5))
+    while(getMessageArrayTokenCount(messages) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
         messages.shift();
     if (messages.length == 0)
-        throw {message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning'};
+        throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
 
     // Call ChatGPT API
     const chat = new ChatGPT({
@@ -101,7 +106,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         model: logseq.settings.CHATGPT_MODEL,
         stream: true,
         messages: messages,
-        max_tokens: (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 3072) - getMessageArrayTokenCount(messages),
+        max_tokens: (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32) - getMessageArrayTokenCount(messages),  // deduct 32 tokens for safety
         presence_penalty: 0,    // try to avoid talking about new topics
         frequency_penalty: 0,
         temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
