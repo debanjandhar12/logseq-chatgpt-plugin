@@ -9,6 +9,7 @@ import {
 } from "../utils/constants";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {askChatGPT} from "./askChatgpt";
+import {recreateNode} from "../utils/recreateNode";
 
 export class AskChatgptBtnController {
     static inAskingInProgress = false;
@@ -16,35 +17,35 @@ export class AskChatgptBtnController {
 
     static init() {
         // --- Button UI ---
-        logseq.App.registerUIItem('pagebar', {
+        logseq.App.registerUIItem('toolbar', {
             key: `logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}`,
             template: String.raw`
               <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex px-1" 
-              style="position: absolute;
-                z-index: var(--ls-z-index-level-1, 9) !important;
-                right: 16px;
-                justify-content: center;
+              style="justify-content: center;
+                padding-top: 8px;
+                font-size: 16px;
+                margin-right: 1px;
+                padding-bottom: 8px;
+                margin-left: 1px;
                 align-items: center;
                 color: var(--ls-block-ref-link-text-color, #d8e1e8);
-                padding: 0.1rem;
-                border-radius: .375rem;
-                transition: 0s;
-                display: none;">
+                border-radius: 0.375rem;
+                transition: all 0s ease 0s;
+                background-color: rgba(59, 130, 246, 0.7);
+                z-index: var(--ls-z-index-level-1, 9) !important;
+                display:none;">
                     ${CHATGPT_ASK_BUTTON_CONTENT}
               </a>
         `
         });
-        LogseqProxy.App.registerPageHeadActionsSlottedListener(async (event) => {
-            // - Add button to page head -
+        LogseqProxy.App.registerRouteChangedListener(async (event) => {
+            recreateNode(window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`), true);
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
-            if (button)
-                button.classList.add("logseq-chatgpt-callAPI-btn");
 
             // Show button if current page is a ChatGPT page only
             const page = await logseq.Editor.getCurrentPage();
-            if (!(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]"))) {
+            if (page == null || !(page.originalName && (page.properties?.type == "ChatGPT" || page.properties?.type == "[[ChatGPT]]"))) {
                 button.style.display = "none";
-                window.parent.document.getElementById("main-content-container").removeEventListener("scroll", window.parent.scrollFixForChatGPTPlugin);
                 return;
             }
             button.style.display = "block";
@@ -73,16 +74,7 @@ export class AskChatgptBtnController {
             const injectedUIItemContainer: HTMLDivElement = window.parent.document.querySelector(`.injected-ui-item-pagebar[title="logseq-chatgpt${logseq.baseInfo.id == "logseq-chatgpt" ? "" : "-" + logseq.baseInfo.id}"]`);
             if (injectedUIItemContainer)
                 injectedUIItemContainer.style.opacity = "1";
-
-            // Fix position of button on scroll
-            window.parent.document.getElementById("main-content-container").addEventListener("scroll", window.parent.scrollFixForChatGPTPlugin);
-            window.parent.scrollFixForChatGPTPlugin();
         });
-        window.parent.scrollFixForChatGPTPlugin = () => {
-            try {   // An error occurs sometimes as the scroll event listener is not removed when changing to journal page
-                (window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) as HTMLAnchorElement).style.top = `${Math.max(10, window.parent.document.getElementById("main-content-container").scrollTop)}px`;
-            } catch (e) {}
-        }
 
         // --- Misc Tasks ---
         LogseqProxy.App.registerRouteChangedListener(async (event) => {
