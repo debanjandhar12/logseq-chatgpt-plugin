@@ -32,6 +32,7 @@
           <li><kbd>cmd/ctrl</kbd>+<kbd>shift</kbd>+<kbd>/</kbd> - Ask ChatGPT</li>
           <li><kbd>cmd/ctrl</kbd>+<kbd>shift</kbd>+<kbd>l</kbd> - Show ChatGPT Page List</li>
       </ul>
+      The above shortcuts can be changed from settings.
   </div>
 </details></li><li>
 <details>
