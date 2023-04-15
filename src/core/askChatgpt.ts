@@ -81,14 +81,18 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     if (prompt && prompt.getPromptPrefixMessages)
         messages.unshift(...prompt.getPromptPrefixMessages());
 
-    // Add the system message after processing via mustache if set
-    if (logseq.settings.CHATGPT_SYSTEM_PROMPT) {
-        messages.unshift({
-            role: "system", content:
-                Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,
-                    {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})
-        });
+    // Add the system message
+    let systemMsgContent = "";
+    if (logseq.settings.CHATGPT_SYSTEM_PROMPT && !page.properties['chatgptPrompt']) {
+        systemMsgContent = Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
+            {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]});
+
     }
+    else {
+        systemMsgContent = Mustache.render(`You are a ai who replies using markdown. Current date: {{today}}`,
+            {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0], prompt});
+    }
+    messages.unshift({role: "system", content: systemMsgContent});
 
     // Context Window - Remove messages from top until we reach token limit
     while(getMessageArrayTokenCount(messages) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
