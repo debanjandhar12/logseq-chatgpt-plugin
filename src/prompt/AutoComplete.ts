@@ -1,6 +1,6 @@
 import {Prompt} from "../types/Prompt";
 
-export class Continue {
+export class AutoComplete {
     public static getPrompts() : Prompt[] {
         return [
             {
@@ -15,7 +15,16 @@ export class Continue {
                     `.replaceAll('    ', '').trim()}
                 ],
                 getPrompt: () => `Continue:`,
-                group: 'continue'
+                group: 'auto-complete'
+            },
+            {
+                name: 'Fill in the blank',
+                required_input: 'block(s)',
+                getPromptPrefixMessages: () => [
+                    {'role': 'user', 'content': `I want you to act as a Fill in the blank tool. You take the input and fill the blanks as marked factually. DO NOT reply the context.`}
+                ],
+                getPrompt: () => `Fill in the blank:`,
+                group: 'auto-complete'
             }
         ]
     }
