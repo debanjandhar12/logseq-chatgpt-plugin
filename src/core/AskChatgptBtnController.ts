@@ -22,13 +22,15 @@ export class AskChatgptBtnController {
             template: String.raw`
               <a class="logseq-chatgpt-callAPI-${logseq.baseInfo.id} flex px-1" 
               style="justify-content: center;
+                align-content: center;
                 padding-top: 8px;
                 font-size: 16px;
                 margin-right: 1px;
                 padding-bottom: 8px;
                 margin-left: 1px;
+                width: 132px;
                 align-items: center;
-                color: var(--ls-block-ref-link-text-color, #d8e1e8);
+                color: var(--ls-header-button-background, #d8e1e8);
                 border-radius: 0.375rem;
                 transition: all 0s ease 0s;
                 background-color: rgba(59, 130, 246, 0.7);
@@ -48,7 +50,7 @@ export class AskChatgptBtnController {
                 button.style.display = "none";
                 return;
             }
-            button.style.display = "block";
+            button.style.display = "flex";
 
             // Add click event listener to button
             button.addEventListener("click", async () => {
