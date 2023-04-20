@@ -18,11 +18,11 @@ async function main(baseInfo: LSPluginBaseInfo) {
     window.parent.ChatGPT = {};
     await addSettingsToLogseq();
     LogseqProxy.init();
-    AutoFlowFormatter.init();
+    ChatgptPageFromPrompt.init();
+    ShowChatGPTPageListInjector.init();
     AskChatgptBtnController.init();
     BulletIconsInjector.init();
-    ShowChatGPTPageListInjector.init();
-    ChatgptPageFromPrompt.init();
+    AutoFlowFormatter.init();
     console.log("ChatGPT plugin loaded on window:", window.parent);
 }
 
