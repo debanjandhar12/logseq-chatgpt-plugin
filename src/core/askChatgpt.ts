@@ -8,6 +8,8 @@ import streamToAsyncIterator from "../utils/streamToAsyncIterator";
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
 import {ActionableNotification} from "../ui/ActionableNotification";
+import {LogseqOutlineParser} from "../adapter/LogseqOutlineParser";
+import {Confirm} from "../ui/Confirm";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -151,10 +153,18 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         label: "Insert",
                         labelSuffix: "↩️",
                         onClick: async () => {
-                            let newBlock = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
+                            let selectBlockAfterOp = block;
+                            let outline = LogseqOutlineParser.parse(chatResponse.trim());
+                            console.log(outline);
+                            if (outline && (await Confirm("The message contains data in the form of an outline. Would you like to add it as separate blocks?"))) {
+                                await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: true});
+                            }
+                            else {
+                                selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: true});
+                            }
                             if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
                                 await logseq.Editor.deletePage(page.originalName)
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, newBlock.uuid);;
+                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, selectBlockAfterOp.uuid);
                         }
                     },
                     {
