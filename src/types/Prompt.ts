@@ -10,6 +10,8 @@ export type Prompt = {
     // An optional function that returns an array of `Message` objects.
     // These messages are prepended (not visible to the user) before sending the block(s) to the API
     getPromptPrefixMessages?: () => Message[];
+    // The length of getPromptPrefixMessages (calculated automatically)
+    promptPrefixMessagesLength?: number;
     // An optional string that represents the group to which the prompt belongs
     group?: string;
 }

@@ -136,10 +136,16 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
                                             <span className="flex-1">
                                                 <div className="inline-grid grid-cols-4 items-center w-full">
                                                     <span className="col-span-3" dangerouslySetInnerHTML={{__html: command.name}}></span>
-                                                    {command && command.group && (
-                                                        <div className="col-span-1 flex justify-end tip"><code
-                                                            className="opacity-40 bg-transparent">{command.group}</code></div>
-                                                    )}
+                                                    <div className="col-span-1 flex justify-end tip">
+                                                        {command && command.promptPrefixMessagesLength && (
+                                                            <code className="opacity-40 bg-transparent"
+                                                                  title={"This command sends additional " + command.promptPrefixMessagesLength + " hidden prompt tokens for improved response."}>🧩</code>
+                                                        )}
+                                                        {command && command.group && (
+                                                            <code
+                                                                className="opacity-40 bg-transparent">{command.group}</code>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </span>
                                     </a>
