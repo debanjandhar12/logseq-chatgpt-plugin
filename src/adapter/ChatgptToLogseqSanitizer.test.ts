@@ -33,6 +33,11 @@ describe('list sanitization tests', () => {
         const expected = `Hello **World!**!\n* Main item 1\n* Main item 2\n_This will not get converted:- :)_`;
         expect(ChatgptToLogseqSanitizer.sanitize(input)).toEqual(expected);
     });
+    test('basic list conversion 3', () => {
+        const input = `Hello **World!**!\n\`Code\` - Some Description`;
+        const expected = `Hello **World!**!\n\`Code\` - Some Description`;
+        expect(ChatgptToLogseqSanitizer.sanitize(input)).toEqual(expected);
+    });
     test('"nested list conversion', () => {
         const input = `List 1:
         - Main item 1

@@ -54,10 +54,13 @@ export class ChatgptToLogseqSanitizer {
     private static sanitizePlain(node, resultUTF8) {
         let {start_pos, end_pos} = ChatgptToLogseqSanitizer.parseNode(node);
         let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
-        nodeText = nodeText.replace(/^(\s*)-(\s*)/gm, "$1*$2"); // convert lists using "-" to "*" lists
-        nodeText = nodeText.replace(/^(\s*)#(\s*)(.*)/gm, (match) => { // convert headings to html
-            return new showdown.Converter({noHeaderId: true}).makeHtml(match);
-        });
+        const lastCharBeforeNode = new TextDecoder().decode(resultUTF8.slice(start_pos-1, start_pos));
+        if (start_pos-1 < 0 || lastCharBeforeNode == '\n') {
+            nodeText = nodeText.replace(/^(\s*)-(\s*)/gm, "$1*$2"); // convert lists using "-" to "*" lists
+            nodeText = nodeText.replace(/^(\s*)#(\s*)(.*)/gm, (match) => { // convert headings to html
+                return new showdown.Converter({noHeaderId: true}).makeHtml(match);
+            });
+        }
         return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
     }
 
