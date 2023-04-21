@@ -160,7 +160,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                                 await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: false});
                             }
                             else {
-                                selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: true});
+                                selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: false});
                             }
                             if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
                                 await logseq.Editor.deletePage(page.originalName)
