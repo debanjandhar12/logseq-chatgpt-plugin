@@ -7,12 +7,14 @@ import {AutoComplete} from "./AutoComplete";
 import {Fix} from "./Fix";
 import {Summarize} from "./Summarize";
 import {Prompt} from "../types/Prompt";
+import {Flashcard} from "./Flashcard";
 
 export function getAllPrompts() : Prompt[] {
     return [
         ...AutoComplete.getPrompts(),
         ...Fix.getPrompts(),
         ...Summarize.getPrompts(),
+        ...Flashcard.getPrompts(),
         ...Translate.getPrompts()
     ];
 }

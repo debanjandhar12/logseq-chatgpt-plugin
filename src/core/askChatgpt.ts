@@ -157,7 +157,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                             let outline = LogseqOutlineParser.parse(chatResponse.trim());
                             console.log(outline);
                             if (outline && (await Confirm("The message contains data in the form of an outline. Would you like to add it as separate blocks?"))) {
-                                await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: true});
+                                await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: false});
                             }
                             else {
                                 selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: true});
