@@ -143,31 +143,33 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
     if (prompt || (page.properties['chatgptPrompt'] && page.properties['chatgptPrompt'].startsWith("Custom:"))) {
         const source = page.properties['chatgptPromptSource'] || "";
-        let singular_block_uuid = source.trim().match(/^\(\([^)\n ]*\)\)$/);
-        if (singular_block_uuid) {
-            const block = await logseq.Editor.getBlock(singular_block_uuid[0].slice(2, -2));
+        let blocksMatch = source.trim().match(/\(\(.+?\)\)/g);
+        if (blocksMatch && blocksMatch.length > 0) {
+            let blockUUID = blocksMatch[blocksMatch.length-1].slice(2, -2);
+            const block = await logseq.Editor.getBlock(blockUUID);
             if (!block) return;
             const blockPage = await logseq.Editor.getPage(block.page.id);
-            ActionableNotification("What action would you like to perform with the result from ChatGPT?", [
-                    {
-                        label: "Insert",
-                        labelSuffix: "↩️",
-                        onClick: async () => {
-                            let selectBlockAfterOp = block;
-                            let outline = LogseqOutlineParser.parse(chatResponse.trim());
-                            console.log(outline);
-                            if (outline && (await Confirm("The message contains data in the form of an outline. Would you like to add it as separate blocks?"))) {
-                                await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: false});
-                            }
-                            else {
-                                selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: false});
-                            }
-                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-                                await logseq.Editor.deletePage(page.originalName)
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, selectBlockAfterOp.uuid);
+            const buttonArr = [
+                {
+                    label: "Insert",
+                    labelSuffix: "↩️",
+                    onClick: async () => {
+                        let selectBlockAfterOp = block;
+                        let outline = LogseqOutlineParser.parse(chatResponse.trim());
+                        console.log(outline);
+                        if (outline && (await Confirm("The message contains data in the form of an outline. Would you like to add it as separate blocks?"))) {
+                            await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: false});
+                        } else {
+                            selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: false});
                         }
-                    },
-                    {
+                        if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                            await logseq.Editor.deletePage(page.originalName)
+                        await logseq.Editor.scrollToBlockInPage(blockPage.originalName, selectBlockAfterOp.uuid);
+                    }
+                }
+            ];
+            if (blocksMatch.length == 1) {
+                buttonArr.push({
                         label: "Replace",
                         labelSuffix: "🔄",
                         onClick: async () => {
@@ -176,8 +178,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                                 await logseq.Editor.deletePage(page.originalName);
                             await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
                         }
-                    }
-                ],
+                    });
+            }
+            ActionableNotification("What action would you like to perform with the result from ChatGPT?", buttonArr,
                 {
                     label: "Delete page after action",
                     checked: logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION,
