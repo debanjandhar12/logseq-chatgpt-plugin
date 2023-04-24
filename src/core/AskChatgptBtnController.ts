@@ -10,6 +10,7 @@ import {
 import {LogseqProxy} from "../logseq/LogseqProxy";
 import {askChatGPT} from "./askChatgpt";
 import {recreateNode} from "../utils/recreateNode";
+import {waitForElement} from "../utils/waitForElement";
 
 export class AskChatgptBtnController {
     static inAskingInProgress = false;
@@ -41,8 +42,10 @@ export class AskChatgptBtnController {
         `
         });
         LogseqProxy.App.registerRouteChangedListener(async (event) => {
+            await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
             recreateNode(window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`), true);
-            const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
+            await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
+            const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
 
             // Show button if current page is a ChatGPT page only
             const page = await logseq.Editor.getCurrentPage();
@@ -51,6 +54,7 @@ export class AskChatgptBtnController {
                 return;
             }
             button.style.display = "flex";
+            button.innerHTML = CHATGPT_ASK_BUTTON_CONTENT;
 
             // Add click event listener to button
             button.addEventListener("click", async () => {
@@ -94,7 +98,8 @@ export class AskChatgptBtnController {
         try { window.parent.ChatGPT.ActionableNotification.close() } catch(e) {} // Close previous actionable notification if any
         this.inAskingInProgress = true;
         this.abortController = new AbortController();
-        const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`);
+        const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
+        if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)) await logseq.UI.showMsg("ChatGPT is Thinking...");
         button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
         try {
             await logseq.provideStyle({ // Disable editor popups
