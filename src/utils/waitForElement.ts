@@ -8,23 +8,13 @@ export async function waitForElement(selector, timeout = null, location = docume
             return resolve(element);
         }
 
+        let timeoutId;
         const observer = new MutationObserver(async () => {
             let element = location.querySelector(selector);
             if (element) {
+                clearTimeout(timeoutId);
                 resolve(element);
                 observer.disconnect();
-            } else {
-                if (timeout) {
-                    async function timeOver() {
-                        return new Promise((resolve) => {
-                            setTimeout(() => {
-                                observer.disconnect();
-                                resolve(false);
-                            }, timeout);
-                        });
-                    }
-                    resolve(await timeOver());
-                }
             }
         });
 
@@ -32,5 +22,12 @@ export async function waitForElement(selector, timeout = null, location = docume
             childList: true,
             subtree: true,
         });
+
+        if (timeout) {
+            timeoutId = setTimeout(() => {
+                observer.disconnect();
+                resolve(false);
+            }, timeout);
+        }
     });
 }

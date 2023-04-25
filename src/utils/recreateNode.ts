@@ -1,5 +1,5 @@
 export function recreateNode(el, withChildren) {
-    if(!el) return;
+    if(!el || !el.parentNode) return;
     if (withChildren) {
         el.parentNode.replaceChild(el.cloneNode(true), el);
     }

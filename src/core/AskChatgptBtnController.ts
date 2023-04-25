@@ -45,6 +45,7 @@ export class AskChatgptBtnController {
             await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
             recreateNode(window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`), true);
             await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
+
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
 
             // Show button if current page is a ChatGPT page only
@@ -55,6 +56,10 @@ export class AskChatgptBtnController {
             }
             button.style.display = "flex";
             button.innerHTML = CHATGPT_ASK_BUTTON_CONTENT;
+
+            // Check if the button is mounted
+            if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`))
+                await logseq.UI.showMsg("The Ask ChatGPT button failed to mount.\nYou can still use the Ask ChatGPT command / shortcut to interact with the page.", "warning", {timeout: 3200});
 
             // Add click event listener to button
             button.addEventListener("click", async () => {
@@ -99,7 +104,8 @@ export class AskChatgptBtnController {
         this.inAskingInProgress = true;
         this.abortController = new AbortController();
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
-        if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`)) await logseq.UI.showMsg("ChatGPT is Thinking...");
+        if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`))
+            await logseq.UI.showMsg("ChatGPT is Thinking...");
         button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
         try {
             await logseq.provideStyle({ // Disable editor popups
