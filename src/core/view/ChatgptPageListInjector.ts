@@ -1,8 +1,8 @@
-import {ChatGPTPageList} from "../ui/ChatGPTPageList";
-import registerSideNavBarItem, {unregisterSideNavBarItem} from "../logseq/registerSideNavBarItem";
-import {ICON_18} from "../utils/constants";
+import {ChatGPTPageList} from "../../ui/ChatGPTPageList";
+import registerSideNavBarItem, {unregisterSideNavBarItem} from "../../logseq/registerSideNavBarItem";
+import {ICON_18} from "../../utils/constants";
 
-export class ShowChatGPTPageListInjector {
+export class ChatgptPageListInjector {
     static init() {
         logseq.App.registerCommand(`logseq-chatgpt-plugin-command-palette-${logseq.baseInfo.id}`, {
             key: `logseq-chatgpt-plugin-command-palette-${logseq.baseInfo.id}`,

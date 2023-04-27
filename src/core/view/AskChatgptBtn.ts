@@ -4,15 +4,14 @@
 import {
     CHATGPT_ASK_BUTTON_CONTENT,
     CHATGPT_ASKING_BUTTON_CONTENT,
-    CHATGPT_STOP_BUTTON_CONTENT,
-    ICON_16
-} from "../utils/constants";
-import {LogseqProxy} from "../logseq/LogseqProxy";
-import {askChatGPT} from "./askChatgpt";
-import {recreateNode} from "../utils/recreateNode";
-import {waitForElement} from "../utils/waitForElement";
+    CHATGPT_STOP_BUTTON_CONTENT
+} from "../../utils/constants";
+import {LogseqProxy} from "../../logseq/LogseqProxy";
+import {askChatGPT} from "../service/askChatgpt";
+import {recreateNode} from "../../utils/recreateNode";
+import {waitForElement} from "../../utils/waitForElement";
 
-export class AskChatgptBtnController {
+export class AskChatgptBtn {
     static inAskingInProgress = false;
     static abortController : AbortController;
 
@@ -64,7 +63,7 @@ export class AskChatgptBtnController {
             // Add click event listener to button
             button.addEventListener("click", async () => {
                 if (!this.inAskingInProgress)
-                    await AskChatgptBtnController.askChatGPTWrapper();
+                    await AskChatgptBtn.askChatGPTWrapper();
                 else this.abortController.abort();
             });
 

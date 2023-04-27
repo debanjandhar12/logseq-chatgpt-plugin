@@ -1,15 +1,15 @@
 import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
-import {removePropsFromBlockContent} from "../adapter/removePropsFromBlockContent";
-import {LogseqToChatgptConverter} from "../adapter/LogseqToChatgptConverter";
-import {getAllPrompts} from "../prompt/getAllPrompts";
+import {removePropsFromBlockContent} from "../../adapter/removePropsFromBlockContent";
+import {LogseqToChatgptConverter} from "../../adapter/LogseqToChatgptConverter";
+import {getAllPrompts} from "../../prompt/getAllPrompts";
 import Mustache from "mustache";
-import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
-import streamToAsyncIterator from "../utils/streamToAsyncIterator";
-import {LogseqProxy} from "../logseq/LogseqProxy";
-import {ChatgptToLogseqSanitizer} from "../adapter/ChatgptToLogseqSanitizer";
-import {ActionableNotification} from "../ui/ActionableNotification";
-import {LogseqOutlineParser} from "../adapter/LogseqOutlineParser";
-import {Confirm} from "../ui/Confirm";
+import getMessageArrayTokenCount from "../../utils/getMessageArrayTokenCount";
+import streamToAsyncIterator from "../../utils/streamToAsyncIterator";
+import {LogseqProxy} from "../../logseq/LogseqProxy";
+import {ChatgptToLogseqSanitizer} from "../../adapter/ChatgptToLogseqSanitizer";
+import {ActionableNotification} from "../../ui/ActionableNotification";
+import {LogseqOutlineParser} from "../../adapter/LogseqOutlineParser";
+import {Confirm} from "../../ui/Confirm";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings

@@ -2,8 +2,7 @@ import React, {useState} from "react";
 import * as ReactDOM from 'react-dom/client';
 import _ from "lodash";
 import {ICON_18} from "../utils/constants";
-import moment from "moment";
-import {ChatgptPageFromPrompt} from "../core/ChatgptPageFromPrompt";
+import {createChatgptPageWithoutPrompt} from "../core/service/createChatgptPage";
 
 export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
     return new Promise(async function (resolve, reject) {
@@ -96,8 +95,8 @@ const Header = () => {
 }
 
 const Toolbar = () => {
-    const createNewPage = () => {
-        ChatgptPageFromPrompt.createChatGPTPageAndGoToIt();
+    const createNewPage = async () => {
+        await createChatgptPageWithoutPrompt();
         window.parent.ChatGPT.ChatGPTPageList.close();
     }
     return (
