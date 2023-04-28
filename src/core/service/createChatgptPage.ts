@@ -26,7 +26,7 @@ export async function createChatgptPageWithPrompt() {
     let blocks = await logseq.Editor.getSelectedBlocks();
     blocks = _.uniqBy(blocks, b => b.id);
 
-    const selectedPrompt = await SelectCommandPrompt(getAllPrompts(), "Select a prompt", true);
+    const selectedPrompt = await SelectCommandPrompt(await getAllPrompts(), "Select a prompt", true);
     if (!selectedPrompt) return;
 
     // Construct additional page props and first block content

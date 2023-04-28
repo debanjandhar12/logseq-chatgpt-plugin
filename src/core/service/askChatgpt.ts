@@ -78,7 +78,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
 
     // Add prefix messages from prompt if set
-    const prompt = getAllPrompts().find(p => p.name == (page.properties['chatgptPrompt'] || "").trim());
+    const prompt = (await getAllPrompts()).find(p => p.name == (page.properties['chatgptPrompt'] || "").trim());
     console.log(prompt, page.properties['chatgptPrompt']);
     if (prompt && prompt.getPromptPrefixMessages)
         messages.unshift(...prompt.getPromptPrefixMessages());
