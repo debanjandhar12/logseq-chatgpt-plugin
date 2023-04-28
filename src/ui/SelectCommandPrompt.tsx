@@ -1,8 +1,5 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import * as ReactDOM from 'react-dom/client';
-import _ from "lodash";
-import {ICON_18} from "../utils/constants";
-import moment from "moment";
 import {Prompt} from "../types/Prompt";
 
 export async function SelectCommandPrompt(commands : Prompt[], placeholder = "Enter command", customCommandAllowed = false): Promise<Prompt | false> {
@@ -94,9 +91,12 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
         filteredCommandList.push({name: `<strong>Custom:</strong> ${search}`, required_input: 'block(s)',
             getPrompt: () => `${search}:`.replace(/:(:)+/g, ':')});
     const [chosenCommand, setChosenCommand] = useState(0);
+    const selectedRef = useRef(null);
+    const [previousCursorPosition, setPreviousCursorPosition] = useState({ x: 0, y: 0 });
+
     // Handle some key events
     useEffect(() => {
-        const onKeydown = (e: KeyboardEvent) => {
+        const onKeydown = async (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
                 if(filteredCommandList.length != 0)
                     onSelect(filteredCommandList[chosenCommand]);
@@ -104,9 +104,12 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 setChosenCommand((chosenCommand) => Math.max(0, chosenCommand - 1));
+                selectedRef.current?.scrollIntoView({ behavior: "instant", block: "center" });
             }
             if (e.key === 'ArrowDown') {
+                e.preventDefault();
                 setChosenCommand((chosenCommand) => Math.min(filteredCommandList.length - 1, chosenCommand + 1));
+                selectedRef.current?.scrollIntoView({ behavior: "instant", block: "center" });
             }
             else {
                 const searchBox = document.getElementsByClassName('cp__palette-input')[0];
@@ -130,9 +133,16 @@ const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
                     <div className="cp__palette-results">
                         <div className="hide-scrollbar">
                             {filteredCommandList.map((command, index) =>
-                                <div key={index}>
+                                <div key={index} ref={chosenCommand === index ? selectedRef : null}>
                                     <a className={`flex justify-between px-4 py-2 text-sm transition ease-in-out duration-150 cursor menu-link ${chosenCommand === index ? 'chosen' : ''}`}
-                                       onClick={() => onSelect(command)} onMouseEnter={() => setChosenCommand(index)}>
+                                       onClick={() => onSelect(command)}
+                                       onMouseEnter={(e) => {
+                                           const { clientX, clientY } = e;
+                                           if (clientX == previousCursorPosition.x && clientY == previousCursorPosition.y)
+                                               return;
+                                           setPreviousCursorPosition({ x: clientX, y: clientY });
+                                           return setChosenCommand(index);
+                                       }}>
                                             <span className="flex-1">
                                                 <div className="inline-grid grid-cols-4 items-center w-full">
                                                     <span className="col-span-3" dangerouslySetInnerHTML={{__html: command.name}}></span>
