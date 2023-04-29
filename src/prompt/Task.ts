@@ -1,5 +1,6 @@
 import {Prompt} from "../types/Prompt";
 import moment from "moment";
+import {UserChatMessage} from "../langchain/schema/UserChatMessage";
 
 export class Task {
     public static async getPrompts() : Promise<Prompt[]> {
@@ -18,8 +19,8 @@ export class Task {
                 required_input: 'block(s)',
                 getPrompt: () => `Generate Tasks:`,
                 getPromptPrefixMessages: () => [
-                    {'role': 'user', 'content': `Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`},
-                    {'role': 'user', 'content': `I want you to act like a loseq task generator. You take the input and create one or more tasks from it. DO NOT refer to yourself. 
+                    new UserChatMessage(`Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`),
+                    new UserChatMessage(`I want you to act like a loseq task generator. You take the input and create one or more tasks from it. DO NOT refer to yourself. 
                     Logseq Tasks have the following format:
                     - {${later}|${now}} Task Title
                        SCHEDULED: <[Date] [Weekday] [Time] [.Repeater]>
@@ -47,7 +48,7 @@ export class Task {
                     - ${now} sleep
                        SCHEDULED: <${currentDate} ${weekdayCurrentDate} ${currentTime}>
                     ____
-            `.replaceAll('                    ', '').trim()}
+            `.replaceAll('                    ', '').trim())
                 ],
                 group: 'tasks'
             }

@@ -1,4 +1,4 @@
-import { Message } from "chatgpt-wrapper";
+import {BaseChatMessage} from "langchain/schema";
 
 export type Prompt = {
     // The name of the prompt
@@ -9,7 +9,7 @@ export type Prompt = {
     getPrompt: () => string;
     // An optional function that returns an array of `Message` objects.
     // These messages are prepended (not visible to the user) before sending the block(s) to the API
-    getPromptPrefixMessages?: () => Message[];
+    getPromptPrefixMessages?: () => BaseChatMessage[];
     // The length of getPromptPrefixMessages (calculated automatically)
     promptPrefixMessagesLength?: number;
     // An optional string that represents the group to which the prompt belongs

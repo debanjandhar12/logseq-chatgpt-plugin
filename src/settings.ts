@@ -9,7 +9,7 @@ export const addSettingsToLogseq = async () => {
     const settingsTemplate: SettingSchemaDesc[] = [
         {
             key: "heading1",
-            title: "🤖 OPENAI Settings",
+            title: "OPENAI Settings",
             description: "",
             type: "heading",
             default: null,

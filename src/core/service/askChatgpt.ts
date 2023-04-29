@@ -1,15 +1,18 @@
-import {ChatGPT, Message, ResBody} from "chatgpt-wrapper";
 import {removePropsFromBlockContent} from "../../adapter/removePropsFromBlockContent";
 import {LogseqToChatgptConverter} from "../../adapter/LogseqToChatgptConverter";
 import {getAllPrompts} from "../../prompt/getAllPrompts";
 import Mustache from "mustache";
 import getMessageArrayTokenCount from "../../utils/getMessageArrayTokenCount";
-import streamToAsyncIterator from "../../utils/streamToAsyncIterator";
 import {LogseqProxy} from "../../logseq/LogseqProxy";
 import {ChatgptToLogseqSanitizer} from "../../adapter/ChatgptToLogseqSanitizer";
 import {ActionableNotification} from "../../ui/ActionableNotification";
 import {LogseqOutlineParser} from "../../adapter/LogseqOutlineParser";
 import {Confirm} from "../../ui/Confirm";
+import {BaseChatMessage, LLMResult, SystemChatMessage} from "langchain/schema";
+import {UserChatMessage} from "../../langchain/schema/UserChatMessage";
+import {AssistantChatMessage} from "../../langchain/schema/AssistantChatMessage";
+import {ChatOpenAI} from "langchain/chat_models/openai";
+import {AsyncCaller} from "langchain/dist/util/async_caller";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -18,20 +21,29 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         setTimeout(function () {
             logseq.App.openExternalLink('https://platform.openai.com/account/api-keys')
         }, 3000);
-        throw { message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning' };
+        throw {message: "OPENAI_API_KEY is empty. Please go to settings and set it.", type: 'warning'};
     }
 
     if (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) < 100) {
-        throw { message: "CHATGPT_MAX_TOKENS is too small. Please go to settings and set it to at least 100.", type: 'warning' };
+        throw {
+            message: "CHATGPT_MAX_TOKENS is too small. Please go to settings and set it to at least 100.",
+            type: 'warning'
+        };
     }
 
     const page = await logseq.Editor.getPage(pageName);
-    if(page.properties.type != "ChatGPT") {
-        throw { message: "Current page is not a ChatGPT page.", type: 'warning' };
+    if (page.properties.type != "ChatGPT") {
+        throw {message: "Current page is not a ChatGPT page.", type: 'warning'};
+    }
+
+    if (logseq.settings.CHATGPT_API_ENDPOINT &&
+        logseq.settings.CHATGPT_API_ENDPOINT.trim() != "" &&
+        !logseq.settings.CHATGPT_API_ENDPOINT.trim().startsWith("http")) {
+        throw {message: "CHATGPT_API_ENDPOINT is not a valid URL.", type: 'warning'};
     }
 
     // Collect all messages and find block to insert result
-    const messages: Array<Message> = [];
+    const messages: BaseChatMessage[] = [];
     let resultBlock = null;
     const pageBlocks = await logseq.Editor.getPageBlocksTree(page.originalName);
     let stack = [];
@@ -44,38 +56,41 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             stack.push(block);
             break;
         }
-        messages.push(<Message>{
-            role: String(block.properties?.speaker) || "assistant",
-            content: (await LogseqToChatgptConverter.convert(block.content)).trim()
-        });
+        messages.push(
+            String(block.properties?.speaker) == "user" ?
+                new UserChatMessage((await LogseqToChatgptConverter.convert(block.content)).trim()) :
+                new AssistantChatMessage((await LogseqToChatgptConverter.convert(block.content)).trim())
+        );
+        console.log(messages);
         if (block.children)
             stack.push(...block.children);
     }
-    console.log("stack", stack);
     if (stack.length > 0) {
         resultBlock = stack.pop();
-    } else if (messages.length != 0 && messages[messages.length - 1].role == "user" && messages[messages.length - 1].content.trim() != "") {
+    } else if (messages.length != 0 && messages[messages.length - 1].name == "user" && messages[messages.length - 1].text != "") {
         // @ts-ignore
         resultBlock = await window.parent.logseq.api.insert_block(page.originalName, "", {
             isPageBlock: true,
             sibling: true
         });
+
+        if (!resultBlock) return;
     }
     console.log("resultBlock", resultBlock);
     console.log("messages", messages);
 
     // Check if messages list is valid
-    if (pageBlocks.length == 1 || messages.length == 0)
+    if (pageBlocks.length == 1 || messages.length == 0) {
         throw {message: "No messages. Please write a messages to the page.", type: 'warning'};
-    else if (messages[messages.length - 1].role != "user")
+    } else if (messages[messages.length - 1].name != "user") {
         throw {message: "Last message is not from user", type: 'warning'};
-    else if (messages[messages.length - 1].content.trim() == "")
+    } else if (messages[messages.length - 1].text.trim() == "") {
         throw {
             message: "User message cannot be empty",
             type: 'warning',
             blockUUID: pageBlocks[messages.length].uuid
         };
-
+    }
 
     // Add prefix messages from prompt if set
     const prompt = (await getAllPrompts()).find(p => p.name == (page.properties['chatgptPrompt'] || "").trim());
@@ -88,64 +103,76 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     if (logseq.settings.CHATGPT_SYSTEM_PROMPT && !page.properties['chatgptPrompt']) {
         systemMsgContent = Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
             {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]});
-
-    }
-    else {
+    } else {
         systemMsgContent = Mustache.render(`You are a ai who replies using markdown. Current date: {{today}}`,
             {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0], prompt});
     }
-    messages.unshift({role: "system", content: systemMsgContent});
+    messages.unshift(new SystemChatMessage(systemMsgContent));
 
     // Context Window - Remove messages from top until we reach token limit
-    while(getMessageArrayTokenCount(messages) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
-        messages.shift();
-    if (messages.length == 0)
-        throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
+    // calculateMaxTokens
+    /*
+        while(getMessageArrayTokenCount(messages) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
+            messages.shift();
+        if (messages.length == 0)
+            throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
+    */
 
     // Call ChatGPT API
-    const chat = new ChatGPT({
-        API_KEY: logseq.settings.OPENAI_API_KEY,
-        URL: logseq.settings.CHATGPT_API_ENDPOINT.trim() || "https://api.openai.com/v1/chat/completions"
-    });
-    let chatResponse = "", finishReason = null, lastChunk = null;
-    const chatResponseStream = await chat.stream({
-        model: logseq.settings.CHATGPT_MODEL,
-        stream: true,
-        messages: messages,
-        max_tokens: (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32) - getMessageArrayTokenCount(messages),  // deduct 32 tokens for safety
-        presence_penalty: 0,    // try to avoid talking about new topics
-        frequency_penalty: 0,
-        temperature: logseq.settings.CHATGPT_TEMPERATURE || 0.7, // 0.7 is default
-    }, {signal});
-    if (signal.aborted) return;
-    const chatResponseIterator = streamToAsyncIterator(chatResponseStream);
-    await iterateChatGptResponse(chatResponseIterator, async (responseChunk) => {
-        if (signal.aborted) {
-            await chatResponseIterator.return();
-            return;
+    let chatResponse: string = "";
+    const chat = new ChatOpenAI({
+        openAIApiKey: logseq.settings.OPENAI_API_KEY,
+        streaming: true,
+        cache: false,
+        maxTokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages) - 1,
+        callbacks: [
+            {
+                async handleLLMError(error: any) {
+                    throw error;
+                }
+            },
+            {
+                async handleLLMEnd(output: LLMResult) {
+                    console.log("output", output);
+                    if (output.generations[0][0].generationInfo?.finishReason) { // TODO: Does not work in browser atm
+                        console.log("finishReason", output.generations[0][0].generationInfo?.finishReason);
+                        await logseq.UI.showMsg("ChatGPT stopped early because of max_tokens limit. Please increase it in settings.", "warning", {timeout: 5000});
+                    }
+                }
+            }
+        ],
+    }, {basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1"});
+    chat.modelName = logseq.settings.CHATGPT_MODEL;
+    chat.caller = new AsyncCaller({maxRetries: 0});
+    chat.CallOptions = {
+        options: {
+            signal: signal,
+            timeout: 10000
         }
-        chatResponse += responseChunk.choices[0].delta?.content || "";
-        finishReason = responseChunk.choices[0].finish_reason;
-        if (finishReason && finishReason.toLowerCase() == "stop")
-            lastChunk = responseChunk;
-        await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
-    });
-    console.log("lastChunk", lastChunk);
-    console.log("finalChatResponse", chatResponse);
+    }
+    let result = await chat.call([
+        ...messages.map(msg => msg.name = null)
+    ], null, [{
+        async handleLLMNewToken(token: string) {
+            if (signal.aborted)
+                return;
+            chatResponse += token;
+            console.log("token", token);
+            await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
+        }
+    }]);
+    console.log("result", result);
+    chatResponse = result.text;
+    if (signal.aborted) return;
     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
     await logseq.Editor.exitEditingMode(false);
     await logseq.Editor.selectBlock(resultBlock.uuid);
-
-    if (finishReason && finishReason.trim().toLowerCase() == "length")
-        await logseq.UI.showMsg("ChatGPT stopped early because of max_tokens limit. Please increase it in settings.", "warning", {timeout: 5000});
-    else if (finishReason && finishReason.toLowerCase() != "stop")
-        await logseq.UI.showMsg(`ChatGPT stopped early because of ${finishReason}.`, "warning", {timeout: 5000});
 
     if (prompt || (page.properties['chatgptPrompt'] && page.properties['chatgptPrompt'].startsWith("Custom:"))) {
         const source = page.properties['chatgptPromptSource'] || "";
         let blocksMatch = source.trim().match(/\(\(.+?\)\)/g);
         if (blocksMatch && blocksMatch.length > 0) {
-            let blockUUID = blocksMatch[blocksMatch.length-1].slice(2, -2);
+            let blockUUID = blocksMatch[blocksMatch.length - 1].slice(2, -2);
             const block = await logseq.Editor.getBlock(blockUUID);
             if (!block) return;
             const blockPage = await logseq.Editor.getPage(block.page.id);
@@ -170,15 +197,15 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             ];
             if (blocksMatch.length == 1) {
                 buttonArr.push({
-                        label: "Replace",
-                        labelSuffix: "🔄",
-                        onClick: async () => {
-                            await logseq.Editor.updateBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
-                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-                                await logseq.Editor.deletePage(page.originalName);
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
-                        }
-                    });
+                    label: "Replace",
+                    labelSuffix: "🔄",
+                    onClick: async () => {
+                        await logseq.Editor.updateBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
+                        if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                            await logseq.Editor.deletePage(page.originalName);
+                        await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
+                    }
+                });
             }
             ActionableNotification("What action would you like to perform with the result from ChatGPT?", buttonArr,
                 {
@@ -189,28 +216,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         logseq.updateSettings({DELETE_PAGE_AFTER_PROMPT_ACTION: checked})
                     }
                 });
-        }
-    }
-}
-
-async function iterateChatGptResponse(asyncIterator, callback: (chunk: ResBody & { choices: [{ delta: any, finish_reason: null | 'stop' | 'length' | 'content_filter' }] }) => void) {
-    for await (const responseStream of asyncIterator) {
-        const responseTxt = new TextDecoder().decode(responseStream, {stream: true});
-        const chunks = responseTxt.split('\n'); // ReadableStream can contain multiple chunks
-        for (let chunk of chunks) {
-            console.log(chunk);
-            try {
-                if (chunk.match(/^data:\s*\[DONE\]/i))  // end of stream
-                    break;
-                if (chunk.length === 0) continue;
-                if (chunk.startsWith('data:')) chunk = chunk.slice(5);
-                let chunkObj = JSON.parse(chunk);
-                await callback(chunkObj);
-            } catch (e) {
-                console.log("Error during message clean:");
-                console.log(chunk);
-                console.log(e);
-            }
         }
     }
 }

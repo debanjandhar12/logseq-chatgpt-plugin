@@ -24,19 +24,18 @@
   "dependencies": {
     "@logseq/libs": "^0.0.14",
     "await-lock": "^2.2.2",
-    "cancelable-promise": "4.3.1",
     "lodash": "^4.17.21",
-    "node-gyp": "^9.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "moment": "^2.29.4",
     "mldoc": "^1.5.3",
-    "chatgpt-wrapper": "^1.1.4",
+    "langchain": "^0.0.66",
     "mustache": "^4.2.0",
     "showdown": "^2.1.0",
     "gpt-3-encoder": "^1.1.4"
   },
   "devDependencies": {
+    "node-gyp": "^9.3.1",
     "@parcel/transformer-inline-string": "2.5.0",
     "@parcel/config-default": "2.5.0",
     "@types/lodash": "^4.14.177",
