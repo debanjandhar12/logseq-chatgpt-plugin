@@ -3054,6 +3054,11 @@ fast-levenshtein@~2.0.6:
   resolved "https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz"
   integrity sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==
 
+fastsolver@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/fastsolver/-/fastsolver-1.0.1.tgz#66e56085d5d0d6b2a1869ad7aadb749d0d8a5776"
+  integrity sha512-fehHLWJ6mCSaKMfcnnQ7K3k/fKlZ9YLd/Oz/zX38zI+v8DawKYS0M8EC7afMzjhVzYDX9kESreeZ/Y8fEQCu2g==
+
 fb-watchman@^2.0.0:
   version "2.0.2"
   resolved "https://registry.npmjs.org/fb-watchman/-/fb-watchman-2.0.2.tgz"

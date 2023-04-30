@@ -12,6 +12,7 @@ import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 import {Task} from "./Task";
 import {Custom} from "./Custom";
 import {SearchEngine} from "./SearchEngine";
+import {Math} from "./Math";
 
 export async function getAllPrompts() : Promise<Prompt[]> {
     let prompts : Prompt[] = [
@@ -21,6 +22,7 @@ export async function getAllPrompts() : Promise<Prompt[]> {
         ...(await Task.getPrompts()),
         ...Flashcard.getPrompts(),
         ...SearchEngine.getPrompts(),
+        ...Math.getPrompts(),
         ...Translate.getPrompts(),
         ...Custom.getPrompts()
     ];
