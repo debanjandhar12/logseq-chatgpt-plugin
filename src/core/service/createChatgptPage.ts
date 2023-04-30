@@ -26,20 +26,22 @@ export async function createChatgptPageWithPrompt() {
     let blocks = await logseq.Editor.getSelectedBlocks();
     blocks = _.uniqBy(blocks, b => b.id);
 
-    const selectedPrompt = await SelectCommandPrompt(await getAllPrompts(), "Select a prompt", true);
-    if (!selectedPrompt) return;
+    const selectedPromptWithModifiedName = await SelectCommandPrompt(await getAllPrompts(), "Select a prompt");
+    if (!selectedPromptWithModifiedName) return;
 
     // Construct additional page props and first block content
     const additionalPageProps = {};
-    additionalPageProps['chatgpt-prompt'] = selectedPrompt.name;
-    if (selectedPrompt.required_input.includes("block"))
+    additionalPageProps['chatgpt-prompt'] = selectedPromptWithModifiedName.name;
+    if (selectedPromptWithModifiedName.required_input.includes("block"))
         additionalPageProps['chatgpt-prompt-source'] = "";
-    let firstBlockContent = selectedPrompt.getPrompt() || "";
+    const selectedPrompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(selectedPromptWithModifiedName.name));
+    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{input}', '(.*)')))?.slice(1)[0];
+    let firstBlockContent = selectedPromptWithModifiedName.getPrompt(input) || "";
     for (const block of blocks) {
         if (block.parent && blocks.find(b => b.id == block.parent?.id)) continue;   // Skip child blocks
 
         firstBlockContent += `\n{{embed ((${block.uuid}))}}`;
-        if (selectedPrompt.required_input.includes("block"))
+        if (selectedPromptWithModifiedName.required_input.includes("block"))
             additionalPageProps['chatgpt-prompt-source'] += `((${block.uuid}))`;
     }
     await createChatgptPageWithoutPrompt("", additionalPageProps, firstBlockContent);

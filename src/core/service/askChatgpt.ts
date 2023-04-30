@@ -8,11 +8,15 @@ import {ChatgptToLogseqSanitizer} from "../../adapter/ChatgptToLogseqSanitizer";
 import {ActionableNotification} from "../../ui/ActionableNotification";
 import {LogseqOutlineParser} from "../../adapter/LogseqOutlineParser";
 import {Confirm} from "../../ui/Confirm";
-import {BaseChatMessage, LLMResult, SystemChatMessage} from "langchain/schema";
+import {BaseChatMessage, BaseChatMessageHistory, LLMResult, SystemChatMessage} from "langchain/schema";
 import {UserChatMessage} from "../../langchain/schema/UserChatMessage";
 import {AssistantChatMessage} from "../../langchain/schema/AssistantChatMessage";
 import {ChatOpenAI} from "langchain/chat_models/openai";
 import {AsyncCaller} from "langchain/dist/util/async_caller";
+import {initializeAgentExecutorWithOptions} from "langchain/agents";
+import {Calculator} from "langchain/dist/tools/calculator";
+import {Tool} from "langchain/dist/tools/base";
+import {BufferMemory, ChatMessageHistory} from "langchain/memory";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -81,9 +85,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
     // Check if messages list is valid
     if (pageBlocks.length == 1 || messages.length == 0) {
-        throw {message: "No messages. Please write a messages to the page.", type: 'warning'};
+        throw { message: "No messages. Please write a messages to the page.", type: 'warning' };
     } else if (messages[messages.length - 1].name != "user") {
-        throw {message: "Last message is not from user", type: 'warning'};
+        throw { message: "Last message is not from user", type: 'warning' };
     } else if (messages[messages.length - 1].text.trim() == "") {
         throw {
             message: "User message cannot be empty",
@@ -93,19 +97,19 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     }
 
     // Add prefix messages from prompt if set
-    const prompt = (await getAllPrompts()).find(p => p.name == (page.properties['chatgptPrompt'] || "").trim());
-    console.log(prompt, page.properties['chatgptPrompt']);
+    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(page.properties['chatgptPrompt'] || ""));
+    console.log("prompt", prompt);
     if (prompt && prompt.getPromptPrefixMessages)
         messages.unshift(...prompt.getPromptPrefixMessages());
 
     // Add the system message
     let systemMsgContent = "";
-    if (logseq.settings.CHATGPT_SYSTEM_PROMPT && !page.properties['chatgptPrompt']) {
+    if (logseq.settings.CHATGPT_SYSTEM_PROMPT && !prompt) {
         systemMsgContent = Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
             {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]});
     } else {
-        systemMsgContent = Mustache.render(`You are a ai who replies using markdown. Current date: {{today}}`,
-            {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0], prompt});
+        systemMsgContent = Mustache.render(`You are a tool who replies using markdown. Current date: {{today}}`,
+            { page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0], prompt });
     }
     messages.unshift(new SystemChatMessage(systemMsgContent));
 
@@ -146,29 +150,50 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     chat.caller = new AsyncCaller({maxRetries: 0});
     chat.CallOptions = {
         options: {
-            signal: signal,
-            timeout: 10000
+            // signal: signal
         }
     }
-    let result = await chat.call([
-        ...messages.map(msg => msg.name = null)
-    ], null, [{
-        async handleLLMNewToken(token: string) {
-            if (signal.aborted)
-                return;
-            chatResponse += token;
-            console.log("token", token);
-            await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
-        }
-    }]);
+    let result;
+    if(prompt && prompt.tools && prompt.tools.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+        const otherMessages = messages.slice(0, messages.length - 1);
+        const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history"});
+        mem.chatHistory = new ChatMessageHistory(otherMessages.map(msg => { msg.name = undefined; return msg; }));
+        const tools : Tool[] = prompt.tools;
+        const executor = await initializeAgentExecutorWithOptions(
+            tools,
+            chat,
+            {
+                agentType: "chat-conversational-react-description",
+                memory: mem,
+                verbose: false
+            }
+        );
+        result = await executor.call({input: lastMessage.text});
+        chatResponse = result.output;
+    }
+    else {
+        result = await chat.call([
+            ...messages.map(msg => { msg.name = undefined; return msg; })
+        ], null, [{
+            async handleLLMNewToken(token: string) {
+                if (signal.aborted)
+                    return;
+                chatResponse += token;
+                console.log("token", token);
+                await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
+            }
+        }]);
+        chatResponse = result.text;
+    }
     console.log("result", result);
-    chatResponse = result.text;
+
     if (signal.aborted) return;
     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
     await logseq.Editor.exitEditingMode(false);
     await logseq.Editor.selectBlock(resultBlock.uuid);
 
-    if (prompt || (page.properties['chatgptPrompt'] && page.properties['chatgptPrompt'].startsWith("Custom:"))) {
+    if (prompt) {
         const source = page.properties['chatgptPromptSource'] || "";
         let blocksMatch = source.trim().match(/\(\(.+?\)\)/g);
         if (blocksMatch && blocksMatch.length > 0) {

@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import * as ReactDOM from 'react-dom/client';
 import {Prompt} from "../types/Prompt";
 
-export async function SelectCommandPrompt(commands : Prompt[], placeholder = "Enter command", customCommandAllowed = false): Promise<Prompt | false> {
+export async function SelectCommandPrompt(commands : Prompt[], placeholder = "Enter command"): Promise<Prompt | false> {
     return new Promise(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `<div label="" class="ui__modal" style="z-index: 999;">
@@ -20,9 +20,8 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
         const root = ReactDOM.createRoot(div.getElementsByClassName('cp__palette-main')[0]);
         try {
             window.parent.document.body.appendChild(div);
-            root.render(<CommandPlate commands={commands} placeholder={placeholder} customCommandAllowed={customCommandAllowed} onSelect={(command) => {
-                if (command.name.startsWith("<strong>Custom:</strong> "))
-                    command.name = command.name.replace("<strong>Custom:</strong>", "Custom:");
+            root.render(<CommandPlate commands={commands} placeholder={placeholder} onSelect={(command) => {
+                command.name = command.name.replace(/<u>/g, '').replace(/<\/u>/g, '');
                 resolve(command);
                 root.unmount();
                 window.parent.document.body.removeChild(div);
@@ -53,13 +52,20 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
     });
 }
 
-const CommandPlate = ({commands, placeholder, customCommandAllowed, onSelect}) => {
+const CommandPlate = ({commands, placeholder, onSelect}) => {
     const [search, setSearch] = useState('');
     const [commandList, setCommandList] = useState(commands);
+    useEffect(() => {
+        setCommandList(() => commands.map((command) => {
+            const newCommand = {...command};
+            newCommand.name = newCommand.name.replaceAll('{input}', `<u>${search.trim() == '' ? '&nbsp;'.repeat(24) : search}</u>`);
+            return newCommand;
+        }));
+    }, [search]);
     return (
         <>
             <SearchBox search={search} onSearchChange={setSearch} placeholder={placeholder}/>
-            <ActionList commandList={commandList} search={search} customCommandAllowed={customCommandAllowed} onSelect={onSelect} />
+            <ActionList commandList={commandList} search={search}onSelect={onSelect} />
         </>
     )
 }
@@ -83,13 +89,16 @@ const SearchBox = ({search, placeholder, onSearchChange}) => {
     );
 };
 
-const ActionList = ({commandList, search, customCommandAllowed, onSelect}) => {
-    const filteredCommandList = commandList.filter((command) => {
-        return command.name.toLowerCase().includes(search.toLowerCase());
-    });
-    if (customCommandAllowed && search.length != "")
-        filteredCommandList.push({name: `<strong>Custom:</strong> ${search}`, required_input: 'block(s)',
-            getPrompt: () => `${search}:`.replace(/:(:)+/g, ':')});
+const ActionList = ({commandList, search, onSelect}) => {
+    const [filteredCommandList, setFilteredCommandList] = useState(commandList);
+
+    useEffect(() => {
+        const filtered = commandList.filter((command) => {
+            return command.name.toLowerCase().includes(search.toLowerCase());
+        });
+        setFilteredCommandList(filtered);
+    }, [commandList, search]);
+
     const [chosenCommand, setChosenCommand] = useState(0);
     const selectedRef = useRef(null);
     const [previousCursorPosition, setPreviousCursorPosition] = useState({ x: 0, y: 0 });
