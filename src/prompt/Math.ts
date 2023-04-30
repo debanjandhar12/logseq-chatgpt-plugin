@@ -9,6 +9,13 @@ export class Math {
                 required_input: 'block(s)',
                 getPrompt: () => `Solve:`,
                 group: 'math'
+            },
+            {
+                name: `{input} using Math Solver`,
+                tools: [new MathSolver()],
+                required_input: 'none',
+                getPrompt: (input) => `${input}`,
+                group: 'math'
             }
         ]
     }

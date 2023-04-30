@@ -26,21 +26,33 @@ export async function createChatgptPageWithPrompt() {
     let blocks = await logseq.Editor.getSelectedBlocks();
     blocks = _.uniqBy(blocks, b => b.id);
 
-    const selectedPromptWithModifiedName = await SelectCommandPrompt(await getAllPrompts(), "Select a prompt");
+    // - Ask user to select a prompt -
+    const promptList = await getAllPrompts();
+    const filteredPromptList = promptList.filter(p => {
+           if (blocks == null || blocks.length == 0)
+               return p.required_input.includes("none");
+          else
+            return p.required_input.includes("block");
+        }
+    );
+    const selectedPromptWithModifiedName = await SelectCommandPrompt(filteredPromptList, "Select a prompt");
     if (!selectedPromptWithModifiedName) return;
+    const selectedPrompt = filteredPromptList.find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(selectedPromptWithModifiedName.name));
 
-    // Construct additional page props and first block content
+    // - Construct additional page props and first block content -
     const additionalPageProps = {};
+    // Collect chatgpt-prompt prop
     additionalPageProps['chatgpt-prompt'] = selectedPromptWithModifiedName.name;
     if (selectedPromptWithModifiedName.required_input.includes("block"))
         additionalPageProps['chatgpt-prompt-source'] = "";
-    const selectedPrompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(selectedPromptWithModifiedName.name));
+    // Collect content for first block
     const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{input}', '(.*)')))?.slice(1)[0];
     let firstBlockContent = selectedPromptWithModifiedName.getPrompt(input) || "";
     for (const block of blocks) {
         if (block.parent && blocks.find(b => b.id == block.parent?.id)) continue;   // Skip child blocks
 
         firstBlockContent += `\n{{embed ((${block.uuid}))}}`;
+        // Collect chatgpt-prompt-source prop
         if (selectedPromptWithModifiedName.required_input.includes("block"))
             additionalPageProps['chatgpt-prompt-source'] += `((${block.uuid}))`;
     }

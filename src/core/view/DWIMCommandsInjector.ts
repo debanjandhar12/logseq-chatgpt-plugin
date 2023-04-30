@@ -40,7 +40,7 @@ export class DWIMCommandsInjector {
         });
         logseq.App.registerCommand(`logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`, {
             key: `logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`,
-            label: `Create ChatGPT Page`,
+            label: `Create ChatGPT Page (with prompt)`,
             keybinding: {
                 binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
             },
@@ -50,12 +50,17 @@ export class DWIMCommandsInjector {
             if (editingStatus)
                 await logseq.Editor.selectBlock(editingStatus as string);
             const blocks = await logseq.Editor.getSelectedBlocks();
-            if (blocks == null || blocks.length == 0) {
-                await createChatgptPageWithoutPrompt();
-            }
-            else {
                 await createChatgptPageWithPrompt();
-            }
+        });
+        logseq.App.registerCommand(`logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`, {
+            key: `logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`,
+            label: `Create Blank ChatGPT Page (without prompt)`,
+            keybinding: {
+                binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
+            },
+            palette: true
+        }, async () => {
+            await createChatgptPageWithoutPrompt();
         });
     }
 }
