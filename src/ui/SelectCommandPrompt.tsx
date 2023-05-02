@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import * as ReactDOM from 'react-dom/client';
 import {Prompt} from "../types/Prompt";
+import {MESSAGES_ICON_16, TOOLS_ICON_16} from "../utils/constants";
 
 export async function SelectCommandPrompt(commands : Prompt[], placeholder = "Enter command"): Promise<Prompt | false> {
     return new Promise(async function (resolve, reject) {
@@ -156,9 +157,21 @@ const ActionList = ({commandList, search, onSelect}) => {
                                                 <div className="inline-grid grid-cols-4 items-center w-full">
                                                     <span className="col-span-3" dangerouslySetInnerHTML={{__html: command.name}}></span>
                                                     <div className="col-span-1 flex justify-end tip">
+                                                        {command && command.tools && (command.tools.length >= 1) && (
+                                                            <code className="opacity-40 bg-transparent"
+                                                               ref={(el) => el && el.style.setProperty('padding-top', '0px', 'important')
+                                                                   && el.style.setProperty('padding-bottom', '0px', 'important')}
+                                                               title={"This command uses and sends data external tools such as Google."}>
+                                                                <span className="ui__icon ti ls-icon-hierarchy px-1" style={{'marginTop': '2px'}}
+                                                                    dangerouslySetInnerHTML={{ __html: TOOLS_ICON_16 }}></span></code>
+                                                        )}
                                                         {command && command.promptPrefixMessagesLength && (
                                                             <code className="opacity-40 bg-transparent"
-                                                                  title={"This command sends additional " + command.promptPrefixMessagesLength + " hidden prompt tokens for improved response."}>🧩</code>
+                                                                  ref={(el) => el && el.style.setProperty('padding-top', '0px', 'important')
+                                                                      && el.style.setProperty('padding-bottom', '0px', 'important')}
+                                                                  title={"This command sends additional " + command.promptPrefixMessagesLength + " hidden prompt tokens for improved response."}>
+                                                                <span className="ui__icon ti ls-icon-hierarchy px-1" style={{'marginTop': '2px'}}
+                                                                      dangerouslySetInnerHTML={{ __html: MESSAGES_ICON_16 }}></span></code>
                                                         )}
                                                         {command && command.group && (
                                                             <code

@@ -4,7 +4,7 @@
 import {
     CHATGPT_ASK_BUTTON_CONTENT,
     CHATGPT_ASKING_BUTTON_CONTENT,
-    CHATGPT_STOP_BUTTON_CONTENT
+    CHATGPT_CANCEL_BUTTON_CONTENT
 } from "../../utils/constants";
 import {LogseqProxy} from "../../logseq/LogseqProxy";
 import {askChatGPT} from "../service/askChatgpt";
@@ -68,12 +68,12 @@ export class AskChatgptBtn {
             });
 
             // Change color to blue on hover
-            button.addEventListener("mouseenter", () => {
+            button.addEventListener("mouseover", () => {
                 button.style.backgroundColor = "rgba(59,130,246, 1)";
                 if (this.inAskingInProgress)
-                    button.innerHTML = CHATGPT_STOP_BUTTON_CONTENT;
+                    button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
             });
-            button.addEventListener("mouseleave", () => {
+            button.addEventListener("mouseout", () => {
                 button.style.backgroundColor = "rgba(59,130,246, .7)";
                 if (this.inAskingInProgress)
                     button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
@@ -105,7 +105,10 @@ export class AskChatgptBtn {
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
         if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`))
             await logseq.UI.showMsg("ChatGPT is Thinking...");
-        button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
+        // if hover, change button content to cancel
+        if (button.matches(":hover"))
+            button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
+        else button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
         try {
             await logseq.provideStyle({ // Disable editor popups
                 key: "hide-editor-popups",

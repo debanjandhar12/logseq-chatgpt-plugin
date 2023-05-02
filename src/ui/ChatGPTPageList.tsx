@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import * as ReactDOM from 'react-dom/client';
 import _ from "lodash";
-import {ICON_18} from "../utils/constants";
+import {GPT_ICON_18} from "../utils/constants";
 import {createChatgptPageWithoutPrompt} from "../core/service/createChatgptPage";
 
 export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
@@ -84,7 +84,7 @@ const Header = () => {
     return (
         <div className="flex" style={{justifyContent: 'space-between', marginTop: '0.3rem', marginBottom: '0.3rem'}}>
             <div className="flex" style={{alignItems: 'center'}}>
-                <i className="ui__icon ti ls-icon-hierarchy" dangerouslySetInnerHTML={{__html: ICON_18}}></i>
+                <i className="ui__icon ti ls-icon-hierarchy" dangerouslySetInnerHTML={{__html: GPT_ICON_18}}></i>
                 &nbsp;
                 <h3 className="text-lg">ChatGPT Page List</h3>
             </div>

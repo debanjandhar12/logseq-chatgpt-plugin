@@ -2,7 +2,7 @@ import {SettingSchemaDesc} from '@logseq/libs/dist/LSPlugin';
 import _ from 'lodash';
 import {LogseqProxy} from "./logseq/LogseqProxy";
 import registerSideNavBarItem, {unregisterSideNavBarItem} from "./logseq/registerSideNavBarItem";
-import {ICON_18} from "./utils/constants";
+import {GPT_ICON_18} from "./utils/constants";
 import {ChatGPTPageList} from "./ui/ChatGPTPageList";
 
 export const addSettingsToLogseq = async () => {
@@ -105,7 +105,7 @@ export const addSettingsToLogseq = async () => {
     LogseqProxy.Settings.registerSettingsChangeListener((newSettings, oldSettings) => {
         if (!_.isEqual(newSettings.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR, oldSettings.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR)) {
             if (newSettings.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR)
-                registerSideNavBarItem("ChatGPT", ICON_18, ChatGPTPageList);
+                registerSideNavBarItem("ChatGPT", GPT_ICON_18, ChatGPTPageList);
             else  unregisterSideNavBarItem("ChatGPT");
         }
     });

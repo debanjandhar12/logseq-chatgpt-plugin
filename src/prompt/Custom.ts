@@ -6,7 +6,7 @@ export class Custom {
                 name: `Custom: {input}`,
                 required_input: 'block(s)',
                 getPrompt: (input) => `${input}:`,
-                group: 'web'
+                group: 'custom'
             }
         ]
     }
