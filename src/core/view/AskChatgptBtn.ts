@@ -105,7 +105,6 @@ export class AskChatgptBtn {
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
         if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`))
             await logseq.UI.showMsg("ChatGPT is Thinking...");
-        // if hover, change button content to cancel
         if (button.matches(":hover"))
             button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
         else button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
@@ -127,9 +126,16 @@ export class AskChatgptBtn {
                 await logseq.Editor.selectBlock(e.blocsignalkUUID);
             }
             let errorMsg = e.message || e.toString();
-            errorMsg = errorMsg.replace(/^Request error: /, "");
-            if (!errorMsg.includes("This readable stream reader has been released and cannot be used to read"))
-                await logseq.UI.showMsg(errorMsg, e.type || "error", {timeout: 5000});
+            errorMsg = errorMsg.trim();
+            if (errorMsg.startsWith("Request failed with status code")) {
+                // Error msg contains:
+                // Request failed with status code 401 and body {"error":{"message":"Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.","type":"invalid_request_error","param":null,"code":"invalid_api_key"}}
+                // We parse the error message to get the actual error message
+                errorMsg = errorMsg.substring(errorMsg.indexOf("{"));
+                errorMsg = errorMsg.substring(0, errorMsg.lastIndexOf("}") + 1);
+                errorMsg = JSON.parse(errorMsg).error.message;
+            }
+            await logseq.UI.showMsg("Error: " + errorMsg, e.type || "error", {timeout: 5000});
             if (e.blockUUID)
                 await logseq.Editor.selectBlock(e.blockUUID);
             console.log(e);

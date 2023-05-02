@@ -29,7 +29,7 @@
     "react-dom": "^18.2.0",
     "moment": "^2.29.4",
     "mldoc": "^1.5.3",
-    "langchain": "^0.0.66",
+    "langchain": "^0.0.67",
     "mustache": "^4.2.0",
     "showdown": "^2.1.0",
     "gpt-3-encoder": "^1.1.4",
