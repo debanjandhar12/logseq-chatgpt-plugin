@@ -11,7 +11,7 @@ import {Flashcard} from "./Flashcard";
 import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 import {Task} from "./Task";
 import {Custom} from "./Custom";
-import {SearchEngine} from "./SearchEngine";
+import {Browser} from "./Browser";
 import {Math} from "./Math";
 
 export async function getAllPrompts() : Promise<Prompt[]> {
@@ -21,7 +21,7 @@ export async function getAllPrompts() : Promise<Prompt[]> {
         ...Summarize.getPrompts(),
         ...(await Task.getPrompts()),
         ...Flashcard.getPrompts(),
-        ...SearchEngine.getPrompts(),
+        ...Browser.getPrompts(),
         ...Math.getPrompts(),
         ...Translate.getPrompts(),
         ...Custom.getPrompts()
