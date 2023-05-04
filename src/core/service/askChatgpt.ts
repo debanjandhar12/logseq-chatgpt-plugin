@@ -128,7 +128,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         openAIApiKey: logseq.settings.OPENAI_API_KEY,
         streaming: true,
         cache: false,
-        maxTokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages) - 1,
+        maxTokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages) - 2,
         callbacks: [
             {
                 async handleLLMError(error: any) {
@@ -148,13 +148,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     }, {basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1"});
     chat.modelName = logseq.settings.CHATGPT_MODEL;
     chat.caller = new AsyncCaller({maxRetries: 0});
-    chat.CallOptions = {
-        options: {
-            // signal: signal
-        }
-    }
     let result;
     if(prompt && prompt.tools && prompt.tools.length > 0) {
+        chat.maxTokens -= 1000;
         const lastMessage = messages[messages.length - 1];
         const otherMessages = messages.slice(0, messages.length - 1);
         const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history"});
@@ -169,13 +165,31 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                 verbose: false
             }
         );
-        result = await executor.call({input: lastMessage.text});
+        result = await executor.call({input: lastMessage.text}, [
+            {
+                async handleToolStart() {
+                    if (signal.aborted)
+                        return;
+                }
+            },
+            {
+                async handleLLMStart() {
+                    if (signal.aborted)
+                        return;
+                }
+            }
+        ]);
         chatResponse = result.output;
     }
     else {
         result = await chat.call([
             ...messages.map(msg => { msg.name = undefined; return msg; })
-        ], null, [{
+        ], {
+            options: {
+                // @ts-ignore
+                signal: signal
+            }
+        }, [{
             async handleLLMNewToken(token: string) {
                 if (signal.aborted)
                     return;
