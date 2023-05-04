@@ -167,9 +167,12 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         );
         result = await executor.call({input: lastMessage.text}, [
             {
-                async handleToolStart() {
+                async handleToolStart(tool: {
+                    name: string;
+                }, input: string) {
                     if (signal.aborted)
                         return;
+                    console.log(`Starting tool ${tool.name} with input ${input}`);
                 }
             },
             {
