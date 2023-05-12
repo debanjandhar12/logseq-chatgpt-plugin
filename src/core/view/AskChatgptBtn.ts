@@ -42,7 +42,7 @@ export class AskChatgptBtn {
         });
         LogseqProxy.App.registerRouteChangedListener(async (event) => {
             await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
-            recreateNode(window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`), true);
+            recreateNode(window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`));
             await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
 
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
