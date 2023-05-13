@@ -1,6 +1,7 @@
-import {Prompt} from "../types/Prompt";
+import {Prompt, PromptVisibility} from "../types/Prompt";
 import moment from "moment";
 import {UserChatMessage} from "../langchain/schema/UserChatMessage";
+import Mustache from "mustache";
 
 export class Task {
     public static async getPrompts() : Promise<Prompt[]> {
@@ -16,8 +17,10 @@ export class Task {
         return [
             {
                 name: 'Generate Logseq Tasks',
-                required_input: 'block(s)',
-                getPrompt: () => `Generate Tasks:`,
+                isVisibleInCommandPrompt: PromptVisibility.Blocks,
+                getPromptMessage: (userInput, invokeState) =>
+                    Mustache.render(`Generate Task(s):\n{{selectedBlocksList}}`,{
+                        selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 getPromptPrefixMessages: () => [
                     new UserChatMessage(`Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`),
                     new UserChatMessage(`I want you to act like a loseq task generator. You take the input and create one or more tasks from it. DO NOT refer to yourself. 

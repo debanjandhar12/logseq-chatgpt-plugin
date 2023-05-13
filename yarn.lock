@@ -1253,10 +1253,10 @@
   dependencies:
     "@lezer/common" "^0.15.0"
 
-"@logseq/libs@^0.0.14":
-  version "0.0.14"
-  resolved "https://registry.npmjs.org/@logseq/libs/-/libs-0.0.14.tgz"
-  integrity sha512-QcNeVxb4LIvV4Tid0ABZXV7fxYdZHynzLlukSk6Ydkuus+hBzLcjfK15nzybIRbiV7ANqSgTooDZkV/E4WP57Q==
+"@logseq/libs@^0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@logseq/libs/-/libs-0.0.15.tgz#03b8b81a0a1557e3f022d68c978ddcb501cd4421"
+  integrity sha512-Z4YrYGfu8Y3s9LTqVnPGkxlO+KZtP1YalH/A63zYgxP61cV5QtKlnHWNcjsKxsD5CkaSL4MlSN4mf7wNx/Fm0A==
   dependencies:
     csstype "3.1.0"
     debug "4.3.4"
@@ -4190,10 +4190,10 @@ kleur@^3.0.3:
   resolved "https://registry.npmjs.org/kleur/-/kleur-3.0.3.tgz"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-langchain@^0.0.68:
-  version "0.0.68"
-  resolved "https://registry.yarnpkg.com/langchain/-/langchain-0.0.68.tgz#445df238dc5bd61a1e0d0276949860512997c39c"
-  integrity sha512-lp7BshAa2BZfayEi/HSZr7d/D3tAM2FYdLgcnbSqM2/NB565435C+mnY5QoKMVYCFukgD4/28AbPvT7xSSfgtw==
+langchain@^0.0.75:
+  version "0.0.75"
+  resolved "https://registry.yarnpkg.com/langchain/-/langchain-0.0.75.tgz#4cbf43ecf818f9b5052c0bfd8e679df25108ae4d"
+  integrity sha512-5bulBe3pEDnCuO3W84E+pmns6+7oKdNomsApPD1PqjplEwT3szSYaY8bvqJVxYz2Hq1wcS3sL1OyL9rbC/s0NA==
   dependencies:
     "@anthropic-ai/sdk" "^0.4.3"
     "@dqbd/tiktoken" "^1.0.7"

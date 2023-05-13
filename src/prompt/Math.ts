@@ -1,20 +1,24 @@
-import {Prompt} from "../types/Prompt";
+import {Prompt, PromptVisibility} from "../types/Prompt";
 import {MathSolver} from "../langchain/tools/MathSolver";
+import Mustache from "mustache";
 export class Math {
     public static getPrompts() : Prompt[] {
         return [
             {
-                name: `Solve using Math Solver`,
+                name: `Evaluate using Math Solver`,
                 tools: [new MathSolver()],
-                required_input: 'block(s)',
-                getPrompt: () => `Solve:`,
+                isVisibleInCommandPrompt: PromptVisibility.Blocks,
+                getPromptMessage: (input, invokeState) =>
+                    Mustache.render(`Solve:\n{{selectedBlocksList}}`,{
+                        selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 group: 'math'
             },
             {
-                name: `{input} using Math Solver`,
+                name: `{{userInput}} using Math Solver`,
                 tools: [new MathSolver()],
-                required_input: 'none',
-                getPrompt: (input) => `${input}`,
+                isVisibleInCommandPrompt: PromptVisibility.NoInput,
+                getPromptMessage: (userInput) =>
+                Mustache.render(`{{userInput}}`, {userInput}),
                 group: 'math'
             }
         ]

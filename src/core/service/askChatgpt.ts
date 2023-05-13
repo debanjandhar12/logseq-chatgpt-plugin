@@ -48,7 +48,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
 
     // Determine type of call
-    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(page.properties['chatgptPrompt'] || ""));
+    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{{userInput}}', '.*')).test(page.properties['chatgptPrompt'] || ""));
     let isAgentCall = prompt && prompt.tools && prompt.tools.length > 0;
     console.log("prompt", prompt);
 
@@ -128,9 +128,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     let chatResponse: string = "";
     const chat = new ChatOpenAI({
         openAIApiKey: logseq.settings.OPENAI_API_KEY,
-        streaming: true,
         cache: false,
-        maxTokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages, isAgentCall) - 16,
         callbacks: [
             {
                 async handleLLMError(error: any) {
@@ -149,6 +147,8 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         ],
     }, {basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1"});
     chat.modelName = logseq.settings.CHATGPT_MODEL;
+    chat.streaming = true;
+    chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages, isAgentCall) - 16;
     chat.caller = new AsyncCaller({maxRetries: 0});
     let result;
     if(isAgentCall) {

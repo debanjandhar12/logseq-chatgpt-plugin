@@ -22,14 +22,14 @@
     "icon": "/icon.png"
   },
   "dependencies": {
-    "@logseq/libs": "^0.0.14",
+    "@logseq/libs": "^0.0.15",
     "await-lock": "^2.2.2",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "moment": "^2.29.4",
     "mldoc": "^1.5.3",
-    "langchain": "^0.0.68",
+    "langchain": "^0.0.75",
     "cheerio": "^1.0.0-rc.12",
     "mustache": "^4.2.0",
     "showdown": "^2.1.0",

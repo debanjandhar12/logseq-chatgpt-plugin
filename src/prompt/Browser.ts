@@ -1,9 +1,10 @@
-import {Prompt} from "../types/Prompt";
+import {Prompt, PromptVisibility} from "../types/Prompt";
 import {SearchEngineTool} from "../langchain/tools/SearchEngine";
 import {WebBrowser} from "langchain/dist/tools/webbrowser";
 import {ChatOpenAI} from "langchain/chat_models/openai";
 import {TensorFlowEmbeddings} from "langchain/dist/embeddings/tensorflow";
 import "@tensorflow/tfjs-backend-cpu";
+import Mustache from "mustache";
 
 export class Browser {
     public static getPrompts() : Prompt[] {
@@ -14,15 +15,18 @@ export class Browser {
             {
                 name: `Find using Browser`,
                 tools: [new SearchEngineTool(), new WebBrowser({ model, embeddings })],
-                required_input: 'block(s)',
-                getPrompt: () => `Find:`,
+                isVisibleInCommandPrompt: PromptVisibility.Blocks,
+                getPromptMessage: (userInput, invokeState) =>
+                    Mustache.render(`Find:\n{{selectedBlocksList}}`,{
+                        selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 group: 'web'
             },
             {
-                name: `{input} using Browser`,
+                name: `{{userInput}} using Browser`,
                 tools: [new SearchEngineTool(), new WebBrowser({ model, embeddings })],
-                required_input: 'none',
-                getPrompt: (input) => `${input}`,
+                isVisibleInCommandPrompt: PromptVisibility.NoInput,
+                getPromptMessage: (userInput) =>
+                    Mustache.render(`{{userInput}}:`,{userInput}),
                 group: 'web'
             }
         ]
