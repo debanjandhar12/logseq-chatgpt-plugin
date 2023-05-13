@@ -148,12 +148,10 @@ const ActionList = ({commandList, search, onSelect}) => {
             }
         };
         window.parent.document.addEventListener('keydown', onKeydown, {capture: true});
-        setChosenCommand((chosenCommand) => Math.min(filteredModifiedCommandList.length - 1, chosenCommand));
-        setChosenCommand((chosenCommand) => Math.max(0, chosenCommand));
         return () => {
             window.parent.document.removeEventListener('keydown', onKeydown, {capture: true});
         };
-    }, [filteredModifiedCommandList]);
+    }, [filteredModifiedCommandList, chosenCommand]);
 
     return (
         <div className="command-results-wrap">

@@ -1,6 +1,5 @@
 import {AskChatgptBtn} from "./AskChatgptBtn";
-import {Confirm} from "../../ui/Confirm";
-import {createChatgptPageWithoutPrompt, createChatgptPageWithPrompt} from "../service/createChatgptPage";
+import { createChatgptPageWithPrompt } from "../service/createChatgptPage";
 
 /**
  * This file injects several DWIM commands into logseq, mainly for calling chatgpt and chatgpt page creation.
@@ -27,20 +26,12 @@ export class DWIMCommandsInjector {
                 let editingStatus = await logseq.Editor.checkEditing();
                 if (editingStatus)
                     await logseq.Editor.selectBlock(editingStatus as string);
-                const blocks = await logseq.Editor.getSelectedBlocks();
-                if (blocks == null || blocks.length == 0) {
-                    if (await Confirm("This will create a new empty ChatGPT page. Continue?"))
-                        await createChatgptPageWithoutPrompt();
-                    // else do nothing
-                }
-                else {
-                    await createChatgptPageWithPrompt();
-                }
+                await createChatgptPageWithPrompt();
             }
         });
         logseq.App.registerCommand(`logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`, {
             key: `logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`,
-            label: `Create ChatGPT Page (with prompt)`,
+            label: `Create ChatGPT Page`,
             keybinding: {
                 binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
             },
@@ -49,18 +40,7 @@ export class DWIMCommandsInjector {
             let editingStatus = await logseq.Editor.checkEditing();
             if (editingStatus)
                 await logseq.Editor.selectBlock(editingStatus as string);
-            const blocks = await logseq.Editor.getSelectedBlocks();
-                await createChatgptPageWithPrompt();
-        });
-        logseq.App.registerCommand(`logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`, {
-            key: `logseq-chatgpt-plugin-create-chatgpt-page-${logseq.baseInfo.id}`,
-            label: `Create Blank ChatGPT Page (without prompt)`,
-            keybinding: {
-                binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
-            },
-            palette: true
-        }, async () => {
-            await createChatgptPageWithoutPrompt();
+            await createChatgptPageWithPrompt();
         });
     }
 }

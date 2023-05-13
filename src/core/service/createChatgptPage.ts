@@ -41,11 +41,17 @@ export async function createChatgptPageWithPrompt() {
     // - Construct additional page props and first block content -
     const additionalPageProps = {};
     // Collect chatgpt-prompt prop
-    additionalPageProps['chatgpt-prompt'] = selectedPromptWithModifiedName.name;
+    additionalPageProps['chatgpt-prompt'] = selectedPromptWithModifiedName.name.split('\n')[0];
     if (blocks && blocks.length > 0)
-        additionalPageProps['chatgpt-prompt-source'] = "";
+        additionalPageProps['chatgpt-prompt-source'] = blocks.map(b => `((${b.uuid}))`).join(' ');
     // Collect content for first block
     const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{userInput}}', '(.*)')))?.slice(1)[0];
+    console.log(selectedPrompt);
+    // Handle create empty chatgpt page prompt
+    if (selectedPrompt.name == "Create empty Chatgpt Page") {
+        await createChatgptPage("", {}, "");
+        return;
+    }
     let firstBlockContent = selectedPromptWithModifiedName.getPromptMessage(input, invokeState) || "";
     await createChatgptPage("", additionalPageProps, firstBlockContent);
 

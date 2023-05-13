@@ -16,6 +16,12 @@ export class SpecialPrompts {
                     Mustache.render(`{{userInput}}:{{selectedBlocksList}}`,{userInput,
                         selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 group: 'custom'
+            },
+            {
+                name: `Create empty Chatgpt Page`,
+                isVisibleInCommandPrompt: PromptVisibility.NoInput,
+                getPromptMessage: (userInput, invokeState) => ``,
+                group: ''
             }
         ]
     }

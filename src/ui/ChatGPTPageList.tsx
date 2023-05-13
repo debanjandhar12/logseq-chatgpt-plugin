@@ -2,10 +2,10 @@ import React, {useState} from "react";
 import * as ReactDOM from 'react-dom/client';
 import _ from "lodash";
 import {GPT_ICON_18} from "../utils/constants";
-import {createChatgptPageWithoutPrompt} from "../core/service/createChatgptPage";
+import {createChatgptPage} from "../core/service/createChatgptPage";
 
 export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
-    return new Promise(async function (resolve, reject) {
+    return new Promise<Array<any> | boolean>(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `
             <div class="ui__modal settings-modal cp__settings-main" style="z-index: 9999;">
@@ -96,7 +96,7 @@ const Header = () => {
 
 const Toolbar = () => {
     const createNewPage = async () => {
-        await createChatgptPageWithoutPrompt();
+        await createChatgptPage();
         window.parent.ChatGPT.ChatGPTPageList.close();
     }
     return (
