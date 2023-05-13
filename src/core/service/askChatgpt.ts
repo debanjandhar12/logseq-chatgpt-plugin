@@ -46,6 +46,12 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         throw {message: "CHATGPT_API_ENDPOINT is not a valid URL.", type: 'warning'};
     }
 
+
+    // Determine type of call
+    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(page.properties['chatgptPrompt'] || ""));
+    let isAgentCall = prompt && prompt.tools && prompt.tools.length > 0;
+    console.log("prompt", prompt);
+
     // Collect all messages and find block to insert result
     const messages: BaseChatMessage[] = [];
     let resultBlock = null;
@@ -97,8 +103,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     }
 
     // Add prefix messages from prompt if set
-    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{input}', '.*')).test(page.properties['chatgptPrompt'] || ""));
-    console.log("prompt", prompt);
     if (prompt && prompt.getPromptPrefixMessages)
         messages.unshift(...prompt.getPromptPrefixMessages());
 
@@ -115,12 +119,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
     // Context Window - Remove messages from top until we reach token limit
     // calculateMaxTokens
-    /*
-        while(getMessageArrayTokenCount(messages) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
-            messages.shift();
-        if (messages.length == 0)
-            throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
-    */
+    while(getMessageArrayTokenCount(messages, isAgentCall) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
+        messages.shift();
+    if (messages.length == 0)
+        throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
 
     // Call ChatGPT API
     let chatResponse: string = "";
@@ -128,7 +130,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         openAIApiKey: logseq.settings.OPENAI_API_KEY,
         streaming: true,
         cache: false,
-        maxTokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages) - 2,
+        maxTokens: parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages, isAgentCall) - 16,
         callbacks: [
             {
                 async handleLLMError(error: any) {
@@ -149,8 +151,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     chat.modelName = logseq.settings.CHATGPT_MODEL;
     chat.caller = new AsyncCaller({maxRetries: 0});
     let result;
-    if(prompt && prompt.tools && prompt.tools.length > 0) {
-        chat.maxTokens -= 1000;
+    if(isAgentCall) {
         const lastMessage = messages[messages.length - 1];
         const otherMessages = messages.slice(0, messages.length - 1);
         const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history"});
@@ -179,6 +180,11 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                 async handleLLMStart() {
                     if (signal.aborted)
                         return;
+                }
+            },
+            {
+                handleAgentAction(action){
+                    console.log(action);
                 }
             }
         ]);
