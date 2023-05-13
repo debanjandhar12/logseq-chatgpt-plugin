@@ -2430,10 +2430,9 @@ char-regex@^1.0.2:
   resolved "https://registry.npmjs.org/char-regex/-/char-regex-1.0.2.tgz"
   integrity sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==
 
-chatgpt-wrapper@^1.1.5:
+"chatgpt-wrapper@https://github.com/debanjandhar12/chatgpt-wrapper":
   version "1.1.5"
-  resolved "https://registry.yarnpkg.com/chatgpt-wrapper/-/chatgpt-wrapper-1.1.5.tgz#8a14ccd10f794263974017984f7eb087d7ca413b"
-  integrity sha512-6eg7FwqVloOjsbyX2ABYV1utRWWwmzj6SC2vkvI8TK/DGL5ktjrmBF4rlhA3Ty6Y4hyXaT7qSjRX0fFj8+Fx0A==
+  resolved "https://github.com/debanjandhar12/chatgpt-wrapper#8f2dbc09dbdb3714e90e45f0c3a679e21a28bcbf"
   dependencies:
     node-fetch "2"
 
