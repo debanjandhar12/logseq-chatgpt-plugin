@@ -65,7 +65,7 @@ export class LogseqOutlineParser {
             let content = nodeText;
             content = content.substring(content.indexOf('*') + 1).trim();
             content = content.replace(/^ +/gm, '')
-            content = content.replace(/^ +/gm, ''); // Needed for parsing Task prompt properly
+            content = content.replace(/^(\s| )+/gm, ''); // Needed for parsing Task prompt properly
             content = content.replace(/\n----\n(\s*?\*)/g, '$1');
             list.unshift({content, indent, ordered});
         }
