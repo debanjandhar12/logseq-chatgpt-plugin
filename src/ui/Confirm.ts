@@ -1,5 +1,5 @@
 export async function Confirm(msg: string): Promise<boolean> {
-    return new Promise(function (resolve, reject) {
+    return new Promise<boolean>(function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `
             <div class="ui__modal anki_sync_confirm" style="z-index: 9999;">
@@ -8,7 +8,7 @@ export async function Confirm(msg: string): Promise<boolean> {
             </div>
             <div class="ui__modal-panel transform transition-all sm:min-w-lg sm ease-out duration-300 opacity-100 translate-y-0 sm:scale-100 enter-done">
                <div class="absolute top-0 right-0 pt-2 pr-2">
-                  <a aria-label="Close" type="button" class="ui__modal-close opacity-60 hover:opacity-100" onclick="sync_cancel_action()">
+                  <a aria-label="Close" type="button" class="ui__modal-close opacity-60 hover:opacity-100" onclick="ChatGPT.ConfirmDialog.cancel()">
                      <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6">
                         <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
                      </svg>
