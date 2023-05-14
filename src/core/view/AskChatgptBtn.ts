@@ -61,11 +61,12 @@ export class AskChatgptBtn {
                 await logseq.UI.showMsg("The Ask ChatGPT button failed to mount.\nYou can still use the Ask ChatGPT command / shortcut to interact with the page.", "warning", {timeout: 3200});
 
             // Add click event listener to button
-            button.addEventListener("click", async () => {
+            button.addEventListener("click", () => {
                 if (!this.inAskingInProgress)
-                    await AskChatgptBtn.askChatGPTWrapper();
-                else this.abortController.abort();
-            });
+                    AskChatgptBtn.askChatGPTWrapper();
+                else
+                    this.abortController.abort();
+            }, {capture: true});
 
             // Change color to blue on hover
             button.addEventListener("mouseover", () => {

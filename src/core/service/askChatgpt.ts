@@ -17,6 +17,13 @@ import {initializeAgentExecutorWithOptions} from "langchain/agents";
 import {Calculator} from "langchain/dist/tools/calculator";
 import {Tool} from "langchain/dist/tools/base";
 import {BufferMemory, ChatMessageHistory} from "langchain/memory";
+import {ChainValues} from "langchain/dist/schema";
+import {LLMChain} from "langchain";
+import {ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder} from "langchain/prompts";
+import {ConversationChain} from "langchain/chains";
+import {BaseCallbackHandler, Callbacks} from "langchain/callbacks";
+import {CallbackManager} from "langchain/dist/callbacks/manager";
+import {CallbackHandlerMethods} from "langchain/dist/callbacks/base";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -112,49 +119,51 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         systemMsgContent = Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
             {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]});
     } else {
-        systemMsgContent = Mustache.render(`You are a tool who replies using markdown. Current date: {{today}}`,
-            { page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0], prompt });
+        systemMsgContent = Mustache.render(`You are a tool who replies using markdown.`,
+            {});
     }
     messages.unshift(new SystemChatMessage(systemMsgContent));
 
-    // Context Window - Remove messages from top until we reach token limit
-    while(getMessageArrayTokenCount(messages, isAgentCall) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 16)*0.5))
-        messages.shift();
-    if (messages.length == 0)
-        throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
+    // Separate the last message from the rest
+    const lastMessage = messages[messages.length - 1];
+    const otherMessages = messages.slice(0, messages.length - 1);
 
     // Call ChatGPT API
     let chatResponse: string = "";
     const chat = new ChatOpenAI({
         openAIApiKey: logseq.settings.OPENAI_API_KEY,
         cache: false,
+        timeout: 0,
         callbacks: [
             {
-                async handleLLMError(error: any) {
-                    throw error;
+                async handleLLMStart() {
+                    if (signal.aborted)
+                        return;
                 }
             },
             {
                 async handleLLMEnd(output: LLMResult) {
-                    console.log("output", output);
                     if (output.generations[0][0].generationInfo?.finishReason) { // TODO: Does not work in browser atm
                         console.log("finishReason", output.generations[0][0].generationInfo?.finishReason);
                         await logseq.UI.showMsg("ChatGPT stopped early because of max_tokens limit. Please increase it in settings.", "warning", {timeout: 5000});
                     }
                 }
+            },
+            {
+                async handleLLMError(error: any) {
+                    throw error;
+                }
             }
         ],
     }, {basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1"});
     chat.modelName = logseq.settings.CHATGPT_MODEL;
-    chat.streaming = true;
-    chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages, isAgentCall) - 16;
-    // chat.caller = new AsyncCaller({maxRetries: 5});
+    chat.CallOptions = {
+        signal: signal,
+    }
+    const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history", inputKey: "input"});
+    mem.chatHistory = new ChatMessageHistory(otherMessages.map(msg => { msg.name = undefined; return msg; }));
     let result;
     if(isAgentCall) {
-        const lastMessage = messages[messages.length - 1];
-        const otherMessages = messages.slice(0, messages.length - 1);
-        const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history"});
-        mem.chatHistory = new ChatMessageHistory(otherMessages.map(msg => { msg.name = undefined; return msg; }));
         const tools : Tool[] = prompt.tools;
         const executor = await initializeAgentExecutorWithOptions(
             tools,
@@ -166,49 +175,32 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             }
         );
         result = await executor.call({input: lastMessage.text}, [
-            {
-                async handleToolStart(tool: {
-                    name: string;
-                }, input: string) {
-                    if (signal.aborted)
-                        return;
-                    console.log(`Starting tool ${tool.name} with input ${input}`);
-                }
-            },
-            {
-                async handleLLMStart() {
-                    if (signal.aborted)
-                        return;
-                }
-            },
-            {
-                handleAgentAction(action){
-                    console.log(action);
-                }
-            }
+            getToolStartLogCallback(),
+            getChainStartTrimMessageCallback(0.6)
         ]);
         chatResponse = result.output;
     }
     else {
-        result = await chat.call([
-            ...messages.map(msg => { msg.name = undefined; return msg; })
-        ], {
-            options: {
-                // @ts-ignore
-                signal: signal
-            }
-        }, [{
-            async handleLLMNewToken(token: string) {
-                if (signal.aborted)
-                    return;
-                chatResponse += token;
-                console.log("token", token);
-                await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
-            }
-        }]);
-        chatResponse = result.text;
+        chat.streaming = true;
+        const inputStructure = ChatPromptTemplate.fromPromptMessages([
+            new MessagesPlaceholder("chat_history"),
+            HumanMessagePromptTemplate.fromTemplate("{input}"),
+        ]);
+        const chain = new ConversationChain({ llm: chat, memory: mem, prompt: inputStructure });
+        result = await chain.call({input: lastMessage.text}, [
+                {
+                    async handleLLMNewToken(token: string) {
+                        if (signal.aborted)
+                            return;
+                        chatResponse += token;
+                        await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
+                    }
+                },
+                getChainStartTrimMessageCallback()
+            ]);
+        chatResponse = result.response;
     }
-    console.log("result", result);
+    console.log("result, signal", result, signal);
 
     if (signal.aborted) return;
     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
@@ -265,4 +257,26 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                 });
         }
     }
+}
+
+// LangChain Callback Objects (TODO: Move to separate file)
+const getChainStartTrimMessageCallback = (threshold = 0.5) => {
+    let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
+    res.handleChainStart = (chain, inputs) => {
+        let chatHistory = inputs.chat_history;
+        while(getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * threshold))
+            chatHistory.shift();
+        if (chatHistory.length == 0)
+            throw { message: "The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.", type: 'warning' };
+        console.log('Chain start', chain, inputs, inputs.chat_history);
+    }
+    return res;
+}
+
+const getToolStartLogCallback = () => {
+    let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
+    res.handleToolStart = (tool, input) => {
+        console.log(`Starting tool ${tool.name} with input ${input}`);
+    }
+    return res;
 }
