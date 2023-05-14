@@ -19,8 +19,15 @@ export class SearchEngineTool extends Tool {
 
         // Clean the response for ChatGPT
         response = _.omit(response, 'people_also_ask');
-        response = cleanObj(response);
         response.results = response.results || [];
+        response.results = _.map(response.results, (result) => {
+            if (result.favicons)    // Remove favicons
+                delete result.favicons;
+            if (result.url) // Remove url params from url
+                result.url = result.url.split("?")[0];
+            return result;
+        });
+        response = cleanObj(response);
         return JSON.stringify(response);
     }
 
