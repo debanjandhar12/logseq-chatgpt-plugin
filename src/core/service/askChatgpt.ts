@@ -24,6 +24,7 @@ import {ConversationChain} from "langchain/chains";
 import {BaseCallbackHandler, Callbacks} from "langchain/callbacks";
 import {CallbackManager} from "langchain/dist/callbacks/manager";
 import {CallbackHandlerMethods} from "langchain/dist/callbacks/base";
+import {OpenAIChat} from "langchain/llms";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -157,9 +158,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         ],
     }, {basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1"});
     chat.modelName = logseq.settings.CHATGPT_MODEL;
-    chat.CallOptions = {
-        signal: signal,
-    }
     const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history", inputKey: "input"});
     mem.chatHistory = new ChatMessageHistory(otherMessages.map(msg => { msg.name = undefined; return msg; }));
     let result;
@@ -174,9 +172,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                 verbose: false
             }
         );
-        result = await executor.call({input: lastMessage.text}, [
+        result = await executor.call({input: lastMessage.text, signal: signal, timeout: 0}, [
             getToolStartLogCallback(),
-            getChainStartTrimMessageCallback(0.6)
+            getChainStartTrimMessageCallback(0.6, chat)
         ]);
         chatResponse = result.output;
     }
@@ -187,7 +185,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             HumanMessagePromptTemplate.fromTemplate("{input}"),
         ]);
         const chain = new ConversationChain({ llm: chat, memory: mem, prompt: inputStructure });
-        result = await chain.call({input: lastMessage.text}, [
+        result = await chain.call({input: lastMessage.text, signal: signal, timeout: 0}, [
                 {
                     async handleLLMNewToken(token: string) {
                         if (signal.aborted)
@@ -196,7 +194,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
                     }
                 },
-                getChainStartTrimMessageCallback()
+                getChainStartTrimMessageCallback(0.5, chat)
             ]);
         chatResponse = result.response;
     }
@@ -260,7 +258,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 }
 
 // LangChain Callback Objects (TODO: Move to separate file)
-const getChainStartTrimMessageCallback = (threshold = 0.5) => {
+const getChainStartTrimMessageCallback = (threshold = 0.5, chat: ChatOpenAI) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
     res.handleChainStart = (chain, inputs) => {
         let chatHistory = inputs.chat_history;
@@ -268,6 +266,7 @@ const getChainStartTrimMessageCallback = (threshold = 0.5) => {
             chatHistory.shift();
         if (chatHistory.length == 0)
             throw { message: "The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.", type: 'warning' };
+        chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory);
         console.log('Chain start', chain, inputs, inputs.chat_history);
     }
     return res;
