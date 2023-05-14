@@ -118,8 +118,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     messages.unshift(new SystemChatMessage(systemMsgContent));
 
     // Context Window - Remove messages from top until we reach token limit
-    // calculateMaxTokens
-    while(getMessageArrayTokenCount(messages, isAgentCall) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 32)*0.5))
+    while(getMessageArrayTokenCount(messages, isAgentCall) > Math.floor((parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - 16)*0.5))
         messages.shift();
     if (messages.length == 0)
         throw { message: "MAX_TOKEN limit reached by last message. Please consider increasing it in settings.", type: 'warning' };
@@ -149,7 +148,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     chat.modelName = logseq.settings.CHATGPT_MODEL;
     chat.streaming = true;
     chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(messages, isAgentCall) - 16;
-    chat.caller = new AsyncCaller({maxRetries: 0});
+    // chat.caller = new AsyncCaller({maxRetries: 5});
     let result;
     if(isAgentCall) {
         const lastMessage = messages[messages.length - 1];

@@ -56,7 +56,7 @@ export const addSettingsToLogseq = async () => {
             type: 'number',
             title: "ChatGPT Max Tokens",
             description: "Enter the maximum number of tokens for ChatGPT. See https://platform.openai.com/docs/guides/chat for more information.",
-            default: 3584
+            default: 4000
         },
         {
             key: "heading3",

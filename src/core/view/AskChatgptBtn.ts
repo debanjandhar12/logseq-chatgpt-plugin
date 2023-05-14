@@ -133,7 +133,8 @@ export class AskChatgptBtn {
                 // We parse the error message to get the actual error message
                 errorMsg = errorMsg.substring(errorMsg.indexOf("{"));
                 errorMsg = errorMsg.substring(0, errorMsg.lastIndexOf("}") + 1);
-                errorMsg = JSON.parse(errorMsg).error.message;
+                errorMsg = JSON.parse(errorMsg);
+                errorMsg = errorMsg.error.message || errorMsg.error.code;
             }
             await logseq.UI.showMsg("Error: " + errorMsg, e.type || "error", {timeout: 5000});
             if (e.blockUUID)
