@@ -59,6 +59,20 @@ export const addSettingsToLogseq = async () => {
             default: 4000
         },
         {
+            key: "heading2",
+            title: "️🔗 Langchain Settings",
+            description: "",
+            type: "heading",
+            default: null,
+        },
+        {
+            key: "ENABLE_LANGCHAIN_TOOL_PROMPTS",
+            type: 'boolean',
+            description: "Enable Prompts powered by Langchain Tools </br> <sub>(prompts powered by Langchain tools cost 10x more than normal prompts and are in beta)</sub>",
+            title: "",
+            default: true
+        },
+        {
             key: "heading3",
             title: "🎨 UI Settings",
             description: "",
@@ -68,7 +82,7 @@ export const addSettingsToLogseq = async () => {
         {
             key: "SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR",
             type: 'boolean',
-            description: "Show Chatgpt Page List in side navbar",
+            description: "Show Chatgpt Page List UI in side navbar",
             title: "",
             default: true
         },

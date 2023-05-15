@@ -18,7 +18,7 @@ export class SpecialPrompts {
                 group: 'custom'
             },
             {
-                name: `Create empty Chatgpt Page`,
+                name: `Create empty ChatGPT Page`,
                 isVisibleInCommandPrompt: PromptVisibility.NoInput,
                 getPromptMessage: (userInput, invokeState) => ``,
                 group: ''

@@ -114,7 +114,8 @@ const ActionList = ({commandList, search, onSelect}) => {
             return newCommand;
         })
         const filteredModifiedCommandList = modifiedCommandList.filter((command) => {
-            return command.displayName.toLowerCase().includes(search.toLowerCase());
+            return command.displayName.toLowerCase().includes(search.toLowerCase()) ||
+                command.name == 'Create empty ChatGPT Page';
         });
         setFilteredModifiedCommandList(filteredModifiedCommandList);
     }, [search]);

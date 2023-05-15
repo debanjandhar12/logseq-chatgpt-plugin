@@ -48,7 +48,7 @@ export async function createChatgptPageWithPrompt() {
     const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{userInput}}', '(.*)')))?.slice(1)[0];
     console.log(selectedPrompt);
     // Handle create empty chatgpt page prompt
-    if (selectedPrompt.name == "Create empty Chatgpt Page") {
+    if (selectedPrompt.name == "Create empty ChatGPT Page") {
         await createChatgptPage("", {}, "");
         return;
     }
