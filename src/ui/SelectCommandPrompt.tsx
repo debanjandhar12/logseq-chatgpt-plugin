@@ -107,9 +107,9 @@ const ActionList = ({commandList, search, onSelect}) => {
         const modifiedCommandList = commandList.map((command) => {
             let newCommand = {...command};
             if (newCommand.name.startsWith('Custom:') && newCommand.name.includes('{{userInput}}'))
-                newCommand.displayName = newCommand.name.replaceAll('{{userInput}}', `<u>${search.trim() == '' ? '&nbsp;'.repeat(24) : search}</u>`);
+                newCommand.displayName = newCommand.name.replaceAll('{{userInput}}', `<u style='text-decoration-style: dotted;'>${search.trim() == '' ? '&nbsp;'.repeat(32) : search}</u>`);
             else if (newCommand.name.includes('{{userInput}}'))
-                newCommand.displayName = newCommand.name.replaceAll('{{userInput}}', `<u style='text-decoration-style: dotted;'>${'&nbsp;'.repeat(24)}</u>`);
+                newCommand.displayName = newCommand.name.replaceAll('{{userInput}}', `<u style='box-shadow: -1px 1px 2px 0 black, 1px 1px 0 0 black;text-decoration: none;margin-right: 4px;'>${'&nbsp;'.repeat(32)}</u>`);
             else newCommand.displayName = newCommand.name;
             return newCommand;
         })
