@@ -41,9 +41,7 @@ export class AskChatgptBtn {
         `
         });
         LogseqProxy.App.registerRouteChangedListener(async (event) => {
-            await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
             recreateNode(window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`), true);
-            await waitForElement(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`, 500, window.parent.document.querySelector('#head'));
 
             const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
 
@@ -69,14 +67,20 @@ export class AskChatgptBtn {
             }, {capture: true});
 
             // Change color to blue on hover
-            button.addEventListener("mouseover", () => {
-                button.style.backgroundColor = "rgba(59,130,246, 1)";
-                if (this.inAskingInProgress)
+            button.addEventListener("mousemove", () => {
+                button.style.backgroundColor = "rgba(59,130,246, 1)"
+                if (!this.inAskingInProgress) return;
+                if (button.matches(":hover"))
                     button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
+                else
+                    button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
             });
-            button.addEventListener("mouseout", () => {
-                button.style.backgroundColor = "rgba(59,130,246, .7)";
-                if (this.inAskingInProgress)
+            button.addEventListener("mouseleave", () => {
+                button.style.backgroundColor = "rgba(59,130,246, .7)"
+                if (!this.inAskingInProgress) return;
+                if (button.matches(":hover"))
+                    button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
+                else
                     button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
             });
             button.style.backgroundColor = "rgba(59,130,246, .7)";
@@ -121,7 +125,6 @@ export class AskChatgptBtn {
             const currentPage = await logseq.Editor.getCurrentPage();
             await askChatGPT(currentPage.originalName,{signal: this.abortController.signal});
         } catch (e) {
-            if (e.name == "AbortError") return; // Ignore abort error
             if (e.blockUUID) {
                 const page = await logseq.Editor.getCurrentPage();
                 await logseq.Editor.selectBlock(e.blocsignalkUUID);
@@ -137,6 +140,9 @@ export class AskChatgptBtn {
                 errorMsg = JSON.parse(errorMsg);
                 errorMsg = errorMsg.error.message || errorMsg.error.code;
             }
+            if (errorMsg.startsWith("Cancel: cancel")) return; // Ignore abort error
+            if (errorMsg.startsWith("[] is too short - 'messages'"))    // Handle empty prompt error due to trimming
+                errorMsg = "Failed to call ChatGPT due to context limit. Please consider increasing the MAX_TOKENS limit to at least 3072 in settings.";
             await logseq.UI.showMsg("Error: " + errorMsg, e.type || "error", {timeout: 5000});
             if (e.blockUUID)
                 await logseq.Editor.selectBlock(e.blockUUID);

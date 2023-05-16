@@ -174,7 +174,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         );
         result = await executor.call({input: lastMessage.text, signal: signal, timeout: 0}, [
             getToolStartLogCallback(),
-            getChainStartTrimMessageCallback(0.6, chat)
+            getChatModelStartTrimMessageCallback(0.6, chat)
         ]);
         chatResponse = result.output;
     }
@@ -194,7 +194,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
                     }
                 },
-                getChainStartTrimMessageCallback(0.5, chat)
+                getChatModelStartTrimMessageCallback(0.5, chat)
             ]);
         chatResponse = result.response;
     }
@@ -258,16 +258,19 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 }
 
 // LangChain Callback Objects (TODO: Move to separate file)
-const getChainStartTrimMessageCallback = (threshold = 0.5, chat: ChatOpenAI) => {
+const getChatModelStartTrimMessageCallback = (threshold = 0.5, chat: ChatOpenAI) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
-    res.handleChainStart = (chain, inputs) => {
-        let chatHistory = inputs.chat_history;
+    res.handleChatModelStart = (llm, messages) => {
+        if (messages.length != 1)
+            throw new Error("Wew! The plugin somehow wants to sent concurrent messages. Please contact dev.");
+        let chatHistory = messages[0];
         while(getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * threshold))
             chatHistory.shift();
-        if (chatHistory.length == 0)
-            throw { message: "The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.", type: 'warning' };
         chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory);
-        console.log('Chain start', chain, inputs, inputs.chat_history);
+        messages = [chatHistory];
+        if (chatHistory.length == 0)
+            throw new Error("The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.");
+        console.log('Chat model call start', messages);
     }
     return res;
 }
