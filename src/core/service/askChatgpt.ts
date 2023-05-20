@@ -260,6 +260,8 @@ const getChatModelStartTrimMessageCallback = (threshold = 0.5, chat: ChatOpenAI)
         if (messages.length != 1)
             throw new Error("Wew! The plugin somehow wants to sent concurrent messages. Please contact dev.");
         let chatHistory = messages[0];
+        if (chatHistory.length == 1 && chatHistory[0].text.startsWith("Text:"))
+            return; // This is a hack to prevent WebBrowser summarization from being stripped
         while(getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * threshold))
             chatHistory.shift();
         chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory);
