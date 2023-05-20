@@ -1,4 +1,4 @@
-import {Tool} from "langchain/dist/tools/base";
+import {Tool} from "langchain/tools";
 import google from 'googlethis';
 import _ from "lodash";
 import {cleanObj} from "../../utils/cleanObj";

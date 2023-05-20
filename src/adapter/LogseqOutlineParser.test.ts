@@ -1,3 +1,4 @@
+import { test, describe, expect } from 'vitest'
 import {LogseqOutlineParser} from "./LogseqOutlineParser";
 import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;

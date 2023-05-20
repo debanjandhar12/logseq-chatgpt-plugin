@@ -2,7 +2,7 @@ import {Prompt, PromptVisibility} from "../types/Prompt";
 import {MathSolver} from "../langchain/tools/MathSolver";
 import Mustache from "mustache";
 import {UserChatMessage} from "../langchain/schema/UserChatMessage";
-import {SystemChatMessage} from "langchain/schema";
+
 export class Math {
     public static getPrompts() : Prompt[] {
         return [

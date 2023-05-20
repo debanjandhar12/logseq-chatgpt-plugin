@@ -12,19 +12,13 @@ import {BaseChatMessage, BaseChatMessageHistory, LLMResult, SystemChatMessage} f
 import {UserChatMessage} from "../../langchain/schema/UserChatMessage";
 import {AssistantChatMessage} from "../../langchain/schema/AssistantChatMessage";
 import {ChatOpenAI} from "langchain/chat_models/openai";
-import {AsyncCaller} from "langchain/dist/util/async_caller";
 import {initializeAgentExecutorWithOptions} from "langchain/agents";
-import {Calculator} from "langchain/dist/tools/calculator";
-import {Tool} from "langchain/dist/tools/base";
+import {Tool} from "langchain/tools";
 import {BufferMemory, ChatMessageHistory} from "langchain/memory";
-import {ChainValues} from "langchain/dist/schema";
-import {LLMChain} from "langchain";
 import {ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder} from "langchain/prompts";
 import {ConversationChain} from "langchain/chains";
 import {BaseCallbackHandler, Callbacks} from "langchain/callbacks";
-import {CallbackManager} from "langchain/dist/callbacks/manager";
 import {CallbackHandlerMethods} from "langchain/dist/callbacks/base";
-import {OpenAIChat} from "langchain/llms";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings

@@ -160,7 +160,7 @@ const PageLink = ({pageName}) => {
     return (
         <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={onClickHandler}>
             <div className="" data-tooltipped="" aria-describedby="tippy-tooltip-15" style={{display: "inline"}}>
-                <span tabIndex="0" data-ref={pageName} className="page-ref">{pageName}</span>
+                <span tabIndex={0} data-ref={pageName} className="page-ref">{pageName}</span>
             </div>
         </a>
     );

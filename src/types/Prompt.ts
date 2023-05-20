@@ -1,6 +1,6 @@
 import {BaseChatMessage} from "langchain/schema";
-import {Tool} from "langchain/dist/tools/base";
-import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
+import {Tool} from "langchain/tools";
+import {BlockEntity} from "@logseq/libs/dist/LSPlugin";
 
 /**
  * Prompts work in two phases:

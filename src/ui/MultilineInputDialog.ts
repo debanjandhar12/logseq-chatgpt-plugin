@@ -37,9 +37,13 @@ export async function MultilineInputDialog(msg: string): Promise<String | false>
                 window.parent.ChatGPT.MultilineInputDialog.cancel();
             }
             else if (e.key === 'Enter' && window.parent.document.activeElement === window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox')) {
-               const textarea = window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox') as HTMLTextAreaElement;
-               textarea.value += '\n';
-               textarea.scrollTop = textarea.scrollHeight;
+                const textarea = window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox') as HTMLTextAreaElement;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const value = textarea.value;
+                textarea.value = value.substring(0, start) + '\n' + value.substring(end);
+                textarea.scrollTop = textarea.scrollHeight;
+                textarea.selectionStart = textarea.selectionEnd = start + 1; //reset cursor position to end of new line
             }
             else if (e.key === 'Enter' && window.parent.document.activeElement != window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox')) {
                 window.parent.ChatGPT.MultilineInputDialog.confirm();

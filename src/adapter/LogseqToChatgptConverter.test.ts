@@ -1,29 +1,34 @@
+import { test, describe, expect, vi } from 'vitest'
 import {LogseqToChatgptConverter} from "./LogseqToChatgptConverter";
 import { TextEncoder, TextDecoder } from 'util';
+import {ILSPluginUser} from "@logseq/libs/dist/LSPlugin";
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
-
-
-logseq.Editor.getBlock = jest.fn().mockImplementation(async (blockRefUUID, opts = {includeChildren: false}) => {
-    switch (blockRefUUID) {
-        case '642146e4-bae3-47cf-world':
-            return { content: 'World', children: [] };
-        case '642146e4-bae3-nested-hello-world':
-            return { content: '\n\nTitle ((642146e4-bae3-47cf-world))\nI am not title.', children: [] };
-        case 'hello-world-with-children':
-            return { content: 'Title ((642146e4-bae3-47cf-world))', children: [
-                    { content: '\n\nChildren 1',  children: []},
-                    { content: '\n\nChildren 2',  children: [{ content: '\n\nSub-Children 1'}]}
-                ]};
-        case 'hello-world-with-children2':
-            return { content: 'Title\n((642146e4-bae3-47cf-world))', children: [
-                    { content: '\n\nChildren 1',  children: [{ content: '\n\nSub-Children 1\nSome more text'}]},
-                    { content: '\n\nChildren 2',  children: []}
-                ]};
-        default:
-            throw new Error("UUID not found");
+global.logseq = {
+    // @ts-ignore
+    Editor: {
+        getBlock: vi.fn().mockImplementation(async (blockRefUUID, opts = {includeChildren: false}) => {
+            switch (blockRefUUID) {
+                case '642146e4-bae3-47cf-world':
+                    return { content: 'World', children: [] };
+                case '642146e4-bae3-nested-hello-world':
+                    return { content: '\n\nTitle ((642146e4-bae3-47cf-world))\nI am not title.', children: [] };
+                case 'hello-world-with-children':
+                    return { content: 'Title ((642146e4-bae3-47cf-world))', children: [
+                            { content: '\n\nChildren 1',  children: []},
+                            { content: '\n\nChildren 2',  children: [{ content: '\n\nSub-Children 1'}]}
+                        ]};
+                case 'hello-world-with-children2':
+                    return { content: 'Title\n((642146e4-bae3-47cf-world))', children: [
+                            { content: '\n\nChildren 1',  children: [{ content: '\n\nSub-Children 1\nSome more text'}]},
+                            { content: '\n\nChildren 2',  children: []}
+                        ]};
+                default:
+                    throw new Error("UUID not found");
+            }
+        })
     }
-});
+}
 
 describe('block ref tests', () => {
     test('basic block ref', async () => {
