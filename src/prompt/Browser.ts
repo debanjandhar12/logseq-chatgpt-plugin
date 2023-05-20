@@ -54,7 +54,15 @@ export class Browser {
                     `.replaceAll('                    ', '').trim())
                 ],
                 getPromptMessage: (userInput) =>
-                    Mustache.render(`Search with sources:\n{{userInput}}`,{userInput}),
+                    Mustache.render(`Search with sources:\n{{{userInput}}}`,{userInput}),
+                group: 'web'
+            },
+            {
+                name: `{{{userInput}}} using Browser`,
+                tools: [new SearchEngineTool(), new WebBrowser({ model, embeddings })],
+                isVisibleInCommandPrompt: PromptVisibility.NoInput,
+                getPromptMessage: (userInput) =>
+                    Mustache.render(`{{{userInput}}}`,{userInput}),
                 group: 'web'
             }
         ]

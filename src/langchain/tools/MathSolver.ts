@@ -3,6 +3,7 @@ import _ from "lodash";
 import {cleanObj} from "../../utils/cleanObj";
 
 export class MathSolver extends Tool {
+    signal : AbortSignal;
 
     async _call(input: string) {
         const options = {
@@ -32,6 +33,7 @@ export class MathSolver extends Tool {
                 'customLatex': input,
                 'showCustomResult': false
             }),
+            signal: this.signal,
             headers
         });
         response = await response.json();

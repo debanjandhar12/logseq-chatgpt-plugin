@@ -158,6 +158,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     let result;
     if(isAgentCall) {
         const tools : Tool[] = prompt.tools;
+        tools.forEach(tool => (tool as any).signal = signal);
         const executor = await initializeAgentExecutorWithOptions(
             tools,
             chat,

@@ -4,15 +4,19 @@ import _ from "lodash";
 import {cleanObj} from "../../utils/cleanObj";
 
 export class SearchEngineTool extends Tool {
+    signal : AbortSignal;
 
     async _call(input: string) {
-        const options = {
+        const options : any = {
             page: 0,
             safe: false,
             parse_ads: false,
             use_mobile_ua: false,
             additional_params: {
                 hl: 'en'
+            },
+            axios_config: {
+                signal: this.signal
             }
         }
         let response : any = await google.search(input, options);
