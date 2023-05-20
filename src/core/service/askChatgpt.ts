@@ -56,7 +56,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
 
     // Determine type of call
-    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{{userInput}}', '.*')).test(page.properties['chatgptPrompt'] || ""));
+    const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{{{userInput}}}', '.*')).test(page.properties['chatgptPrompt'] || ""));
     let isAgentCall = prompt && prompt.tools && prompt.tools.length > 0;
     console.log("prompt", prompt);
 
@@ -115,15 +115,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         messages.unshift(...prompt.getPromptPrefixMessages());
 
     // Add the system message
-    let systemMsgContent = "";
     if (logseq.settings.CHATGPT_SYSTEM_PROMPT && !prompt) {
-        systemMsgContent = Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
-            {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]});
-    } else {
-        systemMsgContent = Mustache.render(`You are a tool who replies using markdown.`,
-            {});
+        messages.unshift(new SystemChatMessage(Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
+            {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})));
     }
-    messages.unshift(new SystemChatMessage(systemMsgContent));
 
     // Separate the last message from the rest
     const lastMessage = messages[messages.length - 1];

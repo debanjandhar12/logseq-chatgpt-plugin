@@ -1,6 +1,6 @@
 export function cleanObj(inputObj) {
     function isEmpty(value) {
-        if (value === null || value === undefined) {
+        if (value === null || value === undefined || value === "" || value === false) {
             return true;
         }
 

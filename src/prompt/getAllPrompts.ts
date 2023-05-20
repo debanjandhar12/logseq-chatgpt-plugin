@@ -3,10 +3,8 @@
  * Please ensure that the name field is always unique.
  */
 import {Translate} from "./Translate";
-import {AutoComplete} from "./AutoComplete";
-import {Grammar} from "./Grammar";
-import {Summarize} from "./Summarize";
-import {LogseqPromptInvocationState, Prompt} from "../types/Prompt";
+import {Basic} from "./Basic";
+import {Prompt} from "../types/Prompt";
 import {Flashcard} from "./Flashcard";
 import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 import {Task} from "./Task";
@@ -16,9 +14,7 @@ import {Math} from "./Math";
 
 export async function getAllPrompts() : Promise<Prompt[]> {
     let prompts : Prompt[] = [
-        ...AutoComplete.getPrompts(),
-        ...Grammar.getPrompts(),
-        ...Summarize.getPrompts(),
+        ...Basic.getPrompts(),
         ...(await Task.getPrompts()),
         ...Flashcard.getPrompts(),
         ...Browser.getPrompts(),

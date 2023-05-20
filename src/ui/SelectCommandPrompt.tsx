@@ -22,19 +22,19 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
         let selectable = true;
         const onSelect = async (command, search) => {
             if (!selectable) return;
-            if (command.name.startsWith('Custom:') && command.name.includes('{{userInput}}')) {
-                command.name = command.name.replaceAll('{{userInput}}', search.trim());
+            if (command.name.startsWith('Custom:') && command.name.includes('{{{userInput}}}')) {
+                command.name = command.name.replaceAll('{{{userInput}}}', search.trim());
             }
-            else if (command.name.includes('{{userInput}}')) {
+            else if (command.name.includes('{{{userInput}}}')) {
                 selectable = false;
                 window.parent.document.removeEventListener('keydown', onKeydown);
-                let userInput = await MultilineInputDialog('What do you want chatgpt to do?');
+                let userInput = await MultilineInputDialog(`What do you want to do ${command.name.substring(command.name.indexOf('using'))}?`);
                 window.parent.document.addEventListener('keydown', onKeydown);
                 if(userInput == false) {
                     selectable = true;
                     return;
                 }
-                command.name = command.name.replaceAll('{{userInput}}', userInput);
+                command.name = command.name.replaceAll('{{{userInput}}}', userInput);
             }
             resolve(command);
             root.unmount();
@@ -106,10 +106,10 @@ const ActionList = ({commandList, search, onSelect}) => {
     useEffect(() => {
         const modifiedCommandList = commandList.map((command) => {
             let newCommand = {...command};
-            if (newCommand.name.startsWith('Custom:') && newCommand.name.includes('{{userInput}}'))
-                newCommand.displayName = newCommand.name.replaceAll('{{userInput}}', `<u style='text-decoration-style: dotted;'>${search.trim() == '' ? '&nbsp;'.repeat(32) : search}</u>`);
-            else if (newCommand.name.includes('{{userInput}}'))
-                newCommand.displayName = newCommand.name.replaceAll('{{userInput}}', `<u style='box-shadow: -1px 1px 2px 0 black, 1px 1px 0 0 black;text-decoration: none;margin-right: 4px;'>${'&nbsp;'.repeat(32)}</u>`);
+            if (newCommand.name.startsWith('Custom:') && newCommand.name.includes('{{{userInput}}}'))
+                newCommand.displayName = newCommand.name.replaceAll('{{{userInput}}}', `<u style='text-decoration-style: dotted;'>${search.trim() == '' ? '&nbsp;'.repeat(32) : search}</u>`);
+            else if (newCommand.name.includes('{{{userInput}}}'))
+                newCommand.displayName = newCommand.name.replaceAll('{{{userInput}}}', `<u style='box-shadow: -1px 1px 2px 0 black, 1px 1px 0 0 black;text-decoration: none;margin-left: 4px;margin-right: 4px;'>${'&nbsp;'.repeat(32)}</u>`);
             else newCommand.displayName = newCommand.name;
             return newCommand;
         })
@@ -128,8 +128,8 @@ const ActionList = ({commandList, search, onSelect}) => {
     useEffect(() => {
         const onKeydown = async (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
-                if(filteredModifiedCommandList.length != 0)
-                    onSelect(filteredModifiedCommandList[chosenCommand], search);
+                if(filteredModifiedCommandList.length > chosenCommand)
+                    await onSelect(filteredModifiedCommandList[chosenCommand], search);
             }
             if (e.key === 'ArrowUp') {
                 e.preventDefault();

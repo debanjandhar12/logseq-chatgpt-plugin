@@ -16,7 +16,10 @@ export class MathSolver extends Tool {
         }
         // Code taken from https://github.com/hexzzz2008/FastSolver/blob/main/MathSolver.js
         // The library is not used directly as it is not compatible with browser.
-        let response : any = await fetch(`https://mathsolver.microsoft.com/cameraexp/api/v1/solvelatex`, {
+        const { baseURI, endpoint, headers } = JSON.parse(atob(
+            "eyJiYXNlVVJJIjoiaHR0cHM6Ly9tYXRoc29sdmVyLm1pY3Jvc29mdC5jb20vIiwiZW5kcG9pbnQiOiJjYW1lcmFleHAvYXBpL3YxL3NvbHZlbGF0ZXgiLCJoZWFkZXJzIjp7ImF1dGhvcml0eSI6Im1hdGhzb2x2ZXIubWljcm9zb2Z0LmNvbSIsImFjY2VwdCI6ImFwcGxpY2F0aW9uL2pzb24iLCJhY2NlcHQtbGFuZ3VhZ2UiOiJ2aSxlbjtxPTAuOSxlbi1VUztxPTAuOCIsImNvbnRlbnQtdHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJvcmlnaW4iOiJodHRwczovL21hdGhzb2x2ZXIubWljcm9zb2Z0LmNvbSIsInJlZmVyZXIiOiJodHRwczovL21hdGhzb2x2ZXIubWljcm9zb2Z0LmNvbS92aS9zb2x2ZS1wcm9ibGVtLzEwNTQ2JTJCMjAlMkIzMCIsInNlYy1jaC11YSI6IlwiQ2hyb21pdW1cIjt2PVwiMTA2XCIsIFwiTWljcm9zb2Z0IEVkZ2VcIjt2PVwiMTA2XCIsIFwiTm90O0E9QnJhbmRcIjt2PVwiOTlcIiIsInNlYy1jaC11YS1tb2JpbGUiOiI/MCIsInNlYy1jaC11YS1wbGF0Zm9ybSI6IlwiV2luZG93c1wiIiwic2VjLWZldGNoLWRlc3QiOiJlbXB0eSIsInNlYy1mZXRjaC1tb2RlIjoiY29ycyIsInNlYy1mZXRjaC1zaXRlIjoic2FtZS1vcmlnaW4iLCJ1c2VyLWFnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNi4wLjAuMCBTYWZhcmkvNTM3LjM2IEVkZy8xMDYuMC4xMzcwLjUyIn19"
+        )); // btoa(JSON.stringify({}))
+        let response : any = await fetch(`${baseURI}${endpoint}`, {
             method: 'POST',
             body: JSON.stringify({
                 'clientInfo': {
@@ -29,21 +32,7 @@ export class MathSolver extends Tool {
                 'customLatex': input,
                 'showCustomResult': false
             }),
-            headers: {
-                'authority': 'mathsolver.microsoft.com',
-                'accept': 'application/json',
-                'accept-language': 'vi,en;q=0.9,en-US;q=0.8',
-                'content-type': 'application/json',
-                'origin': 'https://mathsolver.microsoft.com',
-                'referer': 'https://mathsolver.microsoft.com/vi/solve-problem/10546%2B20%2B30',
-                'sec-ch-ua': '"Chromium";v="106", "Microsoft Edge";v="106", "Not;A=Brand";v="99"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'sec-fetch-dest': 'empty',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-site': 'same-origin',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.52'
-            }
+            headers
         });
         response = await response.json();
 
@@ -54,6 +43,12 @@ export class MathSolver extends Tool {
         response = JSON.parse(response || {result: "Failed to solve."});
         response = _.get(response, 'mathSolverResult', {result: "Failed to solve."});
         response = _.omit(response, 'allGraphData');
+        if(response.actions && Array.isArray(response.actions)) {
+            response.actions = response.actions[0];
+            if (response.actions && response.actions.templateSteps && Array.isArray(response.actions.templateSteps)) {
+                response.actions.templateSteps = response.actions.templateSteps[0];
+            }
+        }
         response = cleanObj(response);
         console.log(response);
         return JSON.stringify(response);

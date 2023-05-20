@@ -1,5 +1,5 @@
 export async function MultilineInputDialog(msg: string): Promise<String | false> {
-    return new Promise<String | false>(function (resolve, reject) {
+    return new Promise<String | false>(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `
             <div class="ui__modal anki_sync_multilineinput" style="z-index: 9999;">
@@ -30,7 +30,10 @@ export async function MultilineInputDialog(msg: string): Promise<String | false>
             </div>
          </div>`;
         const onKeydown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && window.parent.document.activeElement === window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox')) {
+                window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox').blur();
+            }
+            else if (e.key === 'Escape' && window.parent.document.activeElement != window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox')) {
                 window.parent.ChatGPT.MultilineInputDialog.cancel();
             }
             else if (e.key === 'Enter' && window.parent.document.activeElement === window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox')) {
@@ -42,7 +45,6 @@ export async function MultilineInputDialog(msg: string): Promise<String | false>
                 window.parent.ChatGPT.MultilineInputDialog.confirm();
             }
          }
-        window.parent.document.addEventListener('keydown', onKeydown);
         window.parent.ChatGPT.MultilineInputDialog = {};
         window.parent.ChatGPT.MultilineInputDialog.confirm = () => {
             const userInput = (window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox') as HTMLInputElement).value;
@@ -56,5 +58,8 @@ export async function MultilineInputDialog(msg: string): Promise<String | false>
             resolve(false);
         }
         window.parent.document.body.appendChild(div);
+        await new Promise(resolve => setTimeout(resolve, 100)); // Sleep 100ms to wait for the div to be rendered
+        window.parent.document.getElementById('ChatGPTMultilineInputDialogInputBox').focus();
+        window.parent.document.addEventListener('keydown', onKeydown);
     });
 }

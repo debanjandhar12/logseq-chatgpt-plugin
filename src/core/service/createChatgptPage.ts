@@ -36,8 +36,7 @@ export async function createChatgptPageWithPrompt() {
     );
     const selectedPromptWithModifiedName = await SelectCommandPrompt(filteredPromptList, "Select a prompt");
     if (!selectedPromptWithModifiedName) return;
-    const selectedPrompt = filteredPromptList.find(p => new RegExp(p.name.replaceAll('{{userInput}}', '.*')).test(selectedPromptWithModifiedName.name));
-
+    const selectedPrompt = filteredPromptList.find(p => new RegExp(_.escapeRegExp(p.name).replaceAll('\\{\\{\\{userInput\\}\\}\\}', '.*')).test(selectedPromptWithModifiedName.name));
     // - Construct additional page props and first block content -
     const additionalPageProps = {};
     // Collect chatgpt-prompt prop
@@ -45,8 +44,8 @@ export async function createChatgptPageWithPrompt() {
     if (blocks && blocks.length > 0)
         additionalPageProps['chatgpt-prompt-source'] = blocks.map(b => `((${b.uuid}))`).join(' ');
     // Collect content for first block
-    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{userInput}}', '(.*)')))?.slice(1)[0];
-    console.log(selectedPrompt);
+    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '(.*)')))?.slice(1)[0];
+    console.log(input, selectedPromptWithModifiedName.name, new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '(.*)')))
     // Handle create empty chatgpt page prompt
     if (selectedPrompt.name == "Create empty ChatGPT Page") {
         await createChatgptPage("", {}, "");
