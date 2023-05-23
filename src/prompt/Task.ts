@@ -3,7 +3,7 @@ import moment from "moment";
 
 export class Task {
     public static async getPrompts() : Promise<Prompt[]> {
-        let preferedWorkflow = (await logseq.App.getCurrentGraphConfigs())["preferred-workflow"];
+        let preferedWorkflow = _.get(await logseq.App.getCurrentGraphConfigs(), 'preferred-workflow', 'now');
         let [later, now] = preferedWorkflow.toLowerCase() == "now" ? ["LATER", "NOW"] : ["TODO", "DOING"];
         const currentDate = moment().format('YYYY-MM-DD');
         const currentTime = moment().format('HH:mm');
