@@ -32,7 +32,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
     if (parseInt(logseq.settings.CHATGPT_MAX_TOKENS) < 100) {
         throw {
-            message: "CHATGPT_MAX_TOKENS is too small. Please go to settings and set it to at least 100.",
+            message: "CHATGPT_MAX_TOKENS is too small. Please go to settings and set it to at least 100. Recommended value is 3072.",
             type: 'warning'
         };
     }
@@ -258,7 +258,7 @@ const getChatModelStartTrimMessageCallback = (threshold = 0.5, chat: ChatOpenAI)
             return; // This is a hack to prevent WebBrowser summarization from being stripped
         while(getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * threshold))
             chatHistory.shift();
-        chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory);
+        chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory) - 16;
         messages = [chatHistory];
         if (chatHistory.length == 0)
             throw new Error("The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.");
