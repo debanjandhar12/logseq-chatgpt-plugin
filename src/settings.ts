@@ -73,6 +73,13 @@ export const addSettingsToLogseq = async () => {
             default: true
         },
         {
+            key: "ZAPIER_NLA_API_KEY",
+            type: 'string',
+            title: "Zapier NLA API Key",
+            description: "Enter your Zapier NLA API Key here. You can get your API key from https://nla.zapier.com/credentials/ and add actions from https://nla.zapier.com/dev/actions/.",
+            default: ""
+        },
+        {
             key: "heading3",
             title: "🎨 UI Settings",
             description: "",

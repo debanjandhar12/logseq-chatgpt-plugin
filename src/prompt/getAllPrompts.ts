@@ -11,6 +11,8 @@ import {Task} from "./Task";
 import {SpecialPrompts} from "./SpecialPrompts";
 import {Browser} from "./Browser";
 import {Math} from "./Math";
+import {UserDefinedPrompt} from "./UserDefinedPrompt";
+import {ZapierNLA} from "./ZapierNLA";
 
 export async function getAllPrompts() : Promise<Prompt[]> {
     let prompts : Prompt[] = [
@@ -19,6 +21,8 @@ export async function getAllPrompts() : Promise<Prompt[]> {
         ...Flashcard.getPrompts(),
         ...Browser.getPrompts(),
         ...Math.getPrompts(),
+        ...(await ZapierNLA.getPrompts()),
+        ...UserDefinedPrompt.getPrompts(),
         ...Translate.getPrompts(),
         ...SpecialPrompts.getPrompts()
     ];
