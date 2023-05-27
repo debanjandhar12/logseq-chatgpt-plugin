@@ -1,5 +1,6 @@
 import {AskChatgptBtn} from "./AskChatgptBtn";
 import { createChatgptPageWithPrompt } from "../service/createChatgptPage";
+import {UserDefinedPromptEditorDialog} from "../../ui/UserDefinedPromptEditorDialog";
 
 /**
  * This file injects several DWIM commands into logseq, mainly for calling chatgpt and chatgpt page creation.
@@ -41,6 +42,16 @@ export class DWIMCommandsInjector {
             if (editingStatus)
                 await logseq.Editor.selectBlock(editingStatus as string);
             await createChatgptPageWithPrompt();
+        });
+        logseq.App.registerCommand(`logseq-chatgpt-plugin-edit-user-defined-prompt-${logseq.baseInfo.id}`, {
+            key: `logseq-chatgpt-plugin--edit-user-defined-prompt-${logseq.baseInfo.id}`,
+            label: `Edit ChatGPT Custom Prompts`,
+            keybinding: {
+                binding: logseq.settings?.CREATE_CHATGPT_PAGE_SHORTCUT || null
+            },
+            palette: true
+        }, async () => {
+            await UserDefinedPromptEditorDialog();
         });
     }
 }

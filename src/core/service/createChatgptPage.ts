@@ -3,6 +3,7 @@ import _ from "lodash";
 import {SelectCommandPrompt} from "../../ui/SelectCommandPrompt";
 import {getAllPrompts} from "../../prompt/getAllPrompts";
 import {AskChatgptBtn} from "../view/AskChatgptBtn";
+import Mustache from "mustache";
 
 /**
  * Creates a ChatGPT page and opens it in logseq without prompting the user for a prompt.
@@ -40,11 +41,10 @@ export async function createChatgptPageWithPrompt() {
     // - Construct additional page props and first block content -
     const additionalPageProps = {};
     // Collect chatgpt-prompt prop
-    additionalPageProps['chatgpt-prompt'] = selectedPromptWithModifiedName.name.split('\n')[0];
+    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '(.*)')))?.slice(1)[0];
+    additionalPageProps['chatgpt-prompt'] = Mustache.render(selectedPrompt.name, {userInput: (input || '').split('\n')[0]})
     if (blocks && blocks.length > 0)
         additionalPageProps['chatgpt-prompt-source'] = blocks.map(b => `((${b.uuid}))`).join(' ');
-    // Collect content for first block
-    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '(.*)')))?.slice(1)[0];
     console.log(input, selectedPromptWithModifiedName.name, new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '(.*)')))
     // Handle create empty chatgpt page prompt
     if (selectedPrompt.name == "Create empty ChatGPT Page") {

@@ -14,7 +14,6 @@ export class Task {
         const currentTimePlus2Hours = moment().add(2, 'hours').format('HH:mm');
         const currentTimePlus2HoursAlt = moment().add(2, 'hours').format('hh:mm A');
         const weekdayCurrentDate = moment().format('dddd');
-
         return [
             {
                 name: 'Generate Logseq Tasks',

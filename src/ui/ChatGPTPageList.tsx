@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import * as ReactDOM from 'react-dom/client';
+import React, {useEffect, useState} from "react";
+import ReactDOM from 'react-dom';
 import _ from "lodash";
 import {GPT_ICON_18} from "../utils/constants";
 import {createChatgptPage} from "../core/service/createChatgptPage";
@@ -27,10 +27,10 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
                </div>
             </div>
          </div>`;
-        const root = ReactDOM.createRoot(div.getElementsByClassName('chatgptPageList-container')[0]);
+        const container = div.getElementsByClassName('chatgptPageList-container')[0];
         try {
             window.parent.document.body.appendChild(div);
-            root.render(<PageList/>);
+            ReactDOM.render(<PageList />, container);
         } catch (e) {
             // @ts-ignore
             window.parent.ChatGPT.ChatGPTPageList.close();
@@ -50,7 +50,7 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
         window.parent.ChatGPT.ChatGPTPageList = {};
         window.parent.ChatGPT.ChatGPTPageList.close = () => {
             resolve(false);
-            root.unmount();
+            ReactDOM.unmountComponentAtNode(container);
             window.parent.document.body.removeChild(div);
             window.parent.document.removeEventListener('keydown', onKeydown);
         }

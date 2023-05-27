@@ -9,8 +9,7 @@ import {Flashcard} from "./Flashcard";
 import getMessageArrayTokenCount from "../utils/getMessageArrayTokenCount";
 import {Task} from "./Task";
 import {SpecialPrompts} from "./SpecialPrompts";
-import {Browser} from "./Browser";
-import {Math} from "./Math";
+import {WebBrowser} from "./WebBrowser";
 import {UserDefinedPrompt} from "./UserDefinedPrompt";
 import {ZapierNLA} from "./ZapierNLA";
 
@@ -19,10 +18,9 @@ export async function getAllPrompts() : Promise<Prompt[]> {
         ...Basic.getPrompts(),
         ...(await Task.getPrompts()),
         ...Flashcard.getPrompts(),
-        ...Browser.getPrompts(),
-        ...Math.getPrompts(),
+        ...WebBrowser.getPrompts(),
         ...(await ZapierNLA.getPrompts()),
-        ...UserDefinedPrompt.getPrompts(),
+        ...(await UserDefinedPrompt.getPrompts()),
         ...Translate.getPrompts(),
         ...SpecialPrompts.getPrompts()
     ];

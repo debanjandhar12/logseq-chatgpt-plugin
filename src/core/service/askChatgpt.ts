@@ -19,6 +19,7 @@ import {ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder} fro
 import {ConversationChain} from "langchain/chains";
 import {BaseCallbackHandler, Callbacks} from "langchain/callbacks";
 import {CallbackHandlerMethods} from "langchain/dist/callbacks/base";
+import _ from "lodash";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -69,11 +70,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             break;
         }
         messages.push(
-            String(block.properties?.speaker) == "user" ?
+            String(block.properties?.speaker) == "user" || String(block.properties?.speaker) == "[[user]]" ?
                 new UserChatMessage((await LogseqToChatgptConverter.convert(block.content)).trim()) :
                 new AssistantChatMessage((await LogseqToChatgptConverter.convert(block.content)).trim())
         );
-        console.log(messages);
         if (block.children)
             stack.push(...block.children);
     }
@@ -88,8 +88,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
         if (!resultBlock) return;
     }
-    console.log("resultBlock", resultBlock);
-    console.log("messages", messages);
 
     // Check if messages list is valid
     if (pageBlocks.length == 1 || messages.length == 0) {
@@ -117,6 +115,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     // Separate the last message from the rest
     const lastMessage = messages[messages.length - 1];
     const otherMessages = messages.slice(0, messages.length - 1);
+
+    // Add the postfix message from prompt if set
+    if (prompt && prompt.getPromptSuffixMessage)
+        lastMessage.text += "\n"+prompt.getPromptSuffixMessage().trim();
 
     // Call ChatGPT API
     let chatResponse: string = "";
@@ -148,7 +150,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     }, {basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1"});
     chat.modelName = logseq.settings.CHATGPT_MODEL;
     const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history", inputKey: "input"});
-    mem.chatHistory = new ChatMessageHistory(otherMessages.map(msg => { msg.name = undefined; return msg; }));
+    mem.chatHistory = new ChatMessageHistory(otherMessages);
     let result;
     if(isAgentCall) {
         const tools : Tool[] = prompt.tools;
@@ -163,8 +165,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             }
         );
         result = await executor.call({input: lastMessage.text, signal: signal, timeout: 0}, [
-            getToolStartLogCallback(),
-            getChatModelStartTrimMessageCallback(0.6, chat)
+            getToolStartLogCallback(resultBlock),
+            getChatModelStartTrimMessageCallback(chat),
+            getToolEndLogCallback(resultBlock),
+            getToolErrorLogCallback(resultBlock)
         ]);
         chatResponse = result.output;
     }
@@ -184,7 +188,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
                     }
                 },
-                getChatModelStartTrimMessageCallback(0.5, chat)
+                getChatModelStartTrimMessageCallback(chat)
             ]);
         chatResponse = result.response;
     }
@@ -248,29 +252,58 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 }
 
 // LangChain Callback Objects (TODO: Move to separate file)
-const getChatModelStartTrimMessageCallback = (threshold = 0.5, chat: ChatOpenAI) => {
+const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
     res.handleChatModelStart = (llm, messages) => {
+        const originalMessages = _.cloneDeep(messages);
         if (messages.length != 1)
             throw new Error("Wew! The plugin somehow wants to sent concurrent messages. Please contact dev.");
         let chatHistory = messages[0];
-        if (chatHistory.length == 1 && chatHistory[0].text.startsWith("Text:"))
-            return; // This is a hack to prevent WebBrowser summarization from being stripped
-        while(getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * threshold))
-            chatHistory.shift();
+        for (let i = 0; i < chatHistory.length; i++) {
+            if (chatHistory[i].name != "user" && chatHistory[i].name != "assistant") continue; // Skip trimming non-user messages
+            if (getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * 0.5)) {
+                chatHistory.splice(i, 1);
+            }
+        }
         chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory) - 16;
+        chatHistory.map(message => message.name = undefined);
         messages = [chatHistory];
-        if (chatHistory.length == 0)
+        console.log('Chat model call start', originalMessages, messages);
+        if (chatHistory.length == 0 || chat.maxTokens <= 0 || chatHistory[chatHistory.length - 1]._getType() == "system")
             throw new Error("The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.");
-        console.log('Chat model call start', messages);
     }
     return res;
 }
 
-const getToolStartLogCallback = () => {
+const getToolStartLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
-    res.handleToolStart = (tool, input) => {
+    res.handleToolStart = async (tool, input) => {
         console.log(`Starting tool ${tool.name} with input ${input}`);
+        if (resultBlock && resultBlock.uuid) {
+            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + `> 🔧 Starting tool <b>${tool.name}</b> with input <b>${input}</b>`, {properties: {}});
+            await logseq.Editor.exitEditingMode(false);
+        }
+    }
+    return res;
+}
+
+const getToolEndLogCallback = (resultBlock?) => {
+    let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
+    res.handleToolEnd = async (tool, output) => {
+        console.log(`Output from tool: ${output}`);
+        // if (resultBlock && resultBlock.uuid)
+        //     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n", {properties: {}});
+    }
+    return res;
+}
+
+const getToolErrorLogCallback = (resultBlock?) => {
+    let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
+    res.handleToolError = async (error) => {
+        console.error(`Tool error: ${error}`);
+        if (resultBlock && resultBlock.uuid)
+            await logseq.Editor.updateBlock(resultBlock.uuid, "", {properties: {}});
+        throw error;
     }
     return res;
 }

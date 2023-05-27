@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import * as ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import {Prompt} from "../types/Prompt";
 import {MESSAGES_ICON_16, TOOLS_ICON_16} from "../utils/constants";
 import { MultilineInputDialog } from "./MultilineInputDialog";
@@ -37,14 +37,14 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
                 command.name = command.name.replaceAll('{{{userInput}}}', userInput);
             }
             resolve(command);
-            root.unmount();
+            ReactDOM.unmountComponentAtNode(container);
             window.parent.document.body.removeChild(div);
             window.parent.document.removeEventListener('keydown', onKeydown);
         }
-        const root = ReactDOM.createRoot(div.getElementsByClassName('cp__palette-main')[0]);
+        const container = div.getElementsByClassName('cp__palette-main')[0];
         try {
             window.parent.document.body.appendChild(div);
-            root.render(<CommandPlate commands={commands} placeholder={placeholder} onSelect={onSelect}/>);
+            ReactDOM.render(<CommandPlate commands={commands} placeholder={placeholder} onSelect={onSelect}/>, container);
         } catch (e) {
             window.parent.ChatGPT.CommandPrompt.close();
             logseq.App.showMsg("Failed to mount CommandPlate! Error Message: " + e);
@@ -63,7 +63,7 @@ export async function SelectCommandPrompt(commands : Prompt[], placeholder = "En
         window.parent.ChatGPT.CommandPrompt = {};
         window.parent.ChatGPT.CommandPrompt.close = () => {
             resolve(false);
-            root.unmount();
+            ReactDOM.unmountComponentAtNode(container);
             window.parent.document.body.removeChild(div);
             window.parent.document.removeEventListener('keydown', onKeydown);
         }

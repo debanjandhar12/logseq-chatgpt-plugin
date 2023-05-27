@@ -1,6 +1,21 @@
 export function cleanObj(inputObj) {
     function isEmpty(value) {
-        if (value === null || value === undefined || value === "" || value === false) {
+        if (value === null || value === undefined || value === false
+            || (typeof value === 'string' && value.trim() === '')
+            || (typeof value === 'string' && value.startsWith('data:image/png;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/jpeg;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/jpg;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/gif;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/webp;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/svg+xml;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/bmp;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/tiff;base64,'))
+            || (typeof value === 'string' && value.startsWith('data:image/x-icon;base64,'))
+            || (typeof value === 'string' && value.startsWith('base64,'))
+            || (typeof value === 'number' && isNaN(value))
+            || (typeof value === 'object' && Object.keys(value).length === 0)
+            || (typeof value === 'function' && value.toString().trim() === '() => {}')
+            || (typeof value === 'function' && value.toString().trim() === 'function () {}')) {
             return true;
         }
 

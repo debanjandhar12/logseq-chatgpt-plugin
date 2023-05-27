@@ -1,21 +1,15 @@
 import {Prompt, PromptVisibility} from "../types/Prompt";
 import {SearchEngineTool} from "../langchain/tools/SearchEngine";
-import {WebBrowser} from "langchain/tools/webbrowser";
-import {ChatOpenAI} from "langchain/chat_models/openai";
-import {TensorFlowEmbeddings} from "langchain/embeddings/tensorflow";
-import "@tensorflow/tfjs-backend-cpu";
 import Mustache from "mustache";
 import {UserChatMessage} from "../langchain/schema/UserChatMessage";
+import {CustomWebBrowser} from "../langchain/tools/CustomWebBrowser";
 
-export class Browser {
+export class WebBrowser {
     public static getPrompts() : Prompt[] {
-        const model = new ChatOpenAI({ openAIApiKey: logseq.settings.OPENAI_API_KEY, temperature: 0, timeout: 0 },
-            { basePath: logseq.settings.CHATGPT_API_ENDPOINT.replace(/\/chat\/completions\/?$/gi, '').trim() || "https://api.openai.com/v1" });
-        const embeddings = new TensorFlowEmbeddings();
-        const tools = [new SearchEngineTool(), new WebBrowser({ model, embeddings })];
+        const tools = [new SearchEngineTool(), new CustomWebBrowser()];
         return [
             {
-                name: `Search Block(s) using Browser`,
+                name: `Search Block(s) using WebBrowser`,
                 tools,
                 isVisibleInCommandPrompt: PromptVisibility.Blocks,
                 getPromptPrefixMessages: () => [
@@ -39,7 +33,7 @@ export class Browser {
                 group: 'web'
             },
             {
-                name: `Search {{{userInput}}} using Browser`,
+                name: `Search {{{userInput}}} using WebBrowser`,
                 tools,
                 isVisibleInCommandPrompt: PromptVisibility.NoInput,
                 getPromptPrefixMessages: () => [
@@ -59,7 +53,7 @@ export class Browser {
                 group: 'web'
             },
             {
-                name: `{{{userInput}}} using Browser`,
+                name: `{{{userInput}}} using WebBrowser`,
                 tools,
                 isVisibleInCommandPrompt: PromptVisibility.NoInput,
                 getPromptMessage: (userInput) =>

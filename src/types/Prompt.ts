@@ -18,7 +18,8 @@ export type Prompt = {
     group: string;  // A misc string that represents the group to which the prompt belongs
 
     // -- Fields for Phase 2 --
-    getPromptPrefixMessages?: () => BaseChatMessage[];
+    getPromptPrefixMessages?: () => BaseChatMessage[];  // Hidden messages that are prepended to the message history when the prompt is run
+    getPromptSuffixMessage?: () => string; // Hidden message that is appended to the prompt message
     promptPrefixMessagesLength?: number; // The length of getPromptPrefixMessages (filled automatically)
 }
 
@@ -36,5 +37,9 @@ export class PromptVisibility {
 
     static NoInput = (invokeState) => {
         return !invokeState.selectedBlocks || invokeState.selectedBlocks.length == 0;
+    }
+
+    static Never = (invokeState) => {
+        return false;
     }
 }
