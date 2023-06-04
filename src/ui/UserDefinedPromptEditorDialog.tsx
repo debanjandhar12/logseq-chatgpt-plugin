@@ -2,12 +2,14 @@ import React, {useEffect, useState} from "react";
 import ReactDOM from 'react-dom';
 import {GPT_ICON_18} from "../utils/constants";
 import {UserDefinedPrompt} from "../types/UserDefinedPrompt";
+import {MultilineInputDialog} from "./MultilineInputDialog";
+import _ from "lodash";
 
 export async function UserDefinedPromptEditorDialog(): Promise<Array<UserDefinedPrompt> | boolean> {
     return new Promise<Array<any> | boolean>(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `
-            <div class="ui__modal settings-modal cp__settings-main" style="z-index: 9999;">
+            <div class="ui__modal settings-modal cp__settings-main" style="z-index: 999;">
             <div class="ui__modal-overlay ease-out duration-300 opacity-100 enter-done">
                <div class="absolute inset-0 opacity-75"></div>
             </div>
@@ -122,6 +124,47 @@ const Toolbar = ({userDefinedPromptList, currentPromptIdx, setCustomPromptList, 
         decrementCurrentPromptIdx();
     }
 
+    const importFromPromptCode = async () => {
+        const promptCode = await MultilineInputDialog("Paste the prompt code here:");
+        if (!promptCode) {
+            return;
+        }
+        try {
+            if (!promptCode.startsWith('lsChatGPT')) {
+                throw new Error("Invalid prompt code!");
+            }
+            const prompt = JSON.parse(atob(promptCode.replace('lsChatGPT', '')));
+            if (!prompt) {
+                throw new Error("Invalid prompt code!");
+            }
+            if (_.find(userDefinedPromptList, {name: prompt.name})) {
+                throw new Error(`A prompt with the name "${prompt.name}" already exists!`);
+            }
+            if (prompt.name && prompt.name.trim() !== '') {
+                await setCustomPromptList(() => [...userDefinedPromptList, prompt]);
+                setCurrentPromptIdx(userDefinedPromptList.length);
+            }
+            await setCustomPromptList(() => [...userDefinedPromptList, prompt]);
+            setCurrentPromptIdx(userDefinedPromptList.length);
+        }
+        catch (e) {
+            logseq.App.showMsg("Failed to import prompt!\n" + e, 'error');
+            console.error(e);
+        }
+    }
+
+    const exportToPromptCode = async () => {
+        const currentPrompt = userDefinedPromptList[currentPromptIdx];
+        if (!currentPrompt || !currentPrompt.name || currentPrompt.name.trim() == '') {
+            logseq.App.showMsg("Cannot export prompt with no name!", 'error');
+            return;
+        }
+        const code = `lsChatGPT${btoa(JSON.stringify(currentPrompt))}`;
+        await window.parent.navigator.clipboard.writeText(code);
+        logseq.App.showMsg("Prompt code copied to clipboard!\n"
+                            + "You can share and later import this prompt by pasting this code.");
+    }
+
     return (
         <div className="flex" style={{justifyContent: 'space-between', marginTop: '0.3rem', marginBottom: '0.3rem'}}>
             <div style={{display: 'flex', justifyContent: 'flex-start', marginTop: '1rem'}}>
@@ -144,12 +187,21 @@ const Toolbar = ({userDefinedPromptList, currentPromptIdx, setCustomPromptList, 
                     d="M18 15l-6 -6l-6 6h12" transform="rotate(90 12 12)"></path></svg></span></a>
             </div>
             <div>
+                <button onClick={importFromPromptCode}
+                        className="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm"
+                        style={{margin: '0.125rem 0.25rem 0.125rem 0', padding: '.35rem .35rem'}}><i className="ti ti-world-download" style={{fontSize: '0.85rem'}}></i>
+                </button>
+                <button onClick={exportToPromptCode}
+                        className="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm"
+                        style={{margin: '0.125rem 0.25rem 0.125rem 0', padding: '.35rem .35rem'}}><i className="ti ti-world-upload" style={{fontSize: '0.85rem'}}></i>
+                </button>
+                <span style={{borderLeft: '1px solid var(--ls-border-color)', height: '1.25rem', margin: '0.125rem 0.4rem 0.125rem 0.4rem'}}></span>
                 <button onClick={deleteCurrentPrompt}
                         className="ui__button bg-red-600 hover:bg-red-700 focus:border-red-700 active:bg-red-700 text-center text-sm"
                         style={{margin: '0.125rem 0.25rem 0.125rem 0', padding: '.35rem .35rem'}}><i className="ti ti-trash" style={{fontSize: '1.25rem'}}></i>
                 </button>
                 <button onClick={createNewPrompt}
-                        className="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm"
+                        className="ui__button bg-green-600 hover:bg-green-700 focus:border-green-700 active:bg-green-700 text-center text-sm"
                         style={{margin: '0.125rem 0.25rem 0.125rem 0', padding: '.35rem .35rem'}}><i className="ti ti-plus" style={{fontSize: '1.25rem'}}></i>
                 </button>
             </div>
