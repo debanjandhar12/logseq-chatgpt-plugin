@@ -218,7 +218,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         if (outline && (await Confirm("The message contains data in the form of an outline. Would you like to add it as separate blocks?"))) {
                             await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: false});
                         } else {
-                            selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {sibling: false});
+                            let sanitizedOutput = ChatgptToLogseqSanitizer.sanitize(chatResponse.trim());
+                            sanitizedOutput = sanitizedOutput.replace(/^(\s| )+/gm, ''); // Remove task prompt wierd char
+                            selectBlockAfterOp = await logseq.Editor.insertBlock(block.uuid, sanitizedOutput, {sibling: false});
                         }
                         if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
                             await logseq.Editor.deletePage(page.originalName)
@@ -228,15 +230,17 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             ];
             if (blocksMatch.length == 1) {
                 buttonArr.push({
-                    label: "Replace",
-                    labelSuffix: "🔄",
-                    onClick: async () => {
-                        await logseq.Editor.updateBlock(block.uuid, ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()));
-                        if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
-                            await logseq.Editor.deletePage(page.originalName);
-                        await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
-                    }
-                });
+                        label: "Replace",
+                        labelSuffix: "🔄",
+                        onClick: async () => {
+                            let sanitizedOutput = ChatgptToLogseqSanitizer.sanitize(chatResponse.trim());
+                            sanitizedOutput = sanitizedOutput.replace(/^(\s| )+/gm, ''); // Remove task prompt wierd char
+                            await logseq.Editor.updateBlock(block.uuid, sanitizedOutput);
+                            if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
+                                await logseq.Editor.deletePage(page.originalName);
+                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
+                        }
+                    });
             }
             ActionableNotification("What action would you like to perform with the result from ChatGPT?", buttonArr,
                 {

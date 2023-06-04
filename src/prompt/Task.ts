@@ -23,10 +23,10 @@ export class Task {
                         selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 getPromptPrefixMessages: () => [
                     new UserChatMessage(`Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`),
-                    new UserChatMessage(`I want you to act like a loseq task generator. You take the input and create one or more tasks from it. DO NOT refer to yourself. 
+                    new UserChatMessage(`I want you to act like a loseq task generator. You take the input and output one or more logseq tasks. Please do not refer to yourself AND do not forget to add the   (non-breaking space) unicode charecter before the SCHEDULED tag. 
                     Logseq Tasks have the following format:
                     - {${later}|${now}} Task Title
-                       SCHEDULED: <[Date] [Weekday] [Time] [.Repeater]>
+                       SCHEDULED: <[Start Date] [Weekday] [Start Time] [.Repeater]>
                     ____
                     _user_
                     Generate Tasks:
@@ -46,9 +46,9 @@ export class Task {
                     ____
                     _user_
                     Generate Tasks:
-                    I want to sleep now.
+                    I want to brush teeth right now.
                     _you_
-                    - ${now} sleep
+                    - ${now} brush teeth
                        SCHEDULED: <${currentDate} ${weekdayCurrentDate} ${currentTime}>
                     ____
             `.replaceAll('                    ', '').trim())
