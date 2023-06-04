@@ -16,7 +16,7 @@ const MLDOCS_OPTIONS = {
 };
 
 export class LogseqToChatgptConverter {
-    public static async convert(text: string): Promise<string> {
+    public static async convert(text: string, blockUUID = ''): Promise<string> {
         text = removePropsFromBlockContent(text);
 
         let parsedJson = Mldoc.parseInlineJson(text,
@@ -28,7 +28,6 @@ export class LogseqToChatgptConverter {
         } catch {
             parsedJson = [];
         }
-
         let textUTF8 = new TextEncoder().encode(text);
         for (let i = parsedJson.length - 1; i >= 0; i--) {
             let node = parsedJson[i];
@@ -43,6 +42,9 @@ export class LogseqToChatgptConverter {
                     break;
                 case "Macro":
                     textUTF8 = await LogseqToChatgptConverter.convertMacro(node, textUTF8);
+                    break;
+                case "Inline_Hiccup":
+                    textUTF8 = await LogseqToChatgptConverter.convertHiccup(node, textUTF8, blockUUID);
                     break;
             }
         }
@@ -62,7 +64,7 @@ export class LogseqToChatgptConverter {
             try {
                 blockContent = (await logseq.Editor.getBlock(blockRefUUID)).content;
                 const blockContentFirstLine = blockContent.replace(/^(\n|\s)*/, '').split("\n")[0];
-                nodeText = await LogseqToChatgptConverter.convert(blockContentFirstLine);
+                nodeText = await LogseqToChatgptConverter.convert(blockContentFirstLine, blockRefUUID);
             } catch (e) { console.log(e); nodeText = '';  }
         }
         return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
@@ -78,7 +80,7 @@ export class LogseqToChatgptConverter {
             const blockRefUUID = node[0][1]?.arguments[0].substring(2, node[0][1]?.arguments[0].length-2);
             try {
                 const generateOutline = async (block, level) => {
-                    let processedBlockContent = (await LogseqToChatgptConverter.convert(block.content)).trim();
+                    let processedBlockContent = (await LogseqToChatgptConverter.convert(block.content, block.uuid)).trim();
                     let outline = "";
                     outline += "  ".repeat(level) + ((level != 0 || (block.children || []).length != 0) ? "- " : "") + processedBlockContent.split('\n')[0];
                     processedBlockContent.split('\n').slice(1).forEach((line) => {
@@ -98,6 +100,38 @@ export class LogseqToChatgptConverter {
             if(prevText != "\n")
                 nodeText = "\n"+nodeText;
         }
+        return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
+    }
+
+    /**
+     * Convert [:span] hiccup into image annotation for pdf annotation
+     */
+    private static async convertHiccup(node, resultUTF8, blockUUID) {
+        let {start_pos, end_pos} = LogseqToChatgptConverter.parseNode(node);
+        let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
+        if (nodeText != "[:span]")
+            return resultUTF8;
+        let block;
+        try {
+            block = await logseq.Editor.getBlock(blockUUID);
+            if (block && block.properties && block.page) {
+                let blockPageName = block.page.originalName;
+                if (!blockPageName) {
+                    const page = await logseq.Editor.getPage(block.page.id);
+                    blockPageName = page.originalName;
+                }
+                const blockProps = block.properties;
+                const blockLSType = blockProps["ls-type"] || blockProps["lsType"];
+                const blockHlType = blockProps["hl-type"] || blockProps["hlType"];
+                const blockHlPageNo = blockProps["hl-page"] || blockProps["hlPage"];
+                const blockHlStamp = blockProps["hl-stamp"] || blockProps["hlStamp"];
+                if (blockLSType == "annotation" && blockHlType == "area") {  // Image annotation
+                    let hlsImgLoc = `../assets/${blockPageName.replace("hls__", "")}/${blockHlPageNo}_${blockUUID}_${blockHlStamp}.png`;
+                    nodeText = `![](${hlsImgLoc})`;
+                }
+            }
+        }
+        catch (e) {}
         return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
     }
 
