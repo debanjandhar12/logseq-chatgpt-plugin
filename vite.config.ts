@@ -12,15 +12,12 @@ function staticFileSyncPlugin() {
     return {
         name: 'static-readFileSync',
         transform(code, id) {
-
             if (/\.(js|ts|tsx|jsx|mjs)(\?.*)?$/.test(id) && code.includes('readFileSync')) {
                 let curDir = path.dirname(id);
                 if (curDir.includes('node_modules/.vite')) {    // We are in a vite cache folder. We need original path.
                     curDir = path.join(__dirname, '/node_modules/', path.parse(path.basename(id)).name);
                 }
-                let modified = false, ast;
-
-                ast = parseSync(code, { sourceType: 'module' });
+                const ast = parseSync(code, { sourceType: 'module' });
                 traverse(ast, {
                     Identifier(nodePath) {
                         if (nodePath.node.name === '__dirname') {
@@ -28,9 +25,6 @@ function staticFileSyncPlugin() {
                         }
                     },
                 });
-                code = generate(ast, { retainLines: true }).code;
-
-                ast = parseSync(code, { sourceType: 'module' });
                 traverse(ast, {
                     CallExpression(nodePath) {
                         const { callee, arguments: args } = nodePath.node;
@@ -43,9 +37,6 @@ function staticFileSyncPlugin() {
                         }
                     },
                 });
-                code = generate(ast, { retainLines: true }).code;
-
-                ast = parseSync(code, { sourceType: 'module' });
                 traverse(ast, {
                     CallExpression(nodePath) {
                         const { callee, arguments: args } = nodePath.node;
@@ -65,9 +56,9 @@ function staticFileSyncPlugin() {
                         }
                     },
                 });
-                code = generate(ast, { retainLines: true }).code;
-                const map = generate(ast, { retainLines: true }).map;
-
+                const generated = generate(ast, { retainLines: true });
+                code = generated.code;
+                const map = generated.map;
                 return { code, map };
             }
         },
