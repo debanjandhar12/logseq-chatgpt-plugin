@@ -25,6 +25,7 @@ jobs:
       - name: Build
         id: build
         run: |
+          export NODE_OPTIONS="--max_old_space_size=4096"
           yarn run build
           mkdir ${{ steps.package.outputs.package_name }}
           cp README.md package.json icon.png ${{ steps.package.outputs.package_name }}
