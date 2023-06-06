@@ -126,42 +126,40 @@ const Toolbar = ({userDefinedPromptList, currentPromptIdx, setCustomPromptList, 
 
     const importFromPromptCode = async () => {
         const promptCode = await MultilineInputDialog("Paste the prompt code here:");
-        if (!promptCode) {
-            return;
+        if (!promptCode || !promptCode.startsWith('lsChatGPT')) {
+          return;
         }
         try {
-            if (!promptCode.startsWith('lsChatGPT')) {
-                throw new Error("Invalid prompt code!");
-            }
-            const prompt = JSON.parse(atob(promptCode.replace('lsChatGPT', '')));
-            if (!prompt) {
-                throw new Error("Invalid prompt code!");
-            }
-            if (_.find(userDefinedPromptList, {name: prompt.name})) {
-                throw new Error(`A prompt with the name "${prompt.name}" already exists!`);
+          const promptList = JSON.parse(atob(promptCode.replace('lsChatGPT', '')));
+          if (!promptList) {
+            throw new Error("Invalid prompt code!");
+          }
+          for (const prompt of promptList) {
+            const isDuplicate = userDefinedPromptList.some((userPrompt) => userPrompt.name === prompt.name);
+            if (isDuplicate) {
+              logseq.UI.showMsg(`A prompt with the name "${prompt.name}" already exists!`, 'warning');
+              continue;
             }
             if (prompt.name && prompt.name.trim() !== '') {
-                await setCustomPromptList(() => [...userDefinedPromptList, prompt]);
-                setCurrentPromptIdx(userDefinedPromptList.length);
+              await setCustomPromptList(() => [...userDefinedPromptList, prompt]);
+              setCurrentPromptIdx(userDefinedPromptList.length);
             }
-            await setCustomPromptList(() => [...userDefinedPromptList, prompt]);
-            setCurrentPromptIdx(userDefinedPromptList.length);
+          }
+        } catch (error) {
+          logseq.UI.showMsg(`Failed to import prompt!\n${error}`, 'error');
+          console.error(error);
         }
-        catch (e) {
-            logseq.App.showMsg("Failed to import prompt!\n" + e, 'error');
-            console.error(e);
-        }
-    }
+      }
 
     const exportToPromptCode = async () => {
         const currentPrompt = userDefinedPromptList[currentPromptIdx];
         if (!currentPrompt || !currentPrompt.name || currentPrompt.name.trim() == '') {
-            logseq.App.showMsg("Cannot export prompt with no name!", 'error');
+            logseq.UI.showMsg("Cannot export prompt with no name!", 'error');
             return;
         }
-        const code = `lsChatGPT${btoa(JSON.stringify(currentPrompt))}`;
+        const code = `lsChatGPT${btoa(JSON.stringify([currentPrompt]))}`;
         await window.parent.navigator.clipboard.writeText(code);
-        logseq.App.showMsg("Prompt code copied to clipboard!\n"
+        logseq.UI.showMsg("Prompt code copied to clipboard!\n"
                             + "You can share and later import this prompt by pasting this code.");
     }
 

@@ -17,8 +17,7 @@ export class UserDefinedPrompt {
         let userDefinedPrompts = [];
         try {
             userDefinedPrompts = JSON.parse(logseq.settings.userDefinedPromptList);
-        } catch {
-        }
+        } catch {}
 
         // Filter out empty names
         userDefinedPrompts = userDefinedPrompts.filter((userDefinedPrompt) => {
@@ -46,8 +45,7 @@ export class UserDefinedPrompt {
                     const zapierNLAWrapper = new ZapierNLAWrapper({apiKey: logseq.settings.ZAPIER_NLA_API_KEY});
                     tools = (await ZapierToolKit.fromZapierNLAWrapper(zapierNLAWrapper)).tools;
                     zapierLoadedSuccessfully = true;
-                } catch (e) {
-                }
+                } catch (e) {}
                 if (tools.length == 0) {
                     tools = [new DynamicTool({
                         name: 'Zapier',
@@ -75,7 +73,7 @@ export class UserDefinedPrompt {
                     func: async (input) => {
                         // Prepare other stuff
                         let base64Input = '', fileInput;
-                        if (body.includes('base64:input') || headers.includes('base64:input') || body.includes('file:input')) {
+                        if (headers.includes('eval') || headers.includes('base64:input') || body.includes('eval') || body.includes('base64:input') || body.includes('file:input')) {
                             let getBase64 = async (url) => {
                                 const response = await fetch(url);
                                 const blob = await response.blob();
@@ -88,7 +86,7 @@ export class UserDefinedPrompt {
                                 return (reader.result as string);
                             }
                             let getFile = async (url) => {
-                                const fileName = url.split('/').pop();
+                                const fileName = new URL(url).pathname.split('/').pop();
                                 const response = await fetch(url);
                                 const blob = await response.blob();
                                 return new File([blob], fileName, {type: blob.type});
@@ -117,45 +115,70 @@ export class UserDefinedPrompt {
                         }
 
                         // Prepare the request parameters
-                        let bodyObj = JSON5.parse(body);
-                        if (userDefinedPrompt.tool.metadata.bodyType == 'Form Data') {
-                            let formData = new FormData();
-                            for (let key in bodyObj) {
-                                let value = bodyObj[key];
-                                if (typeof value == 'string') {
-                                    if (value.trim() == '{{{file:input}}}')
-                                        value = fileInput;
-                                    else
-                                        value = Mustache.render(value, {
-                                            input: input,
-                                            "base64:input": () => base64Input
-                                        });
-                                }
-                                formData.append(key, value);
-                            }
-                            bodyObj = formData;
-                        } else {
-                            bodyObj = _.mapValues(bodyObj, (value) => {
+                        let headersObj : any = {};
+                        try {
+                            headersObj = JSON5.parse(headers);
+                            headersObj = _.mapValues(headersObj, (value) => {
                                 if (typeof value == 'string')
                                     return Mustache.render(value, {
                                         input: input,
-                                        "base64:input": () => base64Input
+                                        "base64:input": () => base64Input,
+                                        "eval": function () {
+                                            return function (code) {
+                                                return (() => eval(code)).call(this);
+                                            }
+                                        }
                                     });
                                 else
                                     return value;
                             });
-                            bodyObj = JSON.stringify(bodyObj);
+                        } catch (e) {
+                            throw new Error(e+'at headers');
                         }
-                        let headersObj = JSON5.parse(headers);
-                        headersObj = _.mapValues(headersObj, (value) => {
-                            if (typeof value == 'string')
-                                return Mustache.render(value, {
-                                    input: input,
-                                    "base64:input": () => base64Input
+                        let bodyObj : any = '{}';
+                        try {
+                            if (userDefinedPrompt.tool.metadata.bodyType == 'Form Data') {
+                                let formData = new FormData();
+                                for (let key in bodyObj) {
+                                    let value = bodyObj[key];
+                                    if (typeof value == 'string') {
+                                        if (value.trim() == '{{{file:input}}}')
+                                            value = fileInput;
+                                        else
+                                            value = Mustache.render(value, {
+                                                input: input,
+                                                "base64:input": base64Input,
+                                                "eval": function () {
+                                                    return function (code) {
+                                                        return (() => eval(code)).call(this);
+                                                    }
+                                                }
+                                            });
+                                    }
+                                    formData.append(key, value);
+                                }
+                                bodyObj = formData;
+                            } else {
+                                bodyObj = _.mapValues(bodyObj, (value) => {
+                                    if (typeof value == 'string')
+                                        return Mustache.render(value, {
+                                            input: input,
+                                            "base64:input": base64Input,
+                                            "timestamp": () => new Date().getTime(),
+                                            "eval": function () {
+                                                return function (code) {
+                                                    return (() => eval(code)).call(this);
+                                                }
+                                            }
+                                        });
+                                    else
+                                        return value;
                                 });
-                            else
-                                return value;
-                        });
+                                bodyObj = JSON.stringify(bodyObj);
+                            }
+                        } catch (e) {
+                            throw new Error(e+'at body');
+                        }
                         const response = await fetch(apiEndpoint, {
                             method: method || 'POST',
                             body: bodyObj || '{}',
@@ -169,8 +192,7 @@ export class UserDefinedPrompt {
                             try {
                                 result = convertNestedJSONStringToObj(result);
                                 result = cleanObj(result);
-                            } catch (e) {
-                            }
+                            } catch (e) {}
                             result = JSON.stringify(result);
                         } catch {
                             result = await response.text();
