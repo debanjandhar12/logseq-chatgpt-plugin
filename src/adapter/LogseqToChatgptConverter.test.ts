@@ -1,30 +1,49 @@
+import { test, describe, expect, vi } from 'vitest'
 import {LogseqToChatgptConverter} from "./LogseqToChatgptConverter";
 import { TextEncoder, TextDecoder } from 'util';
+import {ILSPluginUser} from "@logseq/libs/dist/LSPlugin";
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
-
-
-logseq.Editor.getBlock = jest.fn().mockImplementation(async (blockRefUUID, opts = {includeChildren: false}) => {
-    switch (blockRefUUID) {
-        case '642146e4-bae3-47cf-world':
-            return { content: 'World', children: [] };
-        case '642146e4-bae3-nested-hello-world':
-            return { content: '\n\nTitle ((642146e4-bae3-47cf-world))\nI am not title.', children: [] };
-        case 'hello-world-with-children':
-            return { content: 'Title ((642146e4-bae3-47cf-world))', children: [
-                    { content: '\n\nChildren 1',  children: []},
-                    { content: '\n\nChildren 2',  children: [{ content: '\n\nSub-Children 1'}]}
-                ]};
-        case 'hello-world-with-children2':
-            return { content: 'Title\n((642146e4-bae3-47cf-world))', children: [
-                    { content: '\n\nChildren 1',  children: [{ content: '\n\nSub-Children 1\nSome more text'}]},
-                    { content: '\n\nChildren 2',  children: []}
-                ]};
-        default:
-            throw new Error("UUID not found");
+global.logseq = {
+    // @ts-ignore
+    Editor: {
+        getBlock: vi.fn().mockImplementation(async (blockRefUUID, opts = {includeChildren: false}) => {
+            switch (blockRefUUID) {
+                case '642146e4-bae3-47cf-world':
+                    return { content: 'World', children: [] };
+                case '642146e4-bae3-nested-hello-world':
+                    return { content: '\n\nTitle ((642146e4-bae3-47cf-world))\nI am not title.', children: [] };
+                case 'hello-world-with-children':
+                    return { content: 'Title ((642146e4-bae3-47cf-world))', children: [
+                            { content: '\n\nChildren 1',  children: []},
+                            { content: '\n\nChildren 2',  children: [{ content: '\n\nSub-Children 1'}]}
+                        ]};
+                case 'hello-world-with-children2':
+                    return { content: 'Title\n((642146e4-bae3-47cf-world))', children: [
+                            { content: '\n\nChildren 1',  children: [{ content: '\n\nSub-Children 1\nSome more text'}]},
+                            { content: '\n\nChildren 2',  children: []}
+                        ]};
+                case 'image-pdf-highlighting':
+                    return { content: '[:span]', page: {originalName: 'hls__C Programing'}, properties: {
+                        lsType: 'annotation', hlType: 'area', hlStamp: '1111', hlPage: '1'},
+                        children: []};
+                default:
+                    throw new Error("UUID not found");
+            }
+        })
     }
+}
+describe('basic rendering test', () => {
+    test('basic text', async () => {
+        expect(await LogseqToChatgptConverter.convert("Hello\nWorld")).toEqual("Hello\nWorld");
+    });
+    test('text containing hiccups', async () => {
+        expect(await LogseqToChatgptConverter.convert("[:span]")).toEqual("[:span]");
+    });
+    test('text containing html', async () => {
+        expect(await LogseqToChatgptConverter.convert("<span>Hello</span>")).toEqual("<span>Hello</span>");
+    })
 });
-
 describe('block ref tests', () => {
     test('basic block ref', async () => {
         expect(await LogseqToChatgptConverter.convert("Hello ((642146e4-bae3-47cf-world))")).toEqual("Hello World");
@@ -71,6 +90,12 @@ describe('block embed with children tests', () => {
     });
     test('basic block embed with children 2', async () => {
         expect(await LogseqToChatgptConverter.convert("Hello\nWorld\n{{embed ((hello-world-with-children2))}}")).toEqual("Hello\nWorld\n- Title\n  World\n  - Children 1\n    - Sub-Children 1\n      Some more text\n  - Children 2\n");
+    });
+});
+
+describe('pdf image test', () => {
+    test('pdf image ref', async () => {
+        expect(await LogseqToChatgptConverter.convert("((image-pdf-highlighting))")).toEqual("![](../assets/C Programing/1_image-pdf-highlighting_1111.png)");
     });
 });
 

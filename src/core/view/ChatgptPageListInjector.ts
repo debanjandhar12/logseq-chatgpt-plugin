@@ -1,6 +1,6 @@
 import {ChatGPTPageList} from "../../ui/ChatGPTPageList";
 import registerSideNavBarItem, {unregisterSideNavBarItem} from "../../logseq/registerSideNavBarItem";
-import {ICON_18} from "../../utils/constants";
+import {GPT_ICON_18} from "../../utils/constants";
 
 export class ChatgptPageListInjector {
     static init() {
@@ -13,7 +13,7 @@ export class ChatgptPageListInjector {
             palette: true
         }, ChatGPTPageList);
         if(logseq.settings?.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR)
-            registerSideNavBarItem("ChatGPT", ICON_18, ChatGPTPageList);
+            registerSideNavBarItem("ChatGPT", GPT_ICON_18, ChatGPTPageList);
         logseq.beforeunload(async () => {
             try {
                 unregisterSideNavBarItem("ChatGPT");

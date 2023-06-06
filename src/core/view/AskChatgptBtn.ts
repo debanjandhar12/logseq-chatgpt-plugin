@@ -4,7 +4,7 @@
 import {
     CHATGPT_ASK_BUTTON_CONTENT,
     CHATGPT_ASKING_BUTTON_CONTENT,
-    CHATGPT_STOP_BUTTON_CONTENT
+    CHATGPT_CANCEL_BUTTON_CONTENT
 } from "../../utils/constants";
 import {LogseqProxy} from "../../logseq/LogseqProxy";
 import {askChatGPT} from "../service/askChatgpt";
@@ -61,21 +61,28 @@ export class AskChatgptBtn {
                 await logseq.UI.showMsg("The Ask ChatGPT button failed to mount.\nYou can still use the Ask ChatGPT command / shortcut to interact with the page.", "warning", {timeout: 3200});
 
             // Add click event listener to button
-            button.addEventListener("click", async () => {
+            button.addEventListener("click", () => {
                 if (!this.inAskingInProgress)
-                    await AskChatgptBtn.askChatGPTWrapper();
-                else this.abortController.abort();
-            });
+                    AskChatgptBtn.askChatGPTWrapper();
+                else
+                    this.abortController.abort();
+            }, {capture: true});
 
             // Change color to blue on hover
-            button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "rgba(59,130,246, 1)";
-                if (this.inAskingInProgress)
-                    button.innerHTML = CHATGPT_STOP_BUTTON_CONTENT;
+            button.addEventListener("mousemove", () => {
+                button.style.backgroundColor = "rgba(59,130,246, 1)"
+                if (!this.inAskingInProgress) return;
+                if (button.matches(":hover"))
+                    button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
+                else
+                    button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
             });
             button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "rgba(59,130,246, .7)";
-                if (this.inAskingInProgress)
+                button.style.backgroundColor = "rgba(59,130,246, .7)"
+                if (!this.inAskingInProgress) return;
+                if (button.matches(":hover"))
+                    button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
+                else
                     button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
             });
             button.style.backgroundColor = "rgba(59,130,246, .7)";
@@ -105,7 +112,9 @@ export class AskChatgptBtn {
         const button: HTMLButtonElement = window.parent.document.querySelector(`.logseq-chatgpt-callAPI-${logseq.baseInfo.id}`) || window.parent.document.createElement("button");
         if (!button.classList.contains(`logseq-chatgpt-callAPI-${logseq.baseInfo.id}`))
             await logseq.UI.showMsg("ChatGPT is Thinking...");
-        button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
+        if (button.matches(":hover"))
+            button.innerHTML = CHATGPT_CANCEL_BUTTON_CONTENT;
+        else button.innerHTML = CHATGPT_ASKING_BUTTON_CONTENT;
         try {
             await logseq.provideStyle({ // Disable editor popups
                 key: "hide-editor-popups",
@@ -118,15 +127,27 @@ export class AskChatgptBtn {
             const currentPage = await logseq.Editor.getCurrentPage();
             await askChatGPT(currentPage.originalName,{signal: this.abortController.signal});
         } catch (e) {
-            if (e.name == "AbortError") return; // Ignore abort error
             if (e.blockUUID) {
                 const page = await logseq.Editor.getCurrentPage();
                 await logseq.Editor.selectBlock(e.blocsignalkUUID);
             }
             let errorMsg = e.message || e.toString();
-            errorMsg = errorMsg.replace(/^Request error: /, "");
-            if (!errorMsg.includes("This readable stream reader has been released and cannot be used to read"))
-                await logseq.UI.showMsg(errorMsg, e.type || "error", {timeout: 5000});
+            errorMsg = errorMsg.trim();
+            if (errorMsg.startsWith("Request failed with status code")) {
+                // Error msg contains:
+                // Request failed with status code 401 and body {"error":{"message":"Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.","type":"invalid_request_error","param":null,"code":"invalid_api_key"}}
+                // We parse the error message to get the actual error message
+                errorMsg = errorMsg.substring(errorMsg.indexOf("{"));
+                errorMsg = errorMsg.substring(0, errorMsg.lastIndexOf("}") + 1);
+                errorMsg = JSON.parse(errorMsg);
+                errorMsg = errorMsg.error.message || errorMsg.error.code;
+            }
+            if (errorMsg.startsWith("Cancel: cancel")) return; // Ignore abort error
+            if (errorMsg.startsWith("[] is too short - 'messages'") && logseq.settings.CHATGPT_MAX_TOKENS < 3072)    // Handle empty prompt error due to trimming
+                errorMsg = "Failed to call ChatGPT due to context limit. Please consider increasing the MAX_TOKENS limit to at least 3072 in settings.";
+            else if (errorMsg.startsWith("[] is too short - 'messages'"))
+                errorMsg = "Failed to call ChatGPT due to context limit.";
+            await logseq.UI.showMsg("Error: " + errorMsg, e.type || "error", {timeout: 5000});
             if (e.blockUUID)
                 await logseq.Editor.selectBlock(e.blockUUID);
             console.log(e);

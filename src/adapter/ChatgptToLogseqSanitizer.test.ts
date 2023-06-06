@@ -1,3 +1,4 @@
+import { test, describe, expect } from 'vitest'
 import {ChatgptToLogseqSanitizer} from "./ChatgptToLogseqSanitizer";
 import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;

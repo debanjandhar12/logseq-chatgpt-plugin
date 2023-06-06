@@ -2,14 +2,14 @@ import {SettingSchemaDesc} from '@logseq/libs/dist/LSPlugin';
 import _ from 'lodash';
 import {LogseqProxy} from "./logseq/LogseqProxy";
 import registerSideNavBarItem, {unregisterSideNavBarItem} from "./logseq/registerSideNavBarItem";
-import {ICON_18} from "./utils/constants";
+import {GPT_ICON_18} from "./utils/constants";
 import {ChatGPTPageList} from "./ui/ChatGPTPageList";
 
 export const addSettingsToLogseq = async () => {
     const settingsTemplate: SettingSchemaDesc[] = [
         {
             key: "heading1",
-            title: "🤖 OPENAI Settings",
+            title: "OPENAI Settings",
             description: "",
             type: "heading",
             default: null,
@@ -56,7 +56,28 @@ export const addSettingsToLogseq = async () => {
             type: 'number',
             title: "ChatGPT Max Tokens",
             description: "Enter the maximum number of tokens for ChatGPT. See https://platform.openai.com/docs/guides/chat for more information.",
-            default: 3584
+            default: 4000
+        },
+        {
+            key: "heading2",
+            title: "️🔗 Langchain Settings",
+            description: "",
+            type: "heading",
+            default: null,
+        },
+        {
+            key: "ENABLE_LANGCHAIN_TOOL_PROMPTS",
+            type: 'boolean',
+            description: "Enable Prompts powered by Langchain Tools </br> <sub>(prompts powered by Langchain tools cost 10x more than normal prompts and are in beta)</sub>",
+            title: "",
+            default: true
+        },
+        {
+            key: "ZAPIER_NLA_API_KEY",
+            type: 'string',
+            title: "Zapier NLA API Key",
+            description: "Enter your Zapier NLA API Key here. You can get your API key from https://nla.zapier.com/credentials/ and add actions from https://nla.zapier.com/dev/actions/.",
+            default: ""
         },
         {
             key: "heading3",
@@ -68,7 +89,7 @@ export const addSettingsToLogseq = async () => {
         {
             key: "SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR",
             type: 'boolean',
-            description: "Show Chatgpt Page List in side navbar",
+            description: "Show Chatgpt Page List UI in side navbar",
             title: "",
             default: true
         },
@@ -105,7 +126,7 @@ export const addSettingsToLogseq = async () => {
     LogseqProxy.Settings.registerSettingsChangeListener((newSettings, oldSettings) => {
         if (!_.isEqual(newSettings.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR, oldSettings.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR)) {
             if (newSettings.SHOW_CHATGPT_PAGE_LIST_IN_SIDE_NAVBAR)
-                registerSideNavBarItem("ChatGPT", ICON_18, ChatGPTPageList);
+                registerSideNavBarItem("ChatGPT", GPT_ICON_18, ChatGPTPageList);
             else  unregisterSideNavBarItem("ChatGPT");
         }
     });

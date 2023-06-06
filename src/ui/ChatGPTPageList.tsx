@@ -1,11 +1,11 @@
-import React, {useState} from "react";
-import * as ReactDOM from 'react-dom/client';
+import React, {useEffect, useState} from "react";
+import ReactDOM from 'react-dom';
 import _ from "lodash";
-import {ICON_18} from "../utils/constants";
-import {createChatgptPageWithoutPrompt} from "../core/service/createChatgptPage";
+import {GPT_ICON_18} from "../utils/constants";
+import {createChatgptPage} from "../core/service/createChatgptPage";
 
 export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
-    return new Promise(async function (resolve, reject) {
+    return new Promise<Array<any> | boolean>(async function (resolve, reject) {
         const div = window.parent.document.createElement('div');
         div.innerHTML = `
             <div class="ui__modal settings-modal cp__settings-main" style="z-index: 9999;">
@@ -27,10 +27,10 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
                </div>
             </div>
          </div>`;
-        const root = ReactDOM.createRoot(div.getElementsByClassName('chatgptPageList-container')[0]);
+        const container = div.getElementsByClassName('chatgptPageList-container')[0];
         try {
             window.parent.document.body.appendChild(div);
-            root.render(<PageList/>);
+            ReactDOM.render(<PageList />, container);
         } catch (e) {
             // @ts-ignore
             window.parent.ChatGPT.ChatGPTPageList.close();
@@ -50,7 +50,7 @@ export async function ChatGPTPageList(): Promise<Array<any> | boolean> {
         window.parent.ChatGPT.ChatGPTPageList = {};
         window.parent.ChatGPT.ChatGPTPageList.close = () => {
             resolve(false);
-            root.unmount();
+            ReactDOM.unmountComponentAtNode(container);
             window.parent.document.body.removeChild(div);
             window.parent.document.removeEventListener('keydown', onKeydown);
         }
@@ -84,7 +84,7 @@ const Header = () => {
     return (
         <div className="flex" style={{justifyContent: 'space-between', marginTop: '0.3rem', marginBottom: '0.3rem'}}>
             <div className="flex" style={{alignItems: 'center'}}>
-                <i className="ui__icon ti ls-icon-hierarchy" dangerouslySetInnerHTML={{__html: ICON_18}}></i>
+                <i className="ui__icon ti ls-icon-hierarchy" dangerouslySetInnerHTML={{__html: GPT_ICON_18}}></i>
                 &nbsp;
                 <h3 className="text-lg">ChatGPT Page List</h3>
             </div>
@@ -96,7 +96,7 @@ const Header = () => {
 
 const Toolbar = () => {
     const createNewPage = async () => {
-        await createChatgptPageWithoutPrompt();
+        await createChatgptPage();
         window.parent.ChatGPT.ChatGPTPageList.close();
     }
     return (
@@ -160,7 +160,7 @@ const PageLink = ({pageName}) => {
     return (
         <a href={`#/page/${encodeURIComponent(pageName)}`} onClick={onClickHandler}>
             <div className="" data-tooltipped="" aria-describedby="tippy-tooltip-15" style={{display: "inline"}}>
-                <span tabIndex="0" data-ref={pageName} className="page-ref">{pageName}</span>
+                <span tabIndex={0} data-ref={pageName} className="page-ref">{pageName}</span>
             </div>
         </a>
     );

@@ -1,17 +1,45 @@
-import { Message } from "chatgpt-wrapper";
+import {BaseChatMessage} from "langchain/schema";
+import {Tool} from "langchain/tools";
+import {BlockEntity} from "@logseq/libs/dist/LSPlugin";
 
+/**
+ * Prompts work in two phases:
+ * - Phase 1: Prompt is displayed to used in command prompt and upon selection,
+ *   Chatgpt page representing the prompt is created.
+ * - Phase 2: Prompt is run. While running, getPromptPrefixMessages is appended at the
+ *   start of message history.
+ */
 export type Prompt = {
-    // The name of the prompt
-    name: string;
-    // The type of input selection required for the prompt to be displayed in the command palette
-    required_input: 'block(s)' | 'block' | 'blocks' | 'none';
-    // A function that returns a string. A block with this string followed by input selection embed(s) is added to the editor
-    getPrompt: () => string;
-    // An optional function that returns an array of `Message` objects.
-    // These messages are prepended (not visible to the user) before sending the block(s) to the API
-    getPromptPrefixMessages?: () => Message[];
-    // The length of getPromptPrefixMessages (calculated automatically)
-    promptPrefixMessagesLength?: number;
-    // An optional string that represents the group to which the prompt belongs
-    group?: string;
+    // -- Fields for Phase 1 --
+    name: string; // The name of the prompt (displayed in command prompt)
+    isVisibleInCommandPrompt?: (invokeState?: LogseqPromptInvocationState) => boolean;
+    tools? : Tool[]; // An option array of Tools that can be used by the prompt. Please avoid unless needed as it changes executor from simple call to agent call.
+    getPromptMessage: (input? : string, invokeState?: LogseqPromptInvocationState) => string; // The return value of the function is appended when chatgpt page is created.
+    group: string;  // A misc string that represents the group to which the prompt belongs
+
+    // -- Fields for Phase 2 --
+    getPromptPrefixMessages?: () => BaseChatMessage[];  // Hidden messages that are prepended to the message history when the prompt is run
+    getPromptSuffixMessage?: () => string; // Hidden message that is appended to the prompt message
+    promptPrefixMessagesLength?: number; // The length of getPromptPrefixMessages (filled automatically)
+}
+
+export type LogseqPromptInvocationState = {
+    selectedBlocks?: BlockEntity[]
+}
+
+export class PromptVisibility {
+    static Blocks = (invokeState) => {
+        return invokeState.selectedBlocks && invokeState.selectedBlocks.length > 0;
+    }
+    static SingleBlock = (invokeState) => {
+        return invokeState.selectedBlocks && invokeState.selectedBlocks.length == 1;
+    }
+
+    static NoInput = (invokeState) => {
+        return !invokeState.selectedBlocks || invokeState.selectedBlocks.length == 0;
+    }
+
+    static Never = (invokeState) => {
+        return false;
+    }
 }

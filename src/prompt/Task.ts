@@ -1,5 +1,7 @@
-import {Prompt} from "../types/Prompt";
+import {Prompt, PromptVisibility} from "../types/Prompt";
 import moment from "moment";
+import {UserChatMessage} from "../langchain/schema/UserChatMessage";
+import Mustache from "mustache";
 import _ from "lodash";
 
 export class Task {
@@ -12,15 +14,16 @@ export class Task {
         const currentTimePlus2Hours = moment().add(2, 'hours').format('HH:mm');
         const currentTimePlus2HoursAlt = moment().add(2, 'hours').format('hh:mm A');
         const weekdayCurrentDate = moment().format('dddd');
-
         return [
             {
                 name: 'Generate Logseq Tasks',
-                required_input: 'block(s)',
-                getPrompt: () => `Generate Tasks:`,
+                isVisibleInCommandPrompt: PromptVisibility.Blocks,
+                getPromptMessage: (userInput, invokeState) =>
+                    Mustache.render(`Generate Task(s):\n{{selectedBlocksList}}`,{
+                        selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 getPromptPrefixMessages: () => [
-                    {'role': 'user', 'content': `Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`},
-                    {'role': 'user', 'content': `I want you to act like a loseq task generator. You take the input and output one or more logseq tasks. Please do not refer to yourself AND do not forget to add the   (non-breaking space) unicode charecter before the SCHEDULED tag. 
+                    new UserChatMessage(`Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`),
+                    new UserChatMessage(`I want you to act like a loseq task generator. You take the input and output one or more logseq tasks. Please do not refer to yourself AND do not forget to add the   (non-breaking space) unicode charecter before the SCHEDULED tag. 
                     Logseq Tasks have the following format:
                     - {${later}|${now}} Task Title
                        SCHEDULED: <[Start Date] [Weekday] [Start Time] [.Repeater]>
@@ -48,7 +51,7 @@ export class Task {
                     - ${now} brush teeth
                        SCHEDULED: <${currentDate} ${weekdayCurrentDate} ${currentTime}>
                     ____
-            `.replaceAll('                    ', '').trim()}
+            `.replaceAll('                    ', '').trim())
                 ],
                 group: 'tasks'
             }

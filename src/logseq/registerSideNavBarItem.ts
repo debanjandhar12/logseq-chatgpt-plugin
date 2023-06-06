@@ -1,11 +1,11 @@
-import {ICON_18} from "../utils/constants";
+import {GPT_ICON_18} from "../utils/constants";
 
 export default function registerSideNavBarItem(name, icon, action) {
     // <div class="journals-nav"><a class="item group flex items-center text-sm font-medium rounded-md"><span class="flex-1">Journals</span></a></div>
     const div = document.createElement('div');
     div.innerHTML = `
         <a class="item group flex items-center text-sm font-medium rounded-md">
-            <span class="ui__icon ti ls-icon-hierarchy">${ICON_18}</span>
+            <span class="ui__icon ti ls-icon-hierarchy">${GPT_ICON_18}</span>
             <span class="flex-1">${name}</span>
         </a>
     `;

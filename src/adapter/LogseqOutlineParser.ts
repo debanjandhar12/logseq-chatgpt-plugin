@@ -1,5 +1,4 @@
 import {Mldoc} from 'mldoc';
-import '@logseq/libs';
 import {ChatgptToLogseqSanitizer} from "./ChatgptToLogseqSanitizer";
 
 /**

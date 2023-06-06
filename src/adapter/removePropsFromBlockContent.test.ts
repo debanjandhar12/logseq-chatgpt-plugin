@@ -1,3 +1,4 @@
+import { test, describe, expect } from 'vitest'
 import { TextEncoder, TextDecoder } from 'util';
 import {removePropsFromBlockContent} from "./removePropsFromBlockContent";
 global.TextEncoder = TextEncoder;
