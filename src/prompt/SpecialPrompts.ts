@@ -10,10 +10,10 @@ export class SpecialPrompts {
     public static getPrompts() : Prompt[] {
         return [
             {
-                name: `Custom: {{userInput}}`,
+                name: `Custom: {{{userInput}}}`,
                 isVisibleInCommandPrompt: PromptVisibility.Blocks,
                 getPromptMessage: (userInput, invokeState) =>
-                    Mustache.render(`{{userInput}}:{{selectedBlocksList}}`,{userInput,
+                    Mustache.render(`{{{userInput}}}:\n{{selectedBlocksList}}`,{userInput,
                         selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 group: 'custom'
             },
