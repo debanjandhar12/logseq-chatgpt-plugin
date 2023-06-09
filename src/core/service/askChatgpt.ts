@@ -53,7 +53,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     // Determine type of call
     const prompt = (await getAllPrompts()).find(p => new RegExp(p.name.replaceAll('{{{userInput}}}', '.*')).test(page.properties['chatgptPrompt'] || ""));
     let isAgentCall = prompt && prompt.tools && prompt.tools.length > 0;
-    console.log("prompt", prompt);
+    console.log("🧩 Running prompt:", prompt, 'background-color: #05f26c;');
 
     // Collect all messages and find block to insert result
     const messages: BaseChatMessage[] = [];
@@ -183,7 +183,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                 {
                     async handleLLMNewToken(token: string) {
                         if (signal.aborted)
-                            return;
+                            throw new Error("Cancel: canceled");
                         chatResponse += token;
                         await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
                     }
@@ -192,9 +192,8 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             ]);
         chatResponse = result.response;
     }
-    console.log("result, signal", result, signal);
 
-    if (signal.aborted) return;
+    if (signal.aborted) throw new Error("Cancel: canceled");
     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
     await logseq.Editor.exitEditingMode(false);
     await logseq.Editor.selectBlock(resultBlock.uuid);
@@ -214,7 +213,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                     onClick: async () => {
                         let selectBlockAfterOp = block;
                         let outline = LogseqOutlineParser.parse(chatResponse.trim());
-                        console.log(outline);
                         if (outline && (await Confirm("The message contains data in the form of an outline. Would you like to add it as separate blocks?"))) {
                             await logseq.Editor.insertBatchBlock(block.uuid, outline, {sibling: false});
                         } else {
@@ -247,7 +245,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                     label: "Delete page after action",
                     checked: logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION,
                     onChange: (checked) => {
-                        console.log(checked, logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION);
                         logseq.updateSettings({DELETE_PAGE_AFTER_PROMPT_ACTION: checked})
                     }
                 });
@@ -272,7 +269,7 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
         chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory) - 16;
         chatHistory.map(message => message.name = undefined);
         messages = [chatHistory];
-        console.log('Chat model call start', originalMessages, messages);
+        console.log(`🦜 Starting chat model`, 'background-color: #05f2cb; font-weight: bold', 'Original messages', originalMessages, 'Trimmed messages', messages);
         if (chatHistory.length == 0 || chat.maxTokens <= 0 || chatHistory[chatHistory.length - 1]._getType() == "system")
             throw new Error("The last message is too long. Please consider increasing the MAX_TOKENS limit in settings.");
     }
@@ -282,7 +279,7 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
 const getToolStartLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
     res.handleToolStart = async (tool, input) => {
-        console.log(`Starting tool ${tool.name} with input ${input}`);
+        console.log(`%c🔧Starting tool ${tool.name} with input ${input}`, 'background-color: #c5c7c7; font-weight: bold');
         if (resultBlock && resultBlock.uuid) {
             await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + `> 🔧 Starting tool <b>${tool.name}</b> with input <b>${input}</b>`, {properties: {}});
             await logseq.Editor.exitEditingMode(false);
@@ -293,8 +290,8 @@ const getToolStartLogCallback = (resultBlock?) => {
 
 const getToolEndLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
-    res.handleToolEnd = async (tool, output) => {
-        console.log(`Output from tool: ${output}`);
+    res.handleToolEnd = async (output, runId) => {
+        console.log('%c🔧Output from tool:', 'background-color: #c5c7c7; font-weight: bold', output);
         // if (resultBlock && resultBlock.uuid)
         //     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n", {properties: {}});
     }

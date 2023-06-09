@@ -66,7 +66,6 @@ export class UserDefinedPrompt {
                 }
             } else if (userDefinedPrompt.tool && userDefinedPrompt.tool.type && userDefinedPrompt.tool.type == 'API') {
                 const {apiEndpoint, toolDesc, method, body, headers} = userDefinedPrompt.tool.metadata;
-                console.log(userDefinedPrompt.tool);
                 const tool = new DynamicTool({
                     name: `${apiEndpoint} API`,
                     description: toolDesc || `Call ${apiEndpoint}. Useful to answer user queries.`,
@@ -102,7 +101,6 @@ export class UserDefinedPrompt {
                             try {
                                 if (input.startsWith('file://') || input.startsWith('http://') || input.startsWith('https://'))
                                     base64Input = await getBase64(input);
-                                console.log('base64Input', base64Input);
                             } catch (e) {
                                 console.error(e);
                             }
@@ -135,8 +133,9 @@ export class UserDefinedPrompt {
                         } catch (e) {
                             throw new Error(e+'at headers');
                         }
-                        let bodyObj : any = '{}';
+                        let bodyObj : any = {};
                         try {
+                            bodyObj = JSON5.parse(body);
                             if (userDefinedPrompt.tool.metadata.bodyType == 'Form Data') {
                                 let formData = new FormData();
                                 for (let key in bodyObj) {
@@ -164,7 +163,6 @@ export class UserDefinedPrompt {
                                         return Mustache.render(value, {
                                             input: input,
                                             "base64:input": base64Input,
-                                            "timestamp": () => new Date().getTime(),
                                             "eval": function () {
                                                 return function (code) {
                                                     return (() => eval(code)).call(this);
@@ -179,6 +177,7 @@ export class UserDefinedPrompt {
                         } catch (e) {
                             throw new Error(e+'at body');
                         }
+                        console.log(`%c🔧Fetching ${apiEndpoint}`, 'background-color: #c5c7c7; font-weight: bold', `(${method || 'POST'})`, `Headers:`, headersObj, `Body:`, bodyObj);
                         const response = await fetch(apiEndpoint, {
                             method: method || 'POST',
                             body: bodyObj || '{}',
