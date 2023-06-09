@@ -26,13 +26,8 @@ export namespace LogseqProxy {
             try {
                 let block = await logseq.Editor.getBlock(blockUUID);
                 if (block.properties[property] == value) return;
-
-                if (!block.properties || (block.properties && Object.keys(block.properties).length === 0)) { // if property is empty
-                    // Add property to the top of the block
-                    await logseq.Editor.updateBlock(blockUUID, `${property}:: ${value}\n${block.content}`);
-                } else {
-                    await logseq.Editor.upsertBlockProperty(blockUUID, property, value);
-                }
+                await logseq.Editor.updateBlock(blockUUID, `${block.properties['id'] ? `` : `id:: ${blockUUID}\n`}${property}:: ${value}\n${block.content}`,
+                    {properties:{}});
             } finally {
                 getLogseqLock.release();
             }

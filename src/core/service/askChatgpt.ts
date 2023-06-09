@@ -20,6 +20,7 @@ import {ConversationChain} from "langchain/chains";
 import {BaseCallbackHandler, Callbacks} from "langchain/callbacks";
 import {CallbackHandlerMethods} from "langchain/dist/callbacks/base";
 import _ from "lodash";
+import getUUIDFromBlock from "../../logseq/getUUIDFromBlock";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -101,6 +102,10 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             blockUUID: pageBlocks[messages.length].uuid
         };
     }
+
+    // Add uuid to last message
+    await LogseqProxy.Editor.upsertBlockProperty(getUUIDFromBlock(resultBlock), "speaker", `[[assistant]]`);
+    await logseq.Editor.exitEditingMode(false);
 
     // Add prefix messages from prompt if set
     if (prompt && prompt.getPromptPrefixMessages)
@@ -185,7 +190,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         if (signal.aborted)
                             throw new Error("Cancel: canceled");
                         chatResponse += token;
-                        await LogseqProxy.Editor.updateBlockAfterDelay(resultBlock.uuid, () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
+                        await LogseqProxy.Editor.updateBlockAfterDelay(getUUIDFromBlock(resultBlock), () => "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse), {properties: {}});
                     }
                 },
                 getChatModelStartTrimMessageCallback(chat)
@@ -194,9 +199,9 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     }
 
     if (signal.aborted) throw new Error("Cancel: canceled");
-    await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
+    await logseq.Editor.updateBlock(getUUIDFromBlock(resultBlock), "speaker:: [[assistant]]\n" + ChatgptToLogseqSanitizer.sanitize(chatResponse.trim()), {properties: {}});
     await logseq.Editor.exitEditingMode(false);
-    await logseq.Editor.selectBlock(resultBlock.uuid);
+    await logseq.Editor.selectBlock(getUUIDFromBlock(resultBlock));
 
     if (prompt) {
         const source = page.properties['chatgptPromptSource'] || "";
@@ -280,8 +285,8 @@ const getToolStartLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
     res.handleToolStart = async (tool, input) => {
         console.log(`%c🔧Starting tool ${tool.name} with input ${input}`, 'background-color: #c5c7c7; font-weight: bold');
-        if (resultBlock && resultBlock.uuid) {
-            await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n" + `> 🔧 Starting tool <b>${tool.name}</b> with input <b>${input}</b>`, {properties: {}});
+        if (resultBlock && getUUIDFromBlock(resultBlock)) {
+            await logseq.Editor.updateBlock(getUUIDFromBlock(resultBlock), "speaker:: [[assistant]]\n" + `> 🔧 Starting tool <b>${tool.name}</b> with input <b>${input}</b>`, {properties: {}});
             await logseq.Editor.exitEditingMode(false);
         }
     }
@@ -292,8 +297,8 @@ const getToolEndLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
     res.handleToolEnd = async (output, runId) => {
         console.log('%c🔧Output from tool:', 'background-color: #c5c7c7; font-weight: bold', output);
-        // if (resultBlock && resultBlock.uuid)
-        //     await logseq.Editor.updateBlock(resultBlock.uuid, "speaker:: [[assistant]]\n", {properties: {}});
+        // if (resultBlock && getUUIDFromBlock(resultBlock))
+        //     await logseq.Editor.updateBlock(getUUIDFromBlock(resultBlock), "speaker:: [[assistant]]\n", {properties: {}});
     }
     return res;
 }
@@ -302,8 +307,8 @@ const getToolErrorLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
     res.handleToolError = async (error) => {
         console.error(`Tool error: ${error}`);
-        if (resultBlock && resultBlock.uuid)
-            await logseq.Editor.updateBlock(resultBlock.uuid, "", {properties: {}});
+        if (resultBlock && getUUIDFromBlock(resultBlock))
+            await logseq.Editor.updateBlock(getUUIDFromBlock(resultBlock), "", {properties: {}});
         throw error;
     }
     return res;
