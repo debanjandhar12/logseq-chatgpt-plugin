@@ -74,7 +74,8 @@ export class UserDefinedPrompt {
                         let base64Input = '', fileInput;
                         if (headers.includes('eval') || headers.includes('base64:input') || body.includes('eval') || body.includes('base64:input') || body.includes('file:input')) {
                             let getBase64 = async (url) => {
-                                const response = await fetch(url);
+                                const response = await fetch(url,{// @ts-ignore
+                                        signal: tool.signal});
                                 const blob = await response.blob();
                                 const reader = new FileReader();
                                 await new Promise((resolve, reject) => {
@@ -86,7 +87,8 @@ export class UserDefinedPrompt {
                             }
                             let getFile = async (url) => {
                                 const fileName = new URL(url).pathname.split('/').pop();
-                                const response = await fetch(url);
+                                const response = await fetch(url,{// @ts-ignore
+                                        signal: tool.signal});
                                 const blob = await response.blob();
                                 return new File([blob], fileName, {type: blob.type});
                             }

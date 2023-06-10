@@ -2,7 +2,7 @@ import moment from "moment";
 import _ from "lodash";
 import {SelectCommandPrompt} from "../../ui/SelectCommandPrompt";
 import {getAllPrompts} from "../../prompt/getAllPrompts";
-import {AskChatgptBtn} from "../view/AskChatgptBtn";
+import {AskChatgptBtn} from "../controller/AskChatgptBtn";
 import Mustache from "mustache";
 
 /**

@@ -70,7 +70,7 @@ export class Basic {
                 isVisibleInCommandPrompt: PromptVisibility.SingleBlock,
                 getPromptPrefixMessages: () => [
                     new UserChatMessage(`You are a outline generator tool. You take text as input and create an outline document. An outline document contains the text as hierarchical bullet points.
-                    DO NOT reply the context. Output only hierarchical markdown bullet points. Sample of the conversation is shown below:
+                    DO NOT reply additional statements. Output only hierarchical markdown bullet points. Sample of the conversation is shown below:
                     user: Create Outline from Block: Pokémon is a series of video games developed by Game Freak and published by Nintendo and The Pokémon Company under the Pokémon media franchise.
                     you: 
                     - Pokémon (series of video games)

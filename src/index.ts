@@ -3,10 +3,10 @@ import {LSPluginBaseInfo} from '@logseq/libs/dist/LSPlugin'
 import {addSettingsToLogseq} from "./settings";
 import {AutoFlowFormatter} from "./core/service/AutoFlowFormatter";
 import {LogseqProxy} from "./logseq/LogseqProxy";
-import {AskChatgptBtn} from "./core/view/AskChatgptBtn";
-import {BulletIconsInjector} from "./core/view/BulletIconsInjector";
-import {ChatgptPageListInjector} from "./core/view/ChatgptPageListInjector";
-import {DWIMCommandsInjector} from "./core/view/DWIMCommandsInjector";
+import {AskChatgptBtn} from "./core/controller/AskChatgptBtn";
+import {BulletIconsInjector} from "./core/controller/BulletIconsInjector";
+import {ChatgptPageListInjector} from "./core/controller/ChatgptPageListInjector";
+import {DWIMCommandsInjector} from "./core/controller/DWIMCommandsInjector";
 
 // --- Register UI Elements Onload ---
 async function main(baseInfo: LSPluginBaseInfo) {
