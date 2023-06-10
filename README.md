@@ -1,6 +1,6 @@
 # Logseq ChatGPT Plugin [<img align="right" src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" height="30"/>](https://www.buymeacoffee.com/debanjandhar12)
 
-<h3 align="center">A tightly integrated ChatGPT plugin for Logseq. Powered by Langchain.js.</h3>
+<h3 align="center">A ChatGPT plugin powered by Langchain.js for Logseq.</h3>
 
 ## Features
 <ul><li>
@@ -25,13 +25,14 @@
   </div>
 </details></li><li>
 <details>
-  <summary><b>📥 DWIM Commands and Shortcuts</b></summary>
+  <summary><b>📥 Commands and Shortcuts</b></summary>
   <div>
       The plugin has the following <i><b>D</b>o <b>W</b>hat <b>I</b> <b>M</b>ean (DWIM)</i> commands:
       <ul>
-          <li><b>Ask ChatGPT -</b> This will call chatgpt API when the user is inside ChatGPT page. Otherwise, it creates a new chatgpt page with prompt from selected blocks or an empty chatgpt page incase no blocks are selected.</li>
-          <li><b>Create ChatGPT page -</b> This will create a new chatgpt page with prompt from selected blocks or an empty chatgpt page incase no blocks are selected. Useful only when you want to create chatgpt page from another chatgpt page.</li>
+          <li><b>Ask ChatGPT -</b> This will call chatgpt API when currently inside ChatGPT page. Otherwise, it open up the AI prompt palette for creating new chatgpt page.</li>
+          <li><b>Create ChatGPT page -</b> It open up the AI prompt palette for creating new chatgpt page.</li>
           <li><b>Show ChatGPT Page List -</b> Opens the ChatGPT Page list dialog.</li>
+          <li><b>Edit ChatGPT Custom Prompts -</b> Opens the Edit ChatGPT Custom Prompts Dialog.</li>
       </ul>
       <br/>
       By default, there are following keyboard shortcuts for the above commands:
