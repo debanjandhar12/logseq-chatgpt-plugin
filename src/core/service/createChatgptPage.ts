@@ -41,7 +41,7 @@ export async function createChatgptPageWithPrompt() {
     // - Construct additional page props and first block content -
     const additionalPageProps = {};
     // Collect chatgpt-prompt prop
-    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '(.*)')))?.slice(1)[0];
+    const input = selectedPromptWithModifiedName.name.match(new RegExp(selectedPrompt.name.replaceAll('{{{userInput}}}', '((.|\n)*)')))?.slice(1)[0];
     additionalPageProps['chatgpt-prompt'] = Mustache.render(selectedPrompt.name, {userInput: (input || '').split('\n')[0]})
     if (blocks && blocks.length > 0)
         additionalPageProps['chatgpt-prompt-source'] = blocks.map(b => `((${b.uuid}))`).join(' ');
