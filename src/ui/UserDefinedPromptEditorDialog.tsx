@@ -104,11 +104,12 @@ const Header = () => {
 const Toolbar = ({userDefinedPromptList, currentPromptIdx, setCustomPromptList, setCurrentPromptIdx}) => {
     if (!userDefinedPromptList) return null;
     const incrementCurrentPromptIdx = () => {
-        console.log(userDefinedPromptList.length);
+        setCurrentPromptIdx(() => -1); // Needed to fix an wierd issue
         setCurrentPromptIdx(Math.min(currentPromptIdx + 1, userDefinedPromptList.length - 1));
     }
     const decrementCurrentPromptIdx = () => {
-        setCurrentPromptIdx(Math.max(currentPromptIdx - 1, 0));
+        setCurrentPromptIdx(() => -1); // Needed to fix an wierd issue
+        setCurrentPromptIdx(() => Math.max(currentPromptIdx - 1, 0));
     }
     const createNewPrompt = async () => {
         let indexOfNewPrompt = userDefinedPromptList.length;
