@@ -25,7 +25,10 @@ export namespace LogseqProxy {
             await getLogseqLock.acquireAsync();
             try {
                 let block = await logseq.Editor.getBlock(blockUUID);
-                if (block.properties[property] == value) return;
+                if (block.properties[property] == value || block.content.includes(`${property}:: ${value}`)) return;
+                await logseq.Editor.removeBlockProperty(blockUUID,  property);
+                block.content = block.content.replace(new RegExp(`^${property}::(?!\\s*${value}).*\$`, 'gmi'), '');
+                console.log('new block.content', block.content);
                 await logseq.Editor.updateBlock(blockUUID, `${block.properties['id'] ? `` : `id:: ${blockUUID}\n`}${property}:: ${value}\n${block.content}`,
                     {properties:{}});
             } finally {
