@@ -16,6 +16,8 @@
   <div>
    The plugin provides GUI for custom prompt creation. The custom prompts can use langchain.js tools like Web Browser, Zapier, and even external custom API Endpoints 😲.<br/>
     <img src='https://github.com/debanjandhar12/logseq-chatgpt-plugin/assets/49021233/c770ed24-0744-46af-9ef0-549a0d8eaca5.gif' height='400' /> <br/>
+    Please read <a href="https://github.com/debanjandhar12/logseq-chatgpt-plugin/discussions/24">Custom Prompt Editor Tutorial</a> and <a href="https://github.com/debanjandhar12/logseq-chatgpt-plugin/discussions/25">Custom API Tool for Custom Prompts Tutorial</a> for documentation on this. <br /><br />
+    Additionally, you can find importable user-made Custom Prompts on the <a href="https://github.com/debanjandhar12/logseq-chatgpt-plugin/discussions/categories/custom-prompts">Github - ChatGPT Plugin Custom Prompt Discussion</a>.<br />
   </div>
 </details></li><li>
 <details>
@@ -46,7 +48,7 @@
 <details>
   <summary><b>🐾 Support for Logseq Syntax</b></summary>
   <div>
-   THe plugin is built with Logseq in mind. It parses the block refs and block embeds before sending request to ChatGPT. This means you can use block refs and embeds anywhere in your conversation.
+   The plugin is built with Logseq in mind. It parses the block refs and block embeds before sending request to ChatGPT. This means you can use block refs and embeds anywhere in your conversation.
    Support for page embeds will be coming soon.<br/>
    Additionally, the plugin sanitizes ChatGPT result using mldocs so that logseq supports rendering the output.<br/>
    <img src='https://github.com/debanjandhar12/logseq-chatgpt-plugin/assets/49021233/042afa23-5219-46eb-8506-4aaadaa5d085.gif' height='400' />
@@ -59,7 +61,7 @@
    * Go to `⋯` > `Settings` > `Features` and enable `Plugins`.
    * Now, go to `⋯` > `Plugin` > `Marketplace` and find Logseq ChatGPT Plugin and click install
 2. Get and Setup OpenAI API Key.
-   * OpenAI gives away free credits worth $5 to $18 for ChatGPT that can last for up to 120 days. [Get an OpenAI API Key here](https://openai.com/api/).
+   * OpenAI gives away free credits for ChatGPT that can last for up to 120 days. [Get an OpenAI API Key here](https://openai.com/api/).
    * Go to Logseq ChatGPT Plugin Settings and enter the API key there.
 3. Have fun!
 
