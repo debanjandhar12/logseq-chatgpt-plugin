@@ -3,7 +3,7 @@ import {MemoryVectorStore} from "langchain/vectorstores/memory";
 import {OpenAIEmbeddings} from "langchain/embeddings/openai";
 import {getText, parseInputs} from "langchain/tools/webbrowser";
 import {RecursiveCharacterTextSplitter} from "langchain/text_splitter";
-import { Document } from "langchain/docstore";
+import { Document } from "langchain/document";
 import {isProbablyReaderable, Readability} from "@mozilla/readability";
 import {CallbackManagerForToolRun} from "langchain/callbacks";
 import {ChatOpenAI} from "langchain/chat_models/openai";

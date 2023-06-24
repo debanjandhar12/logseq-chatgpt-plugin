@@ -142,7 +142,7 @@ export class AskChatgptBtn {
                 errorMsg = JSON.parse(errorMsg);
                 errorMsg = errorMsg.error.message || errorMsg.error.code;
             }
-            if (errorMsg.startsWith("Cancel: cancel")) return; // Ignore abort error
+            if (errorMsg.startsWith("Cancel: cancel") || errorMsg.startsWith("AbortError")) return; // Ignore abort error
             if (errorMsg.startsWith("[] is too short - 'messages'") && logseq.settings.CHATGPT_MAX_TOKENS < 3072)    // Handle empty prompt error due to trimming
                 errorMsg = "Failed to call ChatGPT due to context limit. Please consider increasing the MAX_TOKENS limit to at least 3072 in settings.";
             else if (errorMsg.startsWith("[] is too short - 'messages'"))

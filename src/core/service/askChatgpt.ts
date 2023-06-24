@@ -129,7 +129,6 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     let chatResponse: string = "";
     const chat = new ChatOpenAI({
         openAIApiKey: logseq.settings.OPENAI_API_KEY,
-        cache: false,
         timeout: 0,
         callbacks: [
             {
@@ -271,7 +270,7 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
                 chatHistory.splice(i, 1);
             }
         }
-        chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory) - 16;
+        chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory) - 32;
         chatHistory.map(message => message.name = undefined);
         messages = [chatHistory];
         console.log('%c🦜 Starting chat model', 'background-color: #05f2cb; font-weight: bold;', 'Original messages', originalMessages, 'Trimmed messages', messages);
@@ -283,10 +282,10 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
 
 const getToolStartLogCallback = (resultBlock?) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
-    res.handleToolStart = async (tool, input) => {
-        console.log(`%c🔧Starting tool ${tool.name} with input ${input}`, 'background-color: #c5c7c7; font-weight: bold;');
+    res.handleToolStart = async (tool, input, ...rest) => {
+        console.log(`%c🔧Starting tool ${tool.id[2]} with input ${input}`, 'background-color: #c5c7c7; font-weight: bold;');
         if (resultBlock && getUUIDFromBlock(resultBlock)) {
-            await logseq.Editor.updateBlock(getUUIDFromBlock(resultBlock), "speaker:: [[assistant]]\n" + `> 🔧 Starting tool <b>${tool.name}</b> with input <b>${input}</b>`, {properties: {}});
+            await logseq.Editor.updateBlock(getUUIDFromBlock(resultBlock), "speaker:: [[assistant]]\n" + `> 🔧 Starting tool <b>${tool.id[2]}</b> with input <b>${input}</b>`, {properties: {}});
             await logseq.Editor.exitEditingMode(false);
         }
     }

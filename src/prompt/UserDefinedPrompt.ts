@@ -67,12 +67,14 @@ export class UserDefinedPrompt {
             } else if (userDefinedPrompt.tool && userDefinedPrompt.tool.type && userDefinedPrompt.tool.type == 'API') {
                 const {apiEndpoint, toolDesc, method, body, headers} = userDefinedPrompt.tool.metadata;
                 const tool = new DynamicTool({
-                    name: `${apiEndpoint} API`,
+                    name: `${encodeURI(apiEndpoint.split('?')[0])} API`,
                     description: toolDesc || `Call ${apiEndpoint}. Useful to answer user queries.`,
                     func: async (input) => {
-                        // Prepare other stuff
+                        // Handle file and base64 inputs
                         let base64Input = '', fileInput;
-                        if (headers.includes('eval') || headers.includes('base64:input') || body.includes('eval') || body.includes('base64:input') || body.includes('file:input')) {
+                        if (apiEndpoint.includes('eval') || apiEndpoint.includes('base64:input')
+                            || headers.includes('eval') || headers.includes('base64:input')
+                            || body.includes('eval') || body.includes('base64:input') || body.includes('file:input')) {
                             let getBase64 = async (url) => {
                                 const response = await fetch(url,{// @ts-ignore
                                         signal: tool.signal});
@@ -115,25 +117,26 @@ export class UserDefinedPrompt {
                         }
 
                         // Prepare the request parameters
+                        const mustacheView = {
+                            input: input,
+                            "base64:input": base64Input,
+                            "eval": function () {
+                                return function (code) {
+                                    return (() => eval(code)).call(this);
+                                }
+                            }
+                        };
                         let headersObj : any = {};
                         try {
                             headersObj = JSON5.parse(headers);
                             headersObj = _.mapValues(headersObj, (value) => {
                                 if (typeof value == 'string')
-                                    return Mustache.render(value, {
-                                        input: input,
-                                        "base64:input": () => base64Input,
-                                        "eval": function () {
-                                            return function (code) {
-                                                return (() => eval(code)).call(this);
-                                            }
-                                        }
-                                    });
+                                    return Mustache.render(value, mustacheView);
                                 else
                                     return value;
                             });
                         } catch (e) {
-                            throw new Error(e+'at headers');
+                            console.error(e+'at headers');
                         }
                         let bodyObj : any = {};
                         try {
@@ -143,18 +146,10 @@ export class UserDefinedPrompt {
                                 for (let key in bodyObj) {
                                     let value = bodyObj[key];
                                     if (typeof value == 'string') {
-                                        if (value.trim() == '{{{file:input}}}')
+                                        if (value.trim() == '{{{file:input}}}' || value.trim() == '{{file:input}}')
                                             value = fileInput;
                                         else
-                                            value = Mustache.render(value, {
-                                                input: input,
-                                                "base64:input": base64Input,
-                                                "eval": function () {
-                                                    return function (code) {
-                                                        return (() => eval(code)).call(this);
-                                                    }
-                                                }
-                                            });
+                                            value = Mustache.render(value, mustacheView);
                                     }
                                     formData.append(key, value);
                                 }
@@ -162,31 +157,24 @@ export class UserDefinedPrompt {
                             } else {
                                 bodyObj = _.mapValues(bodyObj, (value) => {
                                     if (typeof value == 'string')
-                                        return Mustache.render(value, {
-                                            input: input,
-                                            "base64:input": base64Input,
-                                            "eval": function () {
-                                                return function (code) {
-                                                    return (() => eval(code)).call(this);
-                                                }
-                                            }
-                                        });
+                                        return Mustache.render(value, mustacheView);
                                     else
                                         return value;
                                 });
                                 bodyObj = JSON.stringify(bodyObj);
                             }
                         } catch (e) {
-                            throw new Error(e+'at body');
+                            console.error(e+'at body');
                         }
-                        console.log(`%c🔧Fetching ${apiEndpoint}`, 'background-color: #c5c7c7; font-weight: bold', `(${method || 'POST'})`, `Headers:`, headersObj, `Body:`, bodyObj);
-                        const response = await fetch(apiEndpoint, {
+                        console.log(`%c🔧Fetching ${Mustache.render(apiEndpoint, mustacheView)}`, 'background-color: #c5c7c7; font-weight: bold', `(${method || 'POST'})`, `Headers:`, headersObj, `Body:`, bodyObj);
+                        const fetchParams = {
                             method: method || 'POST',
                             body: bodyObj || '{}',
                             headers: headersObj || {},
                             // @ts-ignore
                             signal: tool.signal
-                        });
+                        };
+                        const response = await fetch(Mustache.render(apiEndpoint, mustacheView), method == 'POST' ? fetchParams : _.omit(fetchParams,'body'));
                         let result: any | string = '';
                         try {
                             result = await response.json();
