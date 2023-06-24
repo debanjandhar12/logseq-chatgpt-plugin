@@ -11,6 +11,9 @@ describe('basic tests', () => {
     test('multiple items', () => {
         expect(LogseqOutlineParser.parse("* Hello\n  World\n* Oh\n  Good")).toMatchObject([{content: 'Hello\nWorld', children: []}, {content: 'Oh\nGood', children: []}]);
     });
+    test('multiple items with digit first char in new line', () => {
+        expect(LogseqOutlineParser.parse("* 1\n  1\n* Hello\n  2")).toMatchObject([{content: '1\n1', children: []}, {content: 'Hello\n2', children: []}]);
+    });
     test('multiple nested items', () => {
         expect(LogseqOutlineParser.parse("* Hello\n  World\n  * Oh\n   Good")).toMatchObject([{content: 'Hello\nWorld', children: [{content: 'Oh\nGood', children: []}]}]);
     });

@@ -19,6 +19,7 @@ const MLDOCS_OPTIONS = {
 export class LogseqOutlineParser {
     public static parse(text: string): any {
         text = ChatgptToLogseqSanitizer.sanitize(text);
+        text = text.replace(/(\d+?)/g, ' $1') // Needed for parsing digit first char in new line
 
         // First, we parse and check if the content contains only a single list
         let parsedJson = Mldoc.parseJson(text,
@@ -65,6 +66,7 @@ export class LogseqOutlineParser {
             content = content.substring(content.indexOf('*') + 1).trim();
             content = content.replace(/^ +/gm, '')
             content = content.replace(/^(\s| )+/gm, ''); // Needed for parsing Task prompt properly
+            content = content.replace(/ (\d+?)/gm, '$1'); // Needed for parsing digit first char in new line
             content = content.replace(/\n----\n(\s*?\*)/g, '$1');
             list.unshift({content, indent, ordered});
         }
