@@ -12,6 +12,7 @@ export function cleanObj(inputObj) {
             || (typeof value === 'string' && value.startsWith('data:image/tiff;base64,'))
             || (typeof value === 'string' && value.startsWith('data:image/x-icon;base64,'))
             || (typeof value === 'string' && value.startsWith('base64,'))
+            || (typeof value === 'string' && value.length > 1024)
             || (typeof value === 'number' && isNaN(value))
             || (typeof value === 'object' && Object.keys(value).length === 0)
             || (typeof value === 'function' && value.toString().trim() === '() => {}')

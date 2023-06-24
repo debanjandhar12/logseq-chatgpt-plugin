@@ -13,6 +13,7 @@ export function convertNestedJSONStringToObj(inputObj) {
         if (typeof value === 'object' && value !== null) {
             return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, replacer(v)]));
         }
+        return value;
     }
     return JSON.parse(JSON.stringify(inputObj, (k, v) => replacer(v)));
 }
