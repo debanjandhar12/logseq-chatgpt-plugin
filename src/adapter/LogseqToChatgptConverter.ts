@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {Mldoc} from 'mldoc';
 import {removePropsFromBlockContent} from "./removePropsFromBlockContent";
 
@@ -41,7 +42,8 @@ export class LogseqToChatgptConverter {
                     textUTF8 = await LogseqToChatgptConverter.convertLink(node, textUTF8);
                     break;
                 case "Macro":
-                    textUTF8 = await LogseqToChatgptConverter.convertMacro(node, textUTF8);
+                    textUTF8 = await LogseqToChatgptConverter.convertMacroWithBlockEmbedListHandling(node, textUTF8,
+                        LogseqToChatgptConverter.prevNonBreakLineNode(parsedJson, i), LogseqToChatgptConverter.nextNonBreakLineNode(parsedJson, i));
                     break;
                 case "Inline_Hiccup":
                     textUTF8 = await LogseqToChatgptConverter.convertHiccup(node, textUTF8, blockUUID);
@@ -73,10 +75,21 @@ export class LogseqToChatgptConverter {
     /**
      * Convert Block Embed into text
      */
+    private static async convertMacroWithBlockEmbedListHandling(node, resultUTF8, prevNode, nextNode) {
+        let result = await LogseqToChatgptConverter.convertMacro(node, resultUTF8);
+        let {start_pos, end_pos} = LogseqToChatgptConverter.parseNode(node);
+        if(node[0][1]?.name == "embed" && node[0][1]?.arguments[0].startsWith('(') &&
+            (prevNode && prevNode[0][1]?.name == "embed" && prevNode[0][1]?.arguments[0].startsWith('(') ||
+             (nextNode && nextNode[0][1]?.name == "embed" && nextNode[0][1]?.arguments[0].startsWith('(')))) {
+            result = result.split("\n").map(line => "  " + line).join("\n");
+            result = '-' + result.substring(1);
+        }
+        return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(result), ...resultUTF8.subarray(end_pos)]);
+    }
     private static async convertMacro(node, resultUTF8) {
         let {start_pos, end_pos} = LogseqToChatgptConverter.parseNode(node);
         let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
-        if(node[0][1]?.name == "embed") {
+        if(node[0][1]?.name == "embed" && node[0][1]?.arguments[0].startsWith('(')) {
             const blockRefUUID = node[0][1]?.arguments[0].substring(2, node[0][1]?.arguments[0].length-2);
             try {
                 const generateOutline = async (block, level) => {
@@ -95,12 +108,14 @@ export class LogseqToChatgptConverter {
                 const block = await logseq.Editor.getBlock(blockRefUUID, {includeChildren: true});
                 nodeText = await generateOutline(block, 0);
             } catch (e) { console.log(e); nodeText = ''; }
-            nodeText = `${nodeText}\n`;
             let prevText = new TextDecoder().decode(resultUTF8.slice(start_pos-1, start_pos));
-            if(prevText != "\n")
+            if(prevText && prevText != "\n")
                 nodeText = "\n"+nodeText;
+            let nextText = new TextDecoder().decode(resultUTF8.slice(end_pos, end_pos+1));
+            if(nextText && nextText != "\n")
+                nodeText = nodeText+'\n';
         }
-        return new Uint8Array([...resultUTF8.subarray(0, start_pos), ...new TextEncoder().encode(nodeText), ...resultUTF8.subarray(end_pos)]);
+        return nodeText;
     }
 
     /**
@@ -109,6 +124,7 @@ export class LogseqToChatgptConverter {
     private static async convertHiccup(node, resultUTF8, blockUUID) {
         let {start_pos, end_pos} = LogseqToChatgptConverter.parseNode(node);
         let nodeText = new TextDecoder().decode(resultUTF8.slice(start_pos, end_pos));
+        nodeText = nodeText.trim();
         if (nodeText != "[:span]")
             return resultUTF8;
         let block;
@@ -141,5 +157,19 @@ export class LogseqToChatgptConverter {
         let start_pos = node[node.length - 1]["start_pos"];
         let end_pos = node[node.length - 1]["end_pos"];
         return {type, start_pos, end_pos};
+    }
+    private static nextNonBreakLineNode(nodeList, i) {
+        return _.find(nodeList, function(node, idx) {
+            let {type} = LogseqToChatgptConverter.parseNode(node);
+            if (type != 'Break_Line' && idx > i)
+                return true;
+        });
+    }
+    private static prevNonBreakLineNode(nodeList, i) {
+        return _.findLast(nodeList, function(node, idx) {
+            let {type} = LogseqToChatgptConverter.parseNode(node);
+            if (type != 'Break_Line' && idx < i)
+                return true;
+        });
     }
 }
