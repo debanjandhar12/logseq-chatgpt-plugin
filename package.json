@@ -29,7 +29,7 @@
     "await-lock": "^2.2.2",
     "@logseq/libs": "^0.0.15",
     "gpt-3-encoder": "^1.1.4",
-    "langchain": "^0.0.96",
+    "langchain": "^0.0.98",
     "@tensorflow-models/universal-sentence-encoder": "^1.3.3",
     "@tensorflow/tfjs-backend-cpu": "^3.6.0",
     "@tensorflow/tfjs-converter": "^3.6.0",

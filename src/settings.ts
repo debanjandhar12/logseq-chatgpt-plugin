@@ -38,10 +38,10 @@ export const addSettingsToLogseq = async () => {
         {
             key: "CHATGPT_MODEL",
             type: 'enum',
-            enumChoices: ["gpt-3.5-turbo", "gpt-4", "gpt-4-32k"],
+            enumChoices: ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"],
             enumPicker: "select",
             title: "ChatGPT Model",
-            description: "Please note that gpt-4 and gpt-4-32k only work if you have access to the them.",
+            description: "Please note that gpt-4 and gpt-4-32k only work if you have API access to the them. Visit https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4 for more information.",
             default: "gpt-3.5-turbo",
         },
         {

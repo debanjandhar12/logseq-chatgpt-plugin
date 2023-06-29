@@ -2143,11 +2143,6 @@ debug@4, debug@4.3.4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.3, debug@^4.3.4:
   dependencies:
     ms "2.1.2"
 
-decamelize@5:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-5.0.1.tgz#db11a92e58c741ef339fb0a2868d8a06a9a7b1e9"
-  integrity sha512-VfxadyCECXgQlkoEAjeghAr5gY3Hf+IKjKb+X8tGVDtveCjN+USwprd2q3QXBR9T1+x2DG0XZF5/w+7HAtSaXA==
-
 decamelize@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/decamelize/-/decamelize-1.2.0.tgz"
@@ -2909,21 +2904,21 @@ jsonpointer@^5.0.1:
   resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-5.0.1.tgz#2110e0af0900fd37467b5907ecd13a7884a1b559"
   integrity sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==
 
-langchain@^0.0.96:
-  version "0.0.96"
-  resolved "https://registry.yarnpkg.com/langchain/-/langchain-0.0.96.tgz#13ebdc76397a473b054e091e061de6f531bdaf57"
-  integrity sha512-m1d0IWjwZK+D19uBfgmfp5sUTxJXcjJb/YuIyn2cGNmXGqOH2r2cl0TUnhuFKxTXpMTXgTywd7MYF5U5/qkNTQ==
+langchain@^0.0.98:
+  version "0.0.98"
+  resolved "https://registry.yarnpkg.com/langchain/-/langchain-0.0.98.tgz#ca8f6ad46136c8d1708f8cdf94966640286db037"
+  integrity sha512-2VHLReMeN9MCgk7nU7/GGLIYbZgUwLP2BHaGRETA3uGn6L9Un2rtqZBiBtrZcjaQy+XarpAMKiO/DUfRdpNGRg==
   dependencies:
     "@anthropic-ai/sdk" "^0.4.3"
     ansi-styles "^5.0.0"
     binary-extensions "^2.2.0"
     camelcase "6"
-    decamelize "5"
+    decamelize "^1.2.0"
     expr-eval "^2.0.2"
     flat "^5.0.2"
     js-tiktoken "^1.0.7"
     jsonpointer "^5.0.1"
-    langchainplus-sdk "^0.0.11"
+    langchainplus-sdk "^0.0.15"
     ml-distance "^4.0.0"
     object-hash "^3.0.0"
     openai "^3.3.0"
@@ -2934,10 +2929,10 @@ langchain@^0.0.96:
     zod "^3.21.4"
     zod-to-json-schema "^3.20.4"
 
-langchainplus-sdk@^0.0.11:
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/langchainplus-sdk/-/langchainplus-sdk-0.0.11.tgz#bf833c183520983c229ef50071c17c1e3399909d"
-  integrity sha512-bEovYVJZq88LYznDfK+ohNVd0lqQ1DMgE/A/8ZkqsiyaRuEjvIQj4PLc0VQ8htWPBljrfTu8oS7g+SGWYTZfNw==
+langchainplus-sdk@^0.0.15:
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/langchainplus-sdk/-/langchainplus-sdk-0.0.15.tgz#216237d76ab4896ce74542b8e82ee579da3fdbe0"
+  integrity sha512-CWaTylvR2d17rErPqgLCBiAnY3UJMdV4c27itvL0CB0eurYnZspa75u3Xl4frmbMy0nhN2N94jWCnrAZX4YDjg==
   dependencies:
     "@types/uuid" "^9.0.1"
     commander "^10.0.1"

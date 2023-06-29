@@ -21,6 +21,7 @@ import {BaseCallbackHandler, Callbacks} from "langchain/callbacks";
 import {CallbackHandlerMethods} from "langchain/dist/callbacks/base";
 import _ from "lodash";
 import getUUIDFromBlock from "../../logseq/getUUIDFromBlock";
+import {calculateMaxTokens} from "langchain/base_language";
 
 export async function askChatGPT(pageName, {signal = new AbortController().signal}) {
     // Validate settings
@@ -259,7 +260,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 // LangChain Callback Objects (TODO: Move to separate file)
 const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
     let res: (BaseCallbackHandler | CallbackHandlerMethods) = {};
-    res.handleChatModelStart = (llm, messages) => {
+    res.handleChatModelStart = async (llm, messages) => {
         const originalMessages = _.cloneDeep(messages);
         if (messages.length != 1)
             throw new Error("Wew! The plugin somehow wants to sent concurrent messages. Please contact dev.");
@@ -270,7 +271,9 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
                 chatHistory.splice(i, 1);
             }
         }
-        chat.maxTokens = parseInt(logseq.settings.CHATGPT_MAX_TOKENS) - getMessageArrayTokenCount(chatHistory) - 32;
+        let chosenModelMaxTokens = await calculateMaxTokens({prompt: '', modelName: logseq.settings.CHATGPT_MODEL});
+        if (logseq.settings.CHATGPT_MODEL == "gpt-3.5-turbo-16k") chosenModelMaxTokens = 16384;
+        chat.maxTokens = Math.min(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 4000, chosenModelMaxTokens) - getMessageArrayTokenCount(chatHistory) - 32;
         chatHistory.map(message => message.name = undefined);
         messages = [chatHistory];
         console.log('%c🦜 Starting chat model', 'background-color: #05f2cb; font-weight: bold;', 'Original messages', originalMessages, 'Trimmed messages', messages);
