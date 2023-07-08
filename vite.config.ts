@@ -4,7 +4,6 @@ import logseqDevPlugin from "vite-plugin-logseq";
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import * as path from "path";
 import * as fs from "fs";
-import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 const { parseSync, traverse } = require('@babel/core');
 const generate = require('@babel/generator').default;
@@ -68,7 +67,7 @@ function staticFileSyncPlugin() {
 }
 export default defineConfig({
     base: './',
-    plugins: [wasm(), topLevelAwait(),
+    plugins: [wasm(),
         logseqDevPlugin(), reactPlugin(),
         nodePolyfills(), staticFileSyncPlugin()
     ],
