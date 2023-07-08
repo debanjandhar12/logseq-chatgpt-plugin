@@ -24,9 +24,9 @@ export async function getAllPrompts() : Promise<Prompt[]> {
         ...Translate.getPrompts(),
         ...SpecialPrompts.getPrompts()
     ];
-    prompts.forEach((prompt) => {
+    for (let prompt of prompts) {
         if (prompt.getPromptPrefixMessages) {
-            prompt.promptPrefixMessagesLength = getMessageArrayTokenCount(prompt.getPromptPrefixMessages());
+            prompt.promptPrefixMessagesLength = await getMessageArrayTokenCount(prompt.getPromptPrefixMessages());
         }
         if (prompt.isVisibleInCommandPrompt) {  // Handle logseq.settings.ENABLE_LANGCHAIN_TOOL_PROMPTS
             let oldIsVisibleInCommandPrompt = prompt.isVisibleInCommandPrompt;
@@ -38,6 +38,6 @@ export async function getAllPrompts() : Promise<Prompt[]> {
                 return oldIsVisibleInCommandPrompt(invokeState);
             }
         }
-    });
+    }
     return prompts;
 }

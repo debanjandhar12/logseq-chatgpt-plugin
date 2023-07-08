@@ -266,13 +266,13 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
         let chatHistory = messages[0];
         for (let i = 0; i < chatHistory.length; i++) {
             if (chatHistory[i]._getType() != "human" && chatHistory[i]._getType() != "ai") continue; // Skip trimming non-user messages
-            if (getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * 0.5)) {
+            if (await getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * 0.5)) {
                 chatHistory.splice(i, 1);
             }
         }
         let chosenModelMaxTokens = await calculateMaxTokens({prompt: '', modelName: logseq.settings.CHATGPT_MODEL});
         if (logseq.settings.CHATGPT_MODEL == "gpt-3.5-turbo-16k") chosenModelMaxTokens = 16384;
-        chat.maxTokens = Math.min(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 4000, chosenModelMaxTokens) - getMessageArrayTokenCount(chatHistory) - 32;
+        chat.maxTokens = Math.min(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 4000, chosenModelMaxTokens) - await getMessageArrayTokenCount(chatHistory) - 32;
         messages = [chatHistory];
         console.log('%c🦜 Starting chat model', 'background-color: #05f2cb; font-weight: bold;', 'Original messages', originalMessages, 'Trimmed messages', messages);
         if (chatHistory.length == 0 || chat.maxTokens <= 0 || chatHistory[chatHistory.length - 1]._getType() == "system")
