@@ -1,4 +1,4 @@
-import {BaseChatMessage} from "langchain/schema";
+import {BaseMessage} from "langchain/schema";
 import {Tool} from "langchain/tools";
 import {BlockEntity} from "@logseq/libs/dist/LSPlugin";
 
@@ -18,7 +18,7 @@ export type Prompt = {
     group: string;  // A misc string that represents the group to which the prompt belongs
 
     // -- Fields for Phase 2 --
-    getPromptPrefixMessages?: () => BaseChatMessage[];  // Hidden messages that are prepended to the message history when the prompt is run
+    getPromptPrefixMessages?: () => BaseMessage[];  // Hidden messages that are prepended to the message history when the prompt is run
     getPromptSuffixMessage?: () => string; // Hidden message that is appended to the prompt message
     promptPrefixMessagesLength?: number; // The length of getPromptPrefixMessages (filled automatically)
 }

@@ -1,6 +1,6 @@
 import {Prompt, PromptVisibility} from "../types/Prompt";
 import moment from "moment";
-import {UserChatMessage} from "../langchain/schema/UserChatMessage";
+import {UserMessage} from "../langchain/schema/UserMessage";
 import Mustache from "mustache";
 import _ from "lodash";
 
@@ -22,8 +22,8 @@ export class Task {
                     Mustache.render(`Generate Task(s):\n{{selectedBlocksList}}`,{
                         selectedBlocksList: invokeState.selectedBlocks.map(b => `{{embed ((${b.uuid}))}}`).join('\n')}),
                 getPromptPrefixMessages: () => [
-                    new UserChatMessage(`Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`),
-                    new UserChatMessage(`I want you to act like a loseq task generator. You take the input and output one or more logseq tasks. Please do not refer to yourself AND do not forget to add the   (non-breaking space) unicode charecter before the SCHEDULED tag. 
+                    new UserMessage(`Actual Current Time:${currentTime}\nActual Current Date:${currentDate}`),
+                    new UserMessage(`I want you to act like a loseq task generator. You take the input and output one or more logseq tasks. Please do not refer to yourself AND do not forget to add the   (non-breaking space) unicode charecter before the SCHEDULED tag. 
                     Logseq Tasks have the following format:
                     - {${later}|${now}} Task Title
                        SCHEDULED: <[Start Date] [Weekday] [Start Time] [.Repeater]>

@@ -1,7 +1,7 @@
 import {Prompt, PromptVisibility} from "../types/Prompt";
 import {SearchEngineTool} from "../langchain/tools/SearchEngine";
 import Mustache from "mustache";
-import {UserChatMessage} from "../langchain/schema/UserChatMessage";
+import {UserMessage} from "../langchain/schema/UserMessage";
 import {CustomWebBrowser} from "../langchain/tools/CustomWebBrowser";
 
 export class WebBrowser {
@@ -13,7 +13,7 @@ export class WebBrowser {
                 tools,
                 isVisibleInCommandPrompt: PromptVisibility.Blocks,
                 getPromptPrefixMessages: () => [
-                    new UserChatMessage(`
+                    new UserMessage(`
                     You are a search bot with the following profile:
                     - Your responses should be informative, visual, logical and actionable. 
                     - You should always perform web searches when the user is seeking information.
@@ -37,7 +37,7 @@ export class WebBrowser {
                 tools,
                 isVisibleInCommandPrompt: PromptVisibility.NoInput,
                 getPromptPrefixMessages: () => [
-                    new UserChatMessage(`
+                    new UserMessage(`
                     You are a search bot with the following profile:
                     - Your responses should be informative, visual, logical and actionable. 
                     - You should always perform web searches when the user is seeking information.

@@ -1,6 +1,6 @@
 import {Prompt, PromptVisibility} from "../types/Prompt";
 import Mustache from "mustache";
-import {UserChatMessage} from "../langchain/schema/UserChatMessage";
+import {UserMessage} from "../langchain/schema/UserMessage";
 import {DynamicTool, Tool, ZapierNLAWrapper} from "langchain/tools";
 import JSON5 from 'json5';
 import _ from "lodash";
@@ -199,7 +199,7 @@ export class UserDefinedPrompt {
                 tools,
                 getPromptPrefixMessages: () => userDefinedPrompt.tool == 'None' && userDefinedPrompt.hiddenPromptMsg.trim() != '' ? [
                     new SystemChatMessage(`Current Time: ${moment().format('YYYY-MM-DD')} ${moment().format('HH:mm')}`),
-                    new UserChatMessage(userDefinedPrompt.hiddenPrefixPromptMsg)
+                    new UserMessage(userDefinedPrompt.hiddenPrefixPromptMsg)
                 ] : [new SystemChatMessage(`Current Time: ${moment().format('YYYY-MM-DD')} ${moment().format('HH:mm')}`)],
                 getPromptSuffixMessage: () => userDefinedPrompt.tool != 'None' && userDefinedPrompt.hiddenPromptMsg.trim() != '' ? userDefinedPrompt.hiddenPromptMsg : '',
                 getPromptMessage: (userInput, invokeState) => {

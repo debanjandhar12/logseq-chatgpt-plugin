@@ -8,9 +8,9 @@ import {ChatgptToLogseqSanitizer} from "../../adapter/ChatgptToLogseqSanitizer";
 import {ActionableNotification} from "../../ui/ActionableNotification";
 import {LogseqOutlineParser} from "../../adapter/LogseqOutlineParser";
 import {Confirm} from "../../ui/Confirm";
-import {BaseChatMessage, BaseChatMessageHistory, LLMResult, SystemChatMessage} from "langchain/schema";
-import {UserChatMessage} from "../../langchain/schema/UserChatMessage";
-import {AssistantChatMessage} from "../../langchain/schema/AssistantChatMessage";
+import {BaseMessage, BaseChatMessageHistory, LLMResult, SystemMessage} from "langchain/schema";
+import {UserMessage} from "../../langchain/schema/UserMessage";
+import {AssistantMessage} from "../../langchain/schema/AssistantMessage";
 import {ChatOpenAI} from "langchain/chat_models/openai";
 import {initializeAgentExecutorWithOptions} from "langchain/agents";
 import {Tool} from "langchain/tools";
@@ -58,7 +58,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     console.log("%c🧩 Running prompt:", 'background-color: #05f26c;', prompt);
 
     // Collect all messages and find block to insert result
-    const messages: BaseChatMessage[] = [];
+    const messages: BaseMessage[] = [];
     let resultBlock = null;
     const pageBlocks = await logseq.Editor.getPageBlocksTree(page.originalName);
     let stack = [];
@@ -73,30 +73,29 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
         }
         messages.push(
             String(block.properties?.speaker) == "user" || String(block.properties?.speaker) == "[[user]]" ?
-                new UserChatMessage((await LogseqToChatgptConverter.convert(block.content)).trim()) :
-                new AssistantChatMessage((await LogseqToChatgptConverter.convert(block.content)).trim())
+                new UserMessage((await LogseqToChatgptConverter.convert(block.content)).trim()) :
+                new AssistantMessage((await LogseqToChatgptConverter.convert(block.content)).trim())
         );
         if (block.children)
             stack.push(...block.children);
     }
     if (stack.length > 0) {
         resultBlock = stack.pop();
-    } else if (messages.length != 0 && messages[messages.length - 1].name == "user" && messages[messages.length - 1].text != "") {
+    } else if (messages.length != 0 && messages[messages.length - 1]._getType() == "human" && messages[messages.length - 1].content != "") {
         // @ts-ignore
         resultBlock = await window.parent.logseq.api.insert_block(page.originalName, "", {
             isPageBlock: true,
             sibling: true
         });
-
         if (!resultBlock) return;
     }
 
     // Check if messages list is valid
     if (pageBlocks.length == 1 || messages.length == 0) {
         throw { message: "No messages. Please write a messages to the page.", type: 'warning' };
-    } else if (messages[messages.length - 1].name != "user") {
+    } else if (messages[messages.length - 1]._getType() != "human") {
         throw { message: "Last message is not from user", type: 'warning' };
-    } else if (messages[messages.length - 1].text.trim() == "") {
+    } else if (messages[messages.length - 1].content.trim() == "") {
         throw {
             message: "User message cannot be empty",
             type: 'warning',
@@ -114,7 +113,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
     // Add the system message
     if (logseq.settings.CHATGPT_SYSTEM_PROMPT && !prompt) {
-        messages.unshift(new SystemChatMessage(Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
+        messages.unshift(new SystemMessage(Mustache.render(logseq.settings.CHATGPT_SYSTEM_PROMPT,  // Process Mustache template
             {page, timestamp: Date.now(), today: new Date().toISOString().split('T')[0]})));
     }
 
@@ -124,7 +123,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
 
     // Add the postfix message from prompt if set
     if (prompt && prompt.getPromptSuffixMessage)
-        lastMessage.text += "\n"+prompt.getPromptSuffixMessage().trim();
+        lastMessage.content += "\n"+prompt.getPromptSuffixMessage().trim();
 
     // Call ChatGPT API
     let chatResponse: string = "";
@@ -156,7 +155,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
     chat.modelName = logseq.settings.CHATGPT_MODEL;
     const mem = new BufferMemory({returnMessages: true, memoryKey: "chat_history", inputKey: "input"});
     mem.chatHistory = new ChatMessageHistory(otherMessages);
-    let result;
+
     if(isAgentCall) {
         const tools : Tool[] = prompt.tools;
         tools.forEach(tool => (tool as any).signal = signal);
@@ -169,7 +168,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                 verbose: false
             }
         );
-        result = await executor.call({input: lastMessage.text, signal: signal, timeout: 0}, [
+        const result = await executor.call({input: lastMessage.text, signal: signal, timeout: 0}, [
             getToolStartLogCallback(resultBlock),
             getChatModelStartTrimMessageCallback(chat),
             getToolEndLogCallback(resultBlock),
@@ -184,7 +183,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
             HumanMessagePromptTemplate.fromTemplate("{input}"),
         ]);
         const chain = new ConversationChain({ llm: chat, memory: mem, prompt: inputStructure });
-        result = await chain.call({input: lastMessage.text, signal: signal, timeout: 0}, [
+        const result = await chain.call({input: lastMessage.text, signal: signal, timeout: 0}, [
                 {
                     async handleLLMNewToken(token: string) {
                         if (signal.aborted)
@@ -227,7 +226,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                         }
                         if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
                             await logseq.Editor.deletePage(page.originalName)
-                        await logseq.Editor.scrollToBlockInPage(blockPage.originalName, selectBlockAfterOp.uuid);
+                        logseq.Editor.scrollToBlockInPage(blockPage.originalName, selectBlockAfterOp.uuid);
                     }
                 }
             ];
@@ -241,7 +240,7 @@ export async function askChatGPT(pageName, {signal = new AbortController().signa
                             await logseq.Editor.updateBlock(block.uuid, sanitizedOutput);
                             if (logseq.settings.DELETE_PAGE_AFTER_PROMPT_ACTION)
                                 await logseq.Editor.deletePage(page.originalName);
-                            await logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
+                            logseq.Editor.scrollToBlockInPage(blockPage.originalName, block.uuid);
                         }
                     });
             }
@@ -266,7 +265,7 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
             throw new Error("Wew! The plugin somehow wants to sent concurrent messages. Please contact dev.");
         let chatHistory = messages[0];
         for (let i = 0; i < chatHistory.length; i++) {
-            if (chatHistory[i].name != "user" && chatHistory[i].name != "assistant") continue; // Skip trimming non-user messages
+            if (chatHistory[i]._getType() != "human" && chatHistory[i]._getType() != "ai") continue; // Skip trimming non-user messages
             if (getMessageArrayTokenCount(chatHistory) > Math.floor(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) * 0.5)) {
                 chatHistory.splice(i, 1);
             }
@@ -274,7 +273,6 @@ const getChatModelStartTrimMessageCallback = (chat: ChatOpenAI) => {
         let chosenModelMaxTokens = await calculateMaxTokens({prompt: '', modelName: logseq.settings.CHATGPT_MODEL});
         if (logseq.settings.CHATGPT_MODEL == "gpt-3.5-turbo-16k") chosenModelMaxTokens = 16384;
         chat.maxTokens = Math.min(parseInt(logseq.settings.CHATGPT_MAX_TOKENS) || 4000, chosenModelMaxTokens) - getMessageArrayTokenCount(chatHistory) - 32;
-        chatHistory.map(message => message.name = undefined);
         messages = [chatHistory];
         console.log('%c🦜 Starting chat model', 'background-color: #05f2cb; font-weight: bold;', 'Original messages', originalMessages, 'Trimmed messages', messages);
         if (chatHistory.length == 0 || chat.maxTokens <= 0 || chatHistory[chatHistory.length - 1]._getType() == "system")
